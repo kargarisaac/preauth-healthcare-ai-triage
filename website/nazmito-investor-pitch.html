@@ -4,38 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nazmito Investor Deck</title>
-  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg:#ffffff;
-      --fg:#111111;
-      --accent:#0a7f5a;
-      --accent-light:#e9f9f0;
-      --muted:#777;
-    }
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:'Inter',system-ui,sans-serif;}
-    section{padding:80px 110px;box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;justify-content:center;}
-    h1,h2,h3{margin:0 0 24px;line-height:1.15;font-weight:700;}
-    h1.big{font-size:76px;letter-spacing:-1px;}
-    h2{font-size:44px;letter-spacing:-.5px;}
-    h3{font-size:28px;font-weight:600;}
-    p{font-size:20px;line-height:1.6;margin:0 0 16px;}
-    ul{margin:0 0 0 24px;font-size:20px;line-height:1.6;}
-    li{margin-bottom:8px;}
-    .slide{page-break-after:always;}
-    .two-col{display:flex;gap:56px;flex-wrap:wrap;}
-    .two-col>div{flex:1 1 380px;}
-    .metric{font-size:64px;font-weight:700;}
-    .caption{font-size:16px;color:var(--muted);margin-top:8px;}
-    .box{background:#f7f7f7;padding:32px;border-radius:16px;}
-    .box.accent{background:var(--accent-light);}
-    .footer{font-size:14px;color:var(--muted);margin-top:60px;}
-    .quote{font-style:italic;border-left:4px solid var(--accent);padding-left:16px;margin:24px 0;}
-    /* simple fade-in for live presentations */
-    [data-anim]{opacity:0;transform:translateY(16px);transition:all .6s ease;}
-    [data-anim].in{opacity:1;transform:none;}
-  </style>
+  <link rel="stylesheet" href="pitch-style.css">
   <script>
     document.addEventListener('DOMContentLoaded',()=>{
       const els=document.querySelectorAll('[data-anim]');
@@ -48,7 +18,7 @@
 </head>
 <body>
 
-<section class="slide" style="background:var(--accent-light);">
+<section class="slide" style="background:var(--primary-color-light);">
   <h1 class="big" data-anim>Nazmito</h1>
   <h2 data-anim>AI‑Enriched Pre‑Authorization for Chronic Care Cost Control</h2>
   <p data-anim>We turn a mandatory insurance step into an always‑on cost containment engine for UAE payers and TPAs.</p>
@@ -72,7 +42,7 @@
   </div>
 </section>
 
-<section class="slide" style="background:var(--accent-light);">
+<section class="slide" style="background:var(--primary-color-light);">
   <h2>Our Approach</h2>
   <p data-anim>Nazmito sits inside the existing pre‑auth workflow. For every request, we enrich, decide, explain, and learn.</p>
   <div class="two-col">
@@ -109,7 +79,7 @@
   </div>
 </section>
 
-<section class="slide" style="background:var(--accent-light);">
+<section class="slide" style="background:var(--primary-color-light);">
   <h2>Market Size – UAE Only</h2>
   <div class="two-col">
     <div data-anim>
@@ -138,7 +108,7 @@
   <p data-anim><strong>Nazmito wins</strong> on UAE-first compliance, incentive bundling, explainable AI, and chronic outcome focus.</p>
 </section>
 
-<section class="slide" style="background:var(--accent-light);">
+<section class="slide" style="background:var(--primary-color-light);">
   <h2>Product & Tech</h2>
   <ul data-anim>
     <li><strong>Data sources:</strong> Claims, pharmacy, labs now; EMR via HL7/FHIR in phase 2.</li>
@@ -153,7 +123,7 @@
   <p data-anim>PMPM SaaS is primary. For pilots, we offer per-request pricing. Gain-share (15–30% of verified savings) aligns incentives. We provide decision support; payers keep legal liability. We carry Tech E&O and PI insurance.</p>
 </section>
 
-<section class="slide" style="background:var(--accent-light);">
+<section class="slide" style="background:var(--primary-color-light);">
   <h2>Traction Plan</h2>
   <ul data-anim>
     <li>Synthetic demo (Month 2): live rules, audit trail, KPI dashboard.</li>
@@ -170,7 +140,7 @@
   <p data-anim><em>Hiring:</em> Founding Head of Engineering (FHIR/claims), Regulatory & Compliance Lead.</p>
 </section>
 
-<section class="slide" style="background:var(--accent-light);">
+<section class="slide" style="background:var(--primary-color-light);">
   <h2>Financials & Ask</h2>
   <ul data-anim>
     <li>Ask: USD 500k seed / 18 months runway (50% product, 30% GTM, 20% compliance & ops).</li>
@@ -191,4 +161,4 @@
 </section>
 
 </body>
-</html>
+</html> 

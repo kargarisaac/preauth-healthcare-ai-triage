@@ -5,44 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nazmito – AI‑Enriched Pre‑Authorization</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --fg:#111;--bg:#fff;--accent:#0a7f5a;--accent-light:#e9f9f0;--muted:#666;
-    }
-    *{box-sizing:border-box;}
-    body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--fg);background:var(--bg);}    
-    header{padding:140px 24px 120px;text-align:center;background:linear-gradient(135deg,var(--accent) 0%,#0e9c70 100%);color:#fff;}
-    header h1{font-size:64px;margin:0 0 24px;line-height:1.1;letter-spacing:-1px;}
-    header p{font-size:22px;max-width:760px;margin:0 auto 32px;line-height:1.6;}
-    .btn{display:inline-block;padding:16px 32px;background:#fff;color:var(--accent);border-radius:10px;text-decoration:none;font-weight:600;}
-    section{padding:80px 24px;max-width:1080px;margin:auto;}
-    h2{font-size:42px;margin:0 0 24px;line-height:1.2;}
-    h3{font-size:26px;margin:0 0 12px;}
-    p{font-size:19px;line-height:1.7;margin:0 0 18px;color:var(--fg);}    
-    .grid{display:grid;gap:32px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
-    .card{background:#f7f7f7;padding:28px;border-radius:14px;}
-    .pill{display:inline-block;padding:4px 12px;background:var(--accent-light);color:var(--accent);border-radius:999px;font-size:13px;margin-bottom:12px;}
-    .faq-item{margin-bottom:32px;}
-    .faq-item h4{margin:0 0 8px;font-size:20px;}
-    footer{padding:60px 24px;background:#f2f2f2;color:var(--muted);font-size:14px;text-align:center;}
-    a{color:var(--accent);}a:hover{text-decoration:underline;}
-  </style>
+  <link rel="stylesheet" href="website-style.css">
 </head>
 <body>
+
+<nav class="nav-header">
+  <div class="nav-container">
+    <a href="#" class="nav-logo">Nazmito</a>
+    <div class="nav-links">
+      <a href="#how">How It Works</a>
+      <a href="#value">Value</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#contact" class="btn btn-secondary">Contact Us</a>
+    </div>
+  </div>
+</nav>
 
 <header>
   <h1>Turn Pre‑Authorization into Prevention</h1>
   <p>Nazmito enriches every authorization with AI and clinical rules. You approve faster, touch fewer files, and stop costly chronic complications before they start.</p>
-  <a href="#contact" class="btn">Book a Demo</a>
+  <a href="#contact" class="btn btn-primary">Book a Demo</a>
 </header>
 
 <section id="problem">
-  <h2>The Problem</h2>
-  <p>Pre‑authorization is supposed to protect payers from unnecessary spend. In reality, it became a paperwork bottleneck. Providers upload documents, reviewers scan them, and everyone waits. The UAE already has digital rails—Shafafiya in Abu Dhabi, eClaimLink in Dubai—but the logic running on those rails is still basic. Chronic patients drift through without proactive guidance, and avoidable complications eat budgets.</p>
+  <div class="section-intro">
+    <h2>The Problem</h2>
+    <p>Pre‑authorization is supposed to protect payers from unnecessary spend. In reality, it became a paperwork bottleneck. Providers upload documents, reviewers scan them, and everyone waits. The UAE already has digital rails—Shafafiya in Abu Dhabi, eClaimLink in Dubai—but the logic running on those rails is still basic. Chronic patients drift through without proactive guidance, and avoidable complications eat budgets.</p>
+  </div>
 </section>
 
 <section id="how">
-  <h2>How Nazmito Works</h2>
+  <div class="section-intro">
+    <h2>How Nazmito Works</h2>
+  </div>
   <div class="grid">
     <div class="card">
       <span class="pill">1. Ingest & Enrich</span>
@@ -63,7 +60,9 @@
 </section>
 
 <section id="value">
-  <h2>What You Get</h2>
+  <div class="section-intro">
+    <h2>What You Get</h2>
+  </div>
   <div class="grid">
     <div class="card">
       <h3>Fewer Manual Touches</h3>
@@ -84,14 +83,16 @@
   </div>
 </section>
 
-<section id="uae-fit" style="background:var(--accent-light);border-radius:16px;padding:80px 24px;">
+<section id="uae-fit">
   <h2>Built for the UAE</h2>
   <p>We integrate with Shafafiya and eClaimLink, and we design for PDPL, ADHICS, and ISO 27001 from day one. Local data stays local. Arabic & English support are first-class citizens.</p>
 </section>
 
 <section id="security">
-  <h2>Security & Compliance</h2>
-  <p>Encryption at rest (AES‑256) and in transit (TLS 1.2+). Role-based access and least-privilege. Immutable logs for audits. Our roadmap:</p>
+  <div class="section-intro">
+    <h2>Security & Compliance</h2>
+    <p>Encryption at rest (AES‑256) and in transit (TLS 1.2+). Role-based access and least-privilege. Immutable logs for audits. Our roadmap:</p>
+  </div>
   <ul>
     <li>Month 3: PDPL/DHA gap analysis complete; DPO appointed.</li>
     <li>Month 6: ISO 27001 audit kickoff.</li>
@@ -101,24 +102,32 @@
 </section>
 
 <section id="pricing">
-  <h2>Pricing</h2>
-  <p>Simple SaaS: per member per month or per request. Optional gain-share (15–30% of proven savings), capped. Start with a pilot at a reduced rate, then scale once ROI is clear.</p>
+  <div class="section-intro">
+    <h2>Pricing</h2>
+    <p>Simple SaaS: per member per month or per request. Optional gain-share (15–30% of proven savings), capped. Start with a pilot at a reduced rate, then scale once ROI is clear.</p>
+  </div>
 </section>
 
 <section id="story">
-  <h2>Our Story</h2>
-  <p>Nazmito started with a simple question: why isn’t the pre‑auth step used to prevent problems instead of just policing them? Our founder, Isaac, saw the same pattern in multiple GCC projects—huge data exhaust, little clinical intelligence. We built Nazmito to flip the script.</p>
+  <div class="section-intro">
+    <h2>Our Story</h2>
+    <p>Nazmito started with a simple question: why isn’t the pre‑auth step used to prevent problems instead of just policing them? Our founder, Isaac, saw the same pattern in multiple GCC projects—huge data exhaust, little clinical intelligence. We built Nazmito to flip the script.</p>
+  </div>
 </section>
 
 <section id="team">
-  <h2>Team & Advisors</h2>
-  <p><strong>Isaac</strong> – Founder & CEO, AI scientist, shipped ML products in healthcare and insurance. Based in the UAE.</p>
-  <p><strong>Advisors</strong> – senior leaders from DHA/ADHICS, Daman, and major TPAs. (Full bios available on request.)</p>
-  <p><em>We’re hiring:</em> Founding Head of Engineering (FHIR/claims) and a Regulatory & Compliance Lead.</p>
+  <div class="section-intro">
+    <h2>Team & Advisors</h2>
+  </div>
+  <p class="text-center"><strong>Isaac</strong> – Founder & CEO, AI scientist, shipped ML products in healthcare and insurance. Based in the UAE.</p>
+  <p class="text-center"><strong>Advisors</strong> – senior leaders from DHA/ADHICS, Daman, and major TPAs. (Full bios available on request.)</p>
+  <p class="text-center"><em>We’re hiring:</em> Founding Head of Engineering (FHIR/claims) and a Regulatory & Compliance Lead.</p>
 </section>
 
 <section id="faq">
-  <h2>FAQ</h2>
+  <div class="section-intro">
+    <h2>FAQ</h2>
+  </div>
   <div class="faq-item">
     <h4>Do you replace our current TPA portal?</h4>
     <p>No. We sit alongside or integrate into it. Think “intelligence layer,” not “portal replacement.”</p>
@@ -141,7 +150,7 @@
   <h2>Let’s Talk</h2>
   <p>Email: <a href="mailto:isaac@nazmito.ai">isaac@nazmito.ai</a></p>
   <p>Phone: <a href="tel:+971501234567">+971 50 123 4567</a></p>
-  <a href="mailto:isaac@nazmito.com?subject=Demo%20Request" class="btn">Request a Demo</a>
+  <a href="mailto:isaac@nazmito.com?subject=Demo%20Request" class="btn btn-primary">Request a Demo</a>
 </section>
 
 <footer>
@@ -149,4 +158,4 @@
 </footer>
 
 </body>
-</html>
+</html> 
