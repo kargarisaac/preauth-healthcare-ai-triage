@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nazmito Investor Deck</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#ffffff;
+      --fg:#111111;
+      --accent:#0a7f5a;
+      --accent-light:#e9f9f0;
+      --muted:#777;
+    }
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:'Inter',system-ui,sans-serif;}
+    section{padding:80px 110px;box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;justify-content:center;}
+    h1,h2,h3{margin:0 0 24px;line-height:1.15;font-weight:700;}
+    h1.big{font-size:76px;letter-spacing:-1px;}
+    h2{font-size:44px;letter-spacing:-.5px;}
+    h3{font-size:28px;font-weight:600;}
+    p{font-size:20px;line-height:1.6;margin:0 0 16px;}
+    ul{margin:0 0 0 24px;font-size:20px;line-height:1.6;}
+    li{margin-bottom:8px;}
+    .slide{page-break-after:always;}
+    .two-col{display:flex;gap:56px;flex-wrap:wrap;}
+    .two-col>div{flex:1 1 380px;}
+    .metric{font-size:64px;font-weight:700;}
+    .caption{font-size:16px;color:var(--muted);margin-top:8px;}
+    .box{background:#f7f7f7;padding:32px;border-radius:16px;}
+    .box.accent{background:var(--accent-light);}
+    .footer{font-size:14px;color:var(--muted);margin-top:60px;}
+    .quote{font-style:italic;border-left:4px solid var(--accent);padding-left:16px;margin:24px 0;}
+    /* simple fade-in for live presentations */
+    [data-anim]{opacity:0;transform:translateY(16px);transition:all .6s ease;}
+    [data-anim].in{opacity:1;transform:none;}
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded',()=>{
+      const els=document.querySelectorAll('[data-anim]');
+      const observer=new IntersectionObserver(entries=>{
+        entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in')}})
+      },{threshold:.2});
+      els.forEach(el=>observer.observe(el));
+    });
+  </script>
+</head>
+<body>
+
+<section class="slide" style="background:var(--accent-light);">
+  <h1 class="big" data-anim>Nazmito</h1>
+  <h2 data-anim>AI‑Enriched Pre‑Authorization for Chronic Care Cost Control</h2>
+  <p data-anim>We turn a mandatory insurance step into an always‑on cost containment engine for UAE payers and TPAs.</p>
+</section>
+
+<section class="slide">
+  <h2>The Pain Today</h2>
+  <div class="two-col">
+    <div data-anim>
+      <p>Pre‑authorization is already digital in the UAE, but the logic is shallow. Static rules and manual queues dominate. Providers upload PDFs; reviewers skim; decisions take days. Meanwhile, chronic members slip through the cracks and show up later with avoidable complications.</p>
+      <p class="quote">“We spend time checking boxes instead of steering care. It’s reactive, not preventive.” – Claims director, UAE payer (interview)</p>
+    </div>
+    <div class="box" data-anim>
+      <div class="metric">≈40%</div>
+      <div class="caption">Requests still touched by humans</div>
+      <div class="metric" style="margin-top:32px;">~3 days</div>
+      <div class="caption">Average decision time reported by providers</div>
+      <div class="metric" style="margin-top:32px;">35%</div>
+      <div class="caption">Share of spend driven by chronic complications</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" style="background:var(--accent-light);">
+  <h2>Our Approach</h2>
+  <p data-anim>Nazmito sits inside the existing pre‑auth workflow. For every request, we enrich, decide, explain, and learn.</p>
+  <div class="two-col">
+    <div class="box" data-anim>
+      <h3>Enrich</h3>
+      <p>Pull claims, labs, pharmacy history. Detect gaps against guidelines. Score data quality.</p>
+    </div>
+    <div class="box" data-anim>
+      <h3>Decide & Incentivise</h3>
+      <p>Return an auto‑approved pathway: bundle overdue labs, propose a lower‑cost equivalent drug, add a small provider bonus.</p>
+    </div>
+    <div class="box" data-anim>
+      <h3>Explain</h3>
+      <p>Every decision carries an audit trail: which rules fired, which model version, and the clinical citation.</p>
+    </div>
+    <div class="box" data-anim>
+      <h3>Learn</h3>
+      <p>Closed-loop analytics update rules quarterly. Confusion matrices and outcome dashboards prove ROI.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>Before vs After</h2>
+  <div class="two-col">
+    <div class="box" data-anim>
+      <h3>Today</h3>
+      <p>Provider uploads docs → reviewer checks basics → back-and-forth calls → approval/denial → no guidance beyond a binary decision.</p>
+    </div>
+    <div class="box accent" data-anim>
+      <h3>With Nazmito</h3>
+      <p>Request auto-enriched → optimized plan auto-approved → provider sees rationale & incentives → payer gets full audit log and KPI impact.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" style="background:var(--accent-light);">
+  <h2>Market Size – UAE Only</h2>
+  <div class="two-col">
+    <div data-anim>
+      <p><strong>TAM:</strong> USD 224–560M/yr (9.3M insured × $2–5 PMPM × 12).</p>
+      <p><strong>SAM:</strong> USD ~84M/yr chronic wedge (2.8M lives × $2.5 PMPM × 12).</p>
+      <p><strong>SOM:</strong> USD ~3.6M ARR in 3 years (≈120k chronic members across 2–3 early adopters).</p>
+      <p>Transaction sanity check: ~9M PA events/yr → a $0.50 intelligence fee equals ~$4.5M. PMPM captures more of the value we create.</p>
+    </div>
+    <div class="box" data-anim>
+      <div class="metric">9.3M</div>
+      <div class="caption">Insured lives in UAE (2025)</div>
+      <div class="metric" style="margin-top:32px;">30%</div>
+      <div class="caption">Have ≥1 major chronic condition</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>Competition</h2>
+  <p data-anim>The rails exist (Shafafiya, eClaimLink). TPAs and insurers run basic rule engines. InterQual/Milliman provide static criteria. Global AI giants focus on US markets. No one in the UAE delivers proactive, AI-driven, chronic-care-oriented authorization with transparent ROI.</p>
+  <ul data-anim>
+    <li><strong>Status quo:</strong> NAS, Neuron, NextCare, MedNet portals – rule checks, manual queues.</li>
+    <li><strong>Guideline vendors:</strong> InterQual / MCG – evidence rules, little personalization.</li>
+    <li><strong>Global tech:</strong> Optum, eviCore – strong tech, weak local compliance/footprint.</li>
+  </ul>
+  <p data-anim><strong>Nazmito wins</strong> on UAE-first compliance, incentive bundling, explainable AI, and chronic outcome focus.</p>
+</section>
+
+<section class="slide" style="background:var(--accent-light);">
+  <h2>Product & Tech</h2>
+  <ul data-anim>
+    <li><strong>Data sources:</strong> Claims, pharmacy, labs now; EMR via HL7/FHIR in phase 2.</li>
+    <li><strong>Pipeline:</strong> Mapping → quality scoring → rules + ML → incentive optimizer → decision & rationale.</li>
+    <li><strong>Governance:</strong> Clinical board (2 MDs + coder), quarterly audits, confusion matrices.</li>
+    <li><strong>Security:</strong> PDPL/ADHICS/ISO roadmap; AES‑256, TLS 1.2+, RBAC, immutable logs.</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>Business Model</h2>
+  <p data-anim>PMPM SaaS is primary. For pilots, we offer per-request pricing. Gain-share (15–30% of verified savings) aligns incentives. We provide decision support; payers keep legal liability. We carry Tech E&O and PI insurance.</p>
+</section>
+
+<section class="slide" style="background:var(--accent-light);">
+  <h2>Traction Plan</h2>
+  <ul data-anim>
+    <li>Synthetic demo (Month 2): live rules, audit trail, KPI dashboard.</li>
+    <li>LOIs/MOUs with 1 insurer + 1 employer (Month 3–4).</li>
+    <li>3+3 month pilot: integrate → run → measure ROI (manual touch %, turnaround time, proxy MLR impact).</li>
+    <li>Publish case study → expand to 2nd/3rd payer. Add forecasting/FWA modules.</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>Team</h2>
+  <p data-anim><strong>Isaac</strong> – Founder & CEO. AI scientist, shipped healthcare ML products in GCC, ex‑[Company].</p>
+  <p data-anim><strong>Advisors (committed):</strong> [Name], ex‑DHA/ADHICS; [Name], ex‑Daman Medical Director; [Name], ex‑NAS CTO.</p>
+  <p data-anim><em>Hiring:</em> Founding Head of Engineering (FHIR/claims), Regulatory & Compliance Lead.</p>
+</section>
+
+<section class="slide" style="background:var(--accent-light);">
+  <h2>Financials & Ask</h2>
+  <ul data-anim>
+    <li>Ask: USD 500k seed / 18 months runway (50% product, 30% GTM, 20% compliance & ops).</li>
+    <li>Base case: ~USD 3.6M ARR by Year 3, 75% GM, <5% churn.</li>
+    <li>Sensitivity model ready (price, conversion, retention).</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>Next Steps</h2>
+  <ul data-anim>
+    <li>Book live demo (synthetic claims).</li>
+    <li>Review compliance roadmap & data room.</li>
+    <li>Sign pilot LOI and start integration sprint.</li>
+  </ul>
+  <p data-anim>Let’s turn pre‑auth from paperwork into prevention.</p>
+  <p class="footer" data-anim>isaac@nazmito.ai • +971 XX XXX XXXX</p>
+</section>
+
+</body>
+</html>
