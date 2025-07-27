@@ -1,0 +1,59 @@
+<xs:schema xmlns:tns="http://www.eclaimlink.ae/DHD/ValidationSchema" elementFormDefault="qualified" version="2.0" id="PriorAuthorization" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+ <xs:import schemaLocation="CommonTypes_20191113.xsd" namespace="http://www.eclaimlink.ae/DHD/ValidationSchema" />
+    <xs:element name="Prior.Authorization">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="1" maxOccurs="1" name="Header">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element minOccurs="1" maxOccurs="1" name="SenderID" type="tns:HeaderSenderID" />
+                            <xs:element minOccurs="1" maxOccurs="1" name="ReceiverID" type="tns:HeaderReceiverID" />
+                            <xs:element minOccurs="1" maxOccurs="1" name="TransactionDate" type="tns:HeaderTransactionDate" />
+                            <xs:element minOccurs="1" maxOccurs="1" name="RecordCount" type="tns:HeaderRecordCount" />
+                            <xs:element minOccurs="1" maxOccurs="1" name="DispositionFlag" type="tns:HeaderDispositionFlag" />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element minOccurs="1" maxOccurs="1" name="Authorization">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element minOccurs="0" maxOccurs="1" name="Result" type="tns:AuthorizationResult" />
+                            <xs:element minOccurs="1" maxOccurs="1" name="ID" type="tns:AuthorizationID" />
+                            <xs:element minOccurs="0" maxOccurs="1" name="IDPayer" type="tns:AuthorizationIDPayer" />
+                            <xs:element minOccurs="0" maxOccurs="1" name="DenialCode" type="tns:AuthorizationDenialCode" />
+                            <xs:element minOccurs="1" maxOccurs="1" name="Start" type="tns:AuthorizationStart" />
+                            <xs:element minOccurs="1" maxOccurs="1" name="End" type="tns:AuthorizationEnd" />
+                            <xs:element minOccurs="0" maxOccurs="1" name="Limit" type="tns:AuthorizationLimit" />
+                            <xs:element minOccurs="0" maxOccurs="1" name="Comments" type="tns:AuthorizationComments" />
+                            <xs:element minOccurs="0" maxOccurs="unbounded" name="Activity">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element minOccurs="1" maxOccurs="1" name="ID" type="tns:ActivityID"  />
+                                        <xs:element minOccurs="1" maxOccurs="1" name="Type" type="tns:ActivityType" />
+                                        <xs:element minOccurs="1" maxOccurs="1" name="Code" type="tns:ActivityCode" />
+                                        <xs:element minOccurs="0" maxOccurs="1" name="Quantity" type="tns:ActivityQuantity" />
+                                        <xs:element minOccurs="1" maxOccurs="1" name="Net" type="tns:ActivityNet" />
+                                        <xs:element minOccurs="0" maxOccurs="1" name="List" type="tns:ActivityList" />
+                                        <xs:element minOccurs="0" maxOccurs="1" name="PatientShare" type="tns:ActivityPatientShare" />
+                                        <xs:element minOccurs="1" maxOccurs="1" name="PaymentAmount" type="tns:ActivityPaymentAmount" />
+                                        <xs:element minOccurs="0" maxOccurs="1" name="DenialCode" type="tns:ActivityDenialCode" />
+                                        <xs:element minOccurs="0" maxOccurs="unbounded" name="Observation">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element minOccurs="1" maxOccurs="1" name="Type" type="tns:ObservationType" />
+                                                    <xs:element minOccurs="1" maxOccurs="1" name="Code" type="tns:ObservationCode" />
+                                                    <xs:element minOccurs="0" maxOccurs="1" name="Value" type="tns:ObservationValue" />
+                                                    <xs:element minOccurs="0" maxOccurs="1" name="ValueType" type="tns:ObservationValueType" />
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
