@@ -321,7 +321,7 @@
         -   6 = Not discharged
         -   7 = Discharge transfer to non-acute care(Transfer to long term care).
         -   8 = Administrative discharge
-       
+
       </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:integer">
@@ -334,7 +334,7 @@
             <xs:enumeration value="7" />
       <xs:enumeration value="8" />
 
-           
+
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="EncounterSpeciality">
@@ -637,13 +637,13 @@
     <xs:simpleType name="DxInfoCode">
         <xs:annotation>
             <xs:documentation>
-   The code value related to the DxInfoType. 
-   For POA type, values are: 
+   The code value related to the DxInfoType.
+   For POA type, values are:
    - "Y"= Yes. Definition: present at the time of inpatient admission.
    - "N"= No.  Definition: not present at the time of inpatient ad
    - "U"= Unknown. Definition: documentation is insufficient to determine if condition is present on admission.
    - "W"= Clinically Undetermined. Definition: provider is unable tp clinically determine whether condition was present on admission or not.
-   - "1"= Unreported/Not used. Definition: exempt from POA reporting. 
+   - "1"= Unreported/Not used. Definition: exempt from POA reporting.
    - "OP"= Outpatient claim. Definition: this is an outpatient claim which does not require DRGsin Dubai (for the time being).
    </xs:documentation>
         </xs:annotation>
@@ -659,9 +659,9 @@
     <xs:simpleType name="DxInfoType">
         <xs:annotation>
             <xs:documentation>
-   -	The type of additional information for the diagnosis. | Used for POA: Present On Admission (POA) indicator it refers to the associated diagnosis code and is defined as: Present at the time the order for inpatient admission occurs. 
-    Conditions that develop during an outpatient encounter, including emergency department, observation, or outpatient surgery, are considered as present on admission. The POA Indicator is applied to the principal diagnosis as well as all secondary diagnoses and the external cause of injury codes that are reported. 
-    If a condition would not be coded and reported based on UHDDS definitions and current official coding guidelines, then the POA indicator would not be reported. 
+   -	The type of additional information for the diagnosis. | Used for POA: Present On Admission (POA) indicator it refers to the associated diagnosis code and is defined as: Present at the time the order for inpatient admission occurs.
+    Conditions that develop during an outpatient encounter, including emergency department, observation, or outpatient surgery, are considered as present on admission. The POA Indicator is applied to the principal diagnosis as well as all secondary diagnoses and the external cause of injury codes that are reported.
+    If a condition would not be coded and reported based on UHDDS definitions and current official coding guidelines, then the POA indicator would not be reported.
    </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">

@@ -1,7 +1,6 @@
 # pip install xmlschema
 import xmlschema
-from xml.etree import ElementTree as ET
-import xmltodict, json
+import xmltodict
 
 
 def normalize_prior_authorization(xml_file_path: str) -> dict:
