@@ -1,60 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<PriorAuthorizationRequest
-    xmlns="http://www.eclaimlink.ae/dhd/2019/11/PriorAuthorization"
-    xmlns:ct="http://www.eclaimlink.ae/dhd/2019/11/CommonTypes"
+<Prior.Authorization
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="
-      http://www.eclaimlink.ae/dhd/2019/11/PriorAuthorization PriorAuthorization_20191113.xsd
-      http://www.eclaimlink.ae/dhd/2019/11/CommonTypes        CommonTypes_20191113.xsd">
+    xsi:noNamespaceSchemaLocation="../schemas/PriorAuthorization.xsd">
 
+  <!-- Header section -->
   <Header>
     <SenderID>PROV12345</SenderID>
     <ReceiverID>PAYER67890</ReceiverID>
-    <TransactionDateTime>2025-07-27T10:32:00Z</TransactionDateTime>
-    <TransactionID>PA-2025-000123</TransactionID>
+    <!-- dd/mm/yyyy HH:MM format as required by HeaderTransactionDate type -->
+    <TransactionDate>27/07/2025 10:32</TransactionDate>
+    <RecordCount>1</RecordCount>
+    <DispositionFlag>TEST</DispositionFlag>
   </Header>
 
-  <Patient> <!-- TODO: add patient -->
-    <ct:ClaimMemberID>MEM-445566</ct:ClaimMemberID>
-    <ct:PersonUIDNumber>784-1976-1234567-1</ct:PersonUIDNumber>
-    <ct:PersonName>
-      <ct:FirstName>Ahmed</ct:FirstName>
-      <ct:FamilyName>Al Mansoori</ct:FamilyName>
-    </ct:PersonName>
-    <ct:DateOfBirth>1976-05-14</ct:DateOfBirth>
-    <ct:GenderCode>M</ct:GenderCode>
-  </Patient>
+  <!-- Authorization section -->
+  <Authorization>
+    <Result>Yes</Result>
+    <!-- Unique authorization identifier -->
+    <ID>PA-2025-000123</ID>
+    <!-- Start & End in dd/mm/yyyy HH:MM format -->
+    <Start>25/07/2025 00:00</Start>
+    <End>25/07/2025 00:00</End>
+    <!-- Human-readable comments / justification -->
+    <Comments>Patient with poorly controlled diabetes; last HbA1c 9 months ago. No retinopathy screen in 18 months.</Comments>
 
-  <Coverage>
-    <ct:ContractPolicySequence>DPWORLD-GOLD-2025</ct:ContractPolicySequence>
-    <ct:CoverageTypeCode>IP</ct:CoverageTypeCode>
-  </Coverage>
+    <!-- First activity -->
+    <Activity>
+      <ID>1</ID>
+      <!-- 3 = CPT as per ActivityType enumeration -->
+      <Type>3</Type>
+      <Code>83036</Code>
+      <Quantity>1</Quantity>
+      <Net>120.00</Net>
+      <PaymentAmount>0.00</PaymentAmount>
+    </Activity>
 
-  <Encounter>
-    <ct:EncounterID>ENC-998877</ct:EncounterID>
-    <ct:ReferringProviderID>DOC-112233</ct:ReferringProviderID>
-  </Encounter>
+    <!-- Second activity -->
+    <Activity>
+      <ID>2</ID>
+      <Type>3</Type>
+      <Code>92014</Code>
+      <Quantity>1</Quantity>
+      <Net>250.00</Net>
+      <PaymentAmount>0.00</PaymentAmount>
+    </Activity>
+  </Authorization>
 
-  <ServiceRequests>
-    <ServiceRequest>
-      <ct:ActivityCode>CPT-83036</ct:ActivityCode> <!-- HbA1c test -->
-      <ct:DiagnosisCode>ICD10-E11.9</ct:DiagnosisCode> <!-- Type 2 diabetes -->
-      <ct:ActivityDateTime>2025-07-25T00:00:00</ct:ActivityDateTime>
-      <ct:ActivityInstructions>Annual diabetes labs overdue, please approve bundle.</ct:ActivityInstructions>
-      <RequestedAmount currency="AED">120.00</RequestedAmount>
-    </ServiceRequest>
-
-    <ServiceRequest>
-      <ct:ActivityCode>CPT-92014</ct:ActivityCode> <!-- eye exam -->
-      <ct:DiagnosisCode>ICD10-E11.9</ct:DiagnosisCode>
-      <ct:ActivityDateTime>2025-07-25T00:00:00</ct:ActivityDateTime>
-      <ct:ActivityInstructions>Diabetic retinopathy screening overdue.</ct:ActivityInstructions>
-      <RequestedAmount currency="AED">250.00</RequestedAmount>
-    </ServiceRequest>
-  </ServiceRequests>
-
-  <JustificationText>
-    Patient with poorly controlled diabetes; last HbA1c 9 months ago. No retinopathy screen in 18 months.
-  </JustificationText>
-
-</PriorAuthorizationRequest>
+</Prior.Authorization>
