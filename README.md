@@ -87,6 +87,36 @@ Nazmito differentiates itself clearly from existing competitors by providing pro
   * Month 12: Obtain SOC 2 Type I compliance.
 * **Security Measures:** AES-256 encryption at rest, TLS 1.2+ encryption in transit, role-based access controls (RBAC), and immutable audit logs.
 
+## Canonical Schema Overview
+
+Nazmito uses a unified canonical schema based on FHIR (Fast Healthcare Interoperability Resources) standards to normalize healthcare data from various sources. This ensures consistent data processing regardless of the input format (eClaimLink XML, Shafafiya XML, CSV, or PDF).
+
+### Key Components:
+
+1. **FHIR-Based Structure**: Built on FHIR Claim and ServiceRequest resources, ensuring international healthcare interoperability
+2. **UAE-Specific Extensions**: Custom extensions for regional requirements (disposition flags, activity types, etc.)
+3. **Multi-Format Support**: Unified mapping from both 2019/11 PriorAuthorizationRequest and 2011 Prior.Authorization formats
+4. **Data Quality Tracking**: Built-in extensions for quality scores, processing metadata, and audit trails
+
+### Schema Documentation:
+
+- **Canonical Schema**: `schemas/canonical_schema.json` - JSON Schema definition for validated data structure
+- **Field Mappings**: `docs/mappings/field_map_v0.csv` - Complete mapping from source formats to FHIR fields
+- **MVP Fields**: `docs/mappings/mvp_fields.md` - Minimal required fields for authorization processing
+- **Example Data**: `canonical/examples/claim_example.json` - Sample canonical format claim
+
+### Data Flow:
+
+```
+Source Data (XML/CSV/PDF) → Normalization → Canonical FHIR Format → Enrichment → Decision Engine
+```
+
+This canonical approach enables:
+- Consistent downstream processing
+- Easy integration with FHIR-compliant systems
+- Clear audit trails and data lineage
+- Flexible addition of new data sources
+
 ## Business Model
 
 * **Primary Model:** SaaS-based PMPM fee.
