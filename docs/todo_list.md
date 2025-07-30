@@ -77,14 +77,171 @@ flowchart TD
 
 > **Objective:** Establish a single, vendor-agnostic “source of truth” data model that every upstream format (XML, CSV, PDF-extracted JSON) can be transformed into. This *canonical schema* is a streamlined subset of the HL7 FHIR standard—augmented with Nazmito-specific fields—that captures only the attributes we need for the MVP (patient info, service requests, monetary amounts, diagnoses, dates, status). By mapping eClaimLink, Shafafiya, CMS CSV, and OCR/NLP outputs into this schema we (1) decouple parsing logic from downstream analytics and rules, (2) guarantee that every record—regardless of origin—looks the same to the quality scorer, Kafka event bus, and UI layers, and (3) future-proof the platform for interoperability with other FHIR-capable systems such as payer APIs or electronic medical records. Today’s work is therefore crucial: it defines the contract that all subsequent pipeline stages will rely on.
 
-- [ ] 2.1 Review FHIR resources *Claim*, *ClaimResponse*, *ServiceRequest*, *Observation*, *MedicationStatement* (read spec links below)
-- [ ] 2.2 Create mapping spreadsheet (`docs/mappings/field_map_v0.xlsx`) aligning eClaimLink/Shafafiya tags → FHIR fields
-- [ ] 2.3 Define minimal MVP field list (patient, encounter, service, amount, diagnosis, status)
-- [ ] 2.4 Draft JSON Schema `schemas/canonical_schema.json` (use `$schema":"https://json-schema.org/draft/2020-12/schema"`)
-- [ ] 2.5 Add sample `canonical/examples/claim_example.json` conforming to schema
-- [ ] 2.6 Write pytest `tests/test_canonical_schema.py` that loads example and validates with `jsonschema`
-- [ ] 2.7 Update `README.md` with canonical schema overview and link to mapping doc
-- [ ] 2.8 Commit and push branch `feat/canonical-schema` for PR review
+- [x] 2.1 Review FHIR resources *Claim*, *ClaimResponse*, *ServiceRequest*, *Observation*, *MedicationStatement* (read spec links below)
+- [x] 2.2 Create mapping spreadsheet (`docs/mappings/field_map_v0.xlsx`) aligning eClaimLink/Shafafiya tags → FHIR fields
+- [x] 2.3 Define minimal MVP field list (patient, encounter, service, amount, diagnosis, status)
+- [x] 2.4 Draft JSON Schema `schemas/canonical_schema.json` (use `$schema":"https://json-schema.org/draft/2020-12/schema"`)
+- [x] 2.5 Add sample `canonical/examples/claim_example.json` conforming to schema
+- [x] 2.6 Write pytest `tests/test_canonical_schema.py` that loads example and validates with `jsonschema`
+- [x] 2.7 Update `README.md` with canonical schema overview and link to mapping doc
+- [x] 2.8 Commit and push branch `feat/canonical-schema` for PR review
+
+#### 📄 Day 2 Report
+
+##### What I Did
+
+I created a unified data structure (called a "canonical schema") that acts as a common language for all healthcare data in the Nazmito system. Think of it like creating a universal translator that can understand different dialects (XML formats, CSV files, PDFs) and convert them all into one standard language that the rest of the system can understand.
+
+##### Key Concepts Explained
+
+**1. FHIR (Fast Healthcare Interoperability Resources)**
+
+FHIR is like a standardized dictionary for healthcare data created by HL7 (a global healthcare standards organization). Instead of every hospital or insurance company creating their own way to describe a patient or a medical procedure, FHIR provides a common format that everyone can use.
+
+**Resources I used:**
+- https://hl7.org/fhir/claim.html - FHIR Claim resource (for insurance claims and authorizations)
+- https://hl7.org/fhir/servicerequest.html - FHIR ServiceRequest (for medical service requests)
+
+**2. JSON Schema**
+
+JSON Schema is a blueprint that defines what valid data should look like. It's like a quality control checklist that ensures every piece of data has the right fields, in the right format, with the right values.
+
+**3. Canonical Schema**
+
+"Canonical" means the official or standard version. Our canonical schema is the single, authoritative way we represent healthcare authorization data inside Nazmito, regardless of where it came from.
+
+##### Files Created/Updated
+
+**1. `docs/mappings/field_map_v0.csv` (Created)**
+
+**Purpose:** A spreadsheet showing how to translate fields from different sources into our standard format.
+
+**What it contains:**
+- Maps eClaimLink XML fields (like `Header.SenderID`) to FHIR fields (like `Claim.identifier`)
+- Maps Shafafiya XML fields to the same FHIR structure
+- Defines which fields are required vs optional
+- Specifies data types (string, number, date, etc.)
+
+**Example mapping:**
+```
+eClaimLink field: ServiceRequest.ActivityCode → FHIR field: Claim.item.productOrService.coding.code
+```
+
+**2. `docs/mappings/mvp_fields.md` (Created)**
+
+**Purpose:** Documents the minimum fields needed for the system to work.
+
+**Key sections:**
+- Patient Information: Who is getting the medical service
+- Service Details: What procedure/test is being requested
+- Financial Info: How much it costs
+- Clinical Info: Why it's needed (diagnosis codes)
+- Authorization Status: Is it approved, denied, or pending
+
+**3. `schemas/canonical_schema.json` (Created)**
+
+**Purpose:** The technical blueprint that validates all data entering the system.
+
+**Key features:**
+- Based on FHIR Claim resource structure
+- Includes UAE-specific extensions for local requirements
+- Defines validation rules (e.g., currency must be 3 letters like "AED")
+- Supports both authorization requests and responses
+
+**Structure example:**
+```json
+{
+  "resourceType": "Claim",  // Always "Claim" for our use case
+  "id": "PA-2025-000123",   // Unique identifier
+  "patient": {              // Who needs the service
+    "reference": "Patient/123456"
+  },
+  "item": [{               // What services are requested
+    "productOrService": {
+      "code": "83036"      // CPT code for HbA1c test
+    }
+  }]
+}
+```
+
+**4. `canonical/examples/claim_example.json` (Created)**
+
+**Purpose:** A complete example showing how real data looks in our canonical format.
+
+**What it demonstrates:**
+- A diabetic patient requesting two services (HbA1c test and eye exam)
+- How UAE-specific data (like disposition flags) are stored as extensions
+- Proper date/time formatting
+- Currency handling (AED)
+
+**5. `tests/test_canonical_schema.py` (Created)**
+
+**Purpose:** Automated tests that ensure our schema works correctly.
+
+**What it tests:**
+- The schema itself is valid
+- Example data passes validation
+- Required fields are present
+- Date formats are correct
+- Currency codes are valid
+- The transformation from XML to canonical format works
+
+**6. `tests/__init__.py` (Created)**
+
+**Purpose:** Makes the tests directory a Python package (required for Python to recognize it as a module).
+
+**7. `README.md` (Updated)**
+
+**Purpose:** Added a new section explaining the canonical schema to anyone reading the project documentation.
+
+**What was added:**
+- Overview of the canonical schema approach
+- Links to all the documentation files
+- Visual data flow diagram
+- Benefits of using this approach
+
+**8. `pyproject.toml` (Updated)**
+
+**Purpose:** Added new dependencies needed for the schema validation and testing.
+
+**New dependencies:**
+- `jsonschema>=4.23.0` - For validating JSON data against our schema
+- `pytest>=8.3.0` - For running automated tests
+
+##### How the Schema Design Works
+
+1. **Input Variety:** The system receives data in many formats:
+   - eClaimLink XML (Dubai's format)
+   - Shafafiya XML (Abu Dhabi's format)
+   - CSV files
+   - PDF documents
+
+2. **Transformation:** Each format is converted to our canonical structure:
+   ```
+   Original XML → Normalization Function → Canonical JSON → Rest of System
+   ```
+
+3. **Validation:** The JSON Schema ensures every piece of data:
+   - Has all required fields
+   - Uses correct data types
+   - Follows business rules (e.g., end date can't be before start date)
+
+4. **Extensions:** We added UAE-specific fields that FHIR doesn't have:
+   - Disposition flags (TEST/PRODUCTION)
+   - Record counts
+   - Authorization results
+   - Data quality scores
+
+##### Why This Matters
+
+1. **Consistency:** All data looks the same internally, regardless of source
+2. **Interoperability:** Can easily connect with other FHIR-compliant systems
+3. **Validation:** Catches data errors early
+4. **Flexibility:** Easy to add new data sources
+5. **Standards-based:** Following international healthcare standards while supporting local requirements
+
+The canonical schema is like the foundation of a building - everything else in the system is built on top of this standardized data structure. By getting this right, we ensure that all future features (rules engine, ML models, reporting) have clean, consistent data to work with.
+
 
 ### 🗓 Day 3 — XML Ingestion (eClaimLink)
 
