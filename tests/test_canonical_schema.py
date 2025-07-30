@@ -202,7 +202,7 @@ class TestCanonicalSchema:
             },
             "item": [
                 {
-                    "sequence": service.get("id", idx),
+                    "sequence": int(service.get("id", idx)),
                     "productOrService": {
                         "coding": [
                             {
