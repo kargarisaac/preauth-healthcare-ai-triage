@@ -5,7 +5,7 @@ This script shows how to use the new class-based XML ingestion architecture
 and demonstrates backward compatibility with the existing code.
 """
 
-import logging
+from loguru import logger
 import os
 
 from pipelines import (
@@ -19,9 +19,7 @@ from pipelines import (
 )
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logger.add("logs/demo.log", rotation="100 MB", retention="10 days")
 
 
 def demo_basic_usage():

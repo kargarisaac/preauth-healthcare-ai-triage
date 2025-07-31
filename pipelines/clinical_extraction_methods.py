@@ -7,7 +7,6 @@ from healthcare authorization texts.
 """
 
 import re
-import uuid
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
