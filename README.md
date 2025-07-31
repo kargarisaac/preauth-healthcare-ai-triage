@@ -82,7 +82,8 @@ curl http://localhost:8000/claim/PA-2025-000123
 
 ### Technical Documentation
 - **System Architecture**: [`docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md) - Complete technical design and data flow
-- **FHIR Strategy**: [`docs/FHIR_GUIDE.md`](/docs/FHIR_GUIDE.md) - UAE FHIR implementation and clinical enhancements
+- **XML Processing Guide**: [`docs/xml_processing_guide.md`](/docs/xml_processing_guide.md) - Comprehensive XML ingestion architecture and API reference
+- **FHIR Strategy**: [`docs/FHIR_GUIDE.md`](/docs/FHIR_GUIDE.md) - UAE FHIR implementation and clinical enhancements  
 - **Development Roadmap**: [`docs/todo_list.md`](/docs/todo_list.md) - Sprint-based development timeline
 
 ### Data Standards

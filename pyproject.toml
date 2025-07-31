@@ -9,4 +9,5 @@ dependencies = [
     "xmltodict>=0.14.2",
     "jsonschema>=4.23.0",
     "pytest>=8.3.0",
+    "loguru>=0.7.3",
 ]
