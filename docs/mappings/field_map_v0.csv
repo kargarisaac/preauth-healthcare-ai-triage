@@ -41,7 +41,7 @@ Common,-,ServiceRequest,authoredOn,,dateTime,Yes,When request was created
 Common,-,ServiceRequest,requester,,Reference,Yes,Who is requesting
 Common,-,ServiceRequest,reasonCode,,CodeableConcept,No,Why service is needed
 Common,-,ServiceRequest,insurance,,Reference,No,Associated insurance coverage
-Nazmito Extension,-,Claim,extension[url=https://nazmito.ae/fhir/StructureDefinition/gap-flags],Yes,BackboneElement,No,Quality gaps identified
-Nazmito Extension,-,Claim,extension[url=https://nazmito.ae/fhir/StructureDefinition/enrichment-score],Yes,decimal,No,Data quality/enrichment score
-Nazmito Extension,-,Claim,extension[url=https://nazmito.ae/fhir/StructureDefinition/ai-confidence],Yes,decimal,No,AI/ML confidence score
-Nazmito Extension,-,Claim,extension[url=https://nazmito.ae/fhir/StructureDefinition/incentive-eligible],Yes,boolean,No,Eligible for value-based incentives
+Nazmito Extension,-,Claim,extension[url=https://nazmito.com/fhir/StructureDefinition/gap-flags],Yes,BackboneElement,No,Quality gaps identified
+Nazmito Extension,-,Claim,extension[url=https://nazmito.com/fhir/StructureDefinition/enrichment-score],Yes,decimal,No,Data quality/enrichment score
+Nazmito Extension,-,Claim,extension[url=https://nazmito.com/fhir/StructureDefinition/ai-confidence],Yes,decimal,No,AI/ML confidence score
+Nazmito Extension,-,Claim,extension[url=https://nazmito.com/fhir/StructureDefinition/incentive-eligible],Yes,boolean,No,Eligible for value-based incentives

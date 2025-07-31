@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://nazmito.ae/schemas/canonical/v0.1/prior-authorization.json",
+  "$id": "https://nazmito.com/schemas/canonical/v0.1/prior-authorization.json",
   "title": "Nazmito Canonical Prior Authorization Schema",
   "description": "Unified schema for healthcare prior authorization data, based on FHIR resources with Nazmito extensions",
   "type": "object",
@@ -446,17 +446,17 @@
           "url": {
             "type": "string",
             "enum": [
-              "https://nazmito.ae/fhir/StructureDefinition/schema-version",
-              "https://nazmito.ae/fhir/StructureDefinition/original-format",
-              "https://nazmito.ae/fhir/StructureDefinition/data-quality-score",
-              "https://nazmito.ae/fhir/StructureDefinition/processing-timestamp",
-              "https://nazmito.ae/fhir/StructureDefinition/gap-flags",
-              "https://nazmito.ae/fhir/StructureDefinition/enrichment-score",
-              "https://nazmito.ae/fhir/StructureDefinition/ai-confidence",
-              "https://nazmito.ae/fhir/StructureDefinition/incentive-eligible",
-              "https://nazmito.ae/fhir/StructureDefinition/authorization-result",
-              "https://nazmito.ae/fhir/StructureDefinition/record-count",
-              "https://nazmito.ae/fhir/StructureDefinition/disposition-flag"
+              "https://nazmito.com/fhir/StructureDefinition/schema-version",
+              "https://nazmito.com/fhir/StructureDefinition/original-format",
+              "https://nazmito.com/fhir/StructureDefinition/data-quality-score",
+              "https://nazmito.com/fhir/StructureDefinition/processing-timestamp",
+              "https://nazmito.com/fhir/StructureDefinition/gap-flags",
+              "https://nazmito.com/fhir/StructureDefinition/enrichment-score",
+              "https://nazmito.com/fhir/StructureDefinition/ai-confidence",
+              "https://nazmito.com/fhir/StructureDefinition/incentive-eligible",
+              "https://nazmito.com/fhir/StructureDefinition/authorization-result",
+              "https://nazmito.com/fhir/StructureDefinition/record-count",
+              "https://nazmito.com/fhir/StructureDefinition/disposition-flag"
             ]
           },
           "valueString": {

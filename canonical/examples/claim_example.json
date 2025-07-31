@@ -2,7 +2,7 @@
   "resourceType": "Claim",
   "id": "pa-2025-000123",
   "meta": {
-    "profile": ["https://nazmito.ae/fhir/StructureDefinition/PriorAuthorization"],
+    "profile": ["https://nazmito.com/fhir/StructureDefinition/PriorAuthorization"],
     "source": "XML",
     "lastUpdated": "2025-07-30T14:30:00Z"
   },
@@ -191,27 +191,27 @@
   },
   "extension": [
     {
-      "url": "https://nazmito.ae/fhir/StructureDefinition/schema-version",
+      "url": "https://nazmito.com/fhir/StructureDefinition/schema-version",
       "valueString": "2011"
     },
     {
-      "url": "https://nazmito.ae/fhir/StructureDefinition/original-format",
+      "url": "https://nazmito.com/fhir/StructureDefinition/original-format",
       "valueString": "XML"
     },
     {
-      "url": "https://nazmito.ae/fhir/StructureDefinition/processing-timestamp",
+      "url": "https://nazmito.com/fhir/StructureDefinition/processing-timestamp",
       "valueDateTime": "2025-07-30T14:30:00Z"
     },
     {
-      "url": "https://nazmito.ae/fhir/StructureDefinition/authorization-result",
+      "url": "https://nazmito.com/fhir/StructureDefinition/authorization-result",
       "valueString": "Yes"
     },
     {
-      "url": "https://nazmito.ae/fhir/StructureDefinition/record-count",
+      "url": "https://nazmito.com/fhir/StructureDefinition/record-count",
       "valueInteger": 1
     },
     {
-      "url": "https://nazmito.ae/fhir/StructureDefinition/disposition-flag",
+      "url": "https://nazmito.com/fhir/StructureDefinition/disposition-flag",
       "valueString": "TEST"
     }
   ]
