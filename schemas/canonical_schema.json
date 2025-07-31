@@ -1,33 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://nazmito.com/schemas/canonical/v0.1/prior-authorization.json",
-  "title": "Nazmito Canonical Prior Authorization Schema",
-  "description": "Unified schema for healthcare prior authorization data, based on FHIR resources with Nazmito extensions",
+  "$id": "https://nazmito.com/schemas/canonical/v0.2/healthcare-bundle.json",
+  "title": "Nazmito Canonical Healthcare Bundle Schema",
+  "description": "Unified schema for healthcare data including Claims, Observations, Medications, Conditions, and Procedures, based on FHIR resources with UAE-specific extensions",
   "type": "object",
   "required": [
     "resourceType",
     "id",
     "meta",
-    "status",
     "type",
-    "use",
-    "patient",
-    "created",
-    "provider",
-    "billablePeriod",
-    "identifier",
-    "item"
+    "entry"
   ],
   "properties": {
     "resourceType": {
       "type": "string",
-      "const": "Claim",
-      "description": "FHIR resource type"
+      "const": "Bundle",
+      "description": "FHIR resource type - Bundle containing multiple healthcare resources"
     },
     "id": {
       "type": "string",
       "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
-      "description": "Logical id of this artifact"
+      "description": "Logical id of this bundle"
     },
     "meta": {
       "type": "object",
@@ -39,460 +32,1242 @@
             "type": "string"
           },
           "minItems": 1,
-          "description": "Profiles this resource claims to conform to"
+          "description": "Profiles this bundle claims to conform to"
         },
         "source": {
           "type": "string",
-          "description": "Original data format (XML/CSV/PDF)"
+          "enum": ["eClaimLink", "Shafafiya", "CSV", "PDF", "OCR"],
+          "description": "Original data format source system"
         },
         "lastUpdated": {
           "type": "string",
           "format": "date-time",
-          "description": "When the resource version last changed"
+          "description": "When the bundle was last updated"
+        },
+        "versionId": {
+          "type": "string",
+          "description": "Version of this bundle"
         }
       }
     },
-    "identifier": {
+    "type": {
+      "type": "string",
+      "enum": ["document", "message", "transaction", "transaction-response", "batch", "batch-response", "history", "searchset", "collection"],
+      "default": "collection",
+      "description": "Bundle type - typically 'collection' for healthcare data aggregation"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the bundle was assembled"
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of resources in the bundle"
+    },
+    "entry": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["type", "value"],
+        "required": ["resource"],
         "properties": {
-          "type": {
+          "fullUrl": {
+            "type": "string",
+            "description": "URI for this resource within the bundle"
+          },
+          "resource": {
+            "oneOf": [
+              {"$ref": "#/$defs/Claim"},
+              {"$ref": "#/$defs/Observation"},
+              {"$ref": "#/$defs/MedicationStatement"},
+              {"$ref": "#/$defs/Condition"},
+              {"$ref": "#/$defs/Procedure"}
+            ]
+          },
+          "search": {
             "type": "object",
-            "required": ["coding"],
             "properties": {
-              "coding": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["code"],
-                  "properties": {
-                    "system": {
-                      "type": "string"
-                    },
-                    "code": {
-                      "type": "string",
-                      "enum": ["transaction", "authorization", "sender", "receiver"]
-                    }
-                  }
-                }
+              "mode": {
+                "type": "string",
+                "enum": ["match", "include", "outcome"]
+              },
+              "score": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
               }
             }
-
-          },
-          "value": {
-            "type": "string",
-            "description": "The value of the identifier"
           }
         }
       }
     },
-    "status": {
-      "type": "string",
-      "enum": ["active", "cancelled", "draft", "entered-in-error"],
-      "description": "Status of the claim"
-    },
-    "type": {
+    "signature": {
       "type": "object",
-      "required": ["coding"],
+      "description": "Digital signature for bundle integrity"
+    },
+    "extension": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Extension"
+      }
+    }
+  },
+
+  "$defs": {
+    "Extension": {
+      "type": "object",
+      "required": ["url"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "enum": [
+            "https://nazmito.com/fhir/StructureDefinition/schema-version",
+            "https://nazmito.com/fhir/StructureDefinition/original-format",
+            "https://nazmito.com/fhir/StructureDefinition/data-quality-score",
+            "https://nazmito.com/fhir/StructureDefinition/processing-timestamp",
+            "https://nazmito.com/fhir/StructureDefinition/gap-flags",
+            "https://nazmito.com/fhir/StructureDefinition/enrichment-score",
+            "https://nazmito.com/fhir/StructureDefinition/ai-confidence",
+            "https://nazmito.com/fhir/StructureDefinition/incentive-eligible",
+            "https://nazmito.com/fhir/StructureDefinition/authorization-result",
+            "https://nazmito.com/fhir/StructureDefinition/record-count",
+            "https://nazmito.com/fhir/StructureDefinition/disposition-flag",
+            "https://nazmito.com/fhir/StructureDefinition/emirate-authority",
+            "https://nazmito.com/fhir/StructureDefinition/hijri-date",
+            "https://nazmito.com/fhir/StructureDefinition/clinical-reasoning",
+            "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "https://nazmito.com/fhir/StructureDefinition/clinical-context-score"
+          ]
+        },
+        "valueString": {
+          "type": "string"
+        },
+        "valueDecimal": {
+          "type": "number"
+        },
+        "valueBoolean": {
+          "type": "boolean"
+        },
+        "valueInteger": {
+          "type": "integer"
+        },
+        "valueDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valueCodeableConcept": {
+          "$ref": "#/$defs/CodeableConcept"
+        },
+        "extension": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Extension"
+          }
+        }
+      }
+    },
+
+    "CodeableConcept": {
+      "type": "object",
       "properties": {
         "coding": {
           "type": "array",
           "items": {
-            "type": "object",
-            "required": ["code"],
-            "properties": {
-              "system": {
-                "type": "string",
-                "const": "http://terminology.hl7.org/CodeSystem/claim-type"
-              },
-              "code": {
-                "type": "string",
-                "enum": ["institutional", "oral", "pharmacy", "professional", "vision"]
-              }
-            }
+            "$ref": "#/$defs/Coding"
           }
+        },
+        "text": {
+          "type": "string",
+          "description": "Plain text representation"
         }
       }
     },
-    "use": {
-      "type": "string",
-      "enum": ["claim", "preauthorization", "predetermination"],
-      "description": "The purpose of the claim"
-    },
-    "patient": {
+
+    "Coding": {
       "type": "object",
-      "required": ["reference"],
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "Identity of the terminology system"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the system"
+        },
+        "code": {
+          "type": "string",
+          "description": "Symbol in syntax defined by the system"
+        },
+        "display": {
+          "type": "string",
+          "description": "Representation defined by the system"
+        },
+        "userSelected": {
+          "type": "boolean",
+          "description": "If this coding was chosen directly by the user"
+        }
+      }
+    },
+
+    "Identifier": {
+      "type": "object",
+      "properties": {
+        "use": {
+          "type": "string",
+          "enum": ["usual", "official", "temp", "secondary", "old"]
+        },
+        "type": {
+          "$ref": "#/$defs/CodeableConcept"
+        },
+        "system": {
+          "type": "string",
+          "description": "The namespace for the identifier value"
+        },
+        "value": {
+          "type": "string",
+          "description": "The value that is unique"
+        },
+        "period": {
+          "$ref": "#/$defs/Period"
+        },
+        "assigner": {
+          "$ref": "#/$defs/Reference"
+        }
+      }
+    },
+
+    "Reference": {
+      "type": "object",
       "properties": {
         "reference": {
           "type": "string",
-          "pattern": "^Patient/[A-Za-z0-9\\-\\.]{1,64}$",
-          "description": "Reference to Patient resource"
+          "description": "Literal reference, Relative, internal or absolute URL"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type the reference refers to"
         },
         "identifier": {
-          "type": "object",
-          "properties": {
-            "value": {
-              "type": "string",
-              "description": "Patient identifier/MRN"
-            }
-          }
-        }
-      }
-    },
-    "created": {
-      "type": "string",
-      "format": "date-time",
-      "description": "When the authorization request was created"
-    },
-    "provider": {
-      "type": "object",
-      "required": ["reference"],
-      "properties": {
-        "reference": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "display": {
           "type": "string",
-          "pattern": "^(Practitioner|Organization)/[A-Za-z0-9\\-\\.]{1,64}$",
-          "description": "Reference to provider"
+          "description": "Text alternative for the resource"
         }
       }
     },
-    "billablePeriod": {
+
+    "Period": {
       "type": "object",
-      "required": ["start", "end"],
       "properties": {
         "start": {
           "type": "string",
           "format": "date-time",
-          "description": "Authorization start date"
+          "description": "Starting time with inclusive boundary"
         },
         "end": {
           "type": "string",
           "format": "date-time",
-          "description": "Authorization end date"
+          "description": "End time with inclusive boundary, if not ongoing"
         }
       }
     },
-    "diagnosis": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["sequence", "diagnosisCodeableConcept"],
-        "properties": {
-          "sequence": {
-            "type": "integer",
-            "minimum": 1,
-            "description": "Diagnosis sequence number"
-          },
-          "diagnosisCodeableConcept": {
-            "type": "object",
-            "required": ["coding"],
-            "properties": {
-              "coding": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["system", "code"],
-                  "properties": {
-                    "system": {
-                      "type": "string",
-                      "const": "http://hl7.org/fhir/sid/icd-10"
-                    },
-                    "code": {
-                      "type": "string",
-                      "pattern": "^[A-Z][0-9]{2}(\\.[0-9]{1,4})?$",
-                      "description": "ICD-10 diagnosis code"
-                    },
-                    "display": {
-                      "type": "string",
-                      "description": "Human-readable diagnosis description"
-                    }
-                  }
-                }
-              }
-            }
-          }
+
+    "Quantity": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "Numerical value (with implicit precision)"
+        },
+        "comparator": {
+          "type": "string",
+          "enum": ["<", "<=", ">=", ">"]
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit representation"
+        },
+        "system": {
+          "type": "string",
+          "description": "System that defines coded unit form"
+        },
+        "code": {
+          "type": "string",
+          "description": "Coded form of the unit"
         }
       }
     },
-    "supportingInfo": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["sequence", "category"],
-        "properties": {
-          "sequence": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "category": {
-            "type": "object",
-            "required": ["coding"],
-            "properties": {
-              "coding": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["code"],
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "enum": ["justification", "comments", "instructions"]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "valueString": {
-            "type": "string",
-            "description": "Supporting information text"
-          }
-        }
-      }
-    },
-    "item": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": ["sequence", "productOrService", "servicedDate", "quantity", "unitPrice"],
-        "properties": {
-          "sequence": {
-            "type": "integer",
-            "minimum": 1,
-            "description": "Line item sequence number"
-          },
-          "productOrService": {
-            "type": "object",
-            "required": ["coding"],
-            "properties": {
-              "coding": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["system", "code"],
-                  "properties": {
-                    "system": {
-                      "type": "string",
-                      "enum": ["http://www.ama-assn.org/go/cpt", "https://eclaimlink.ae/codes"]
-                    },
-                    "code": {
-                      "type": "string",
-                      "description": "CPT or service code"
-                    },
-                    "display": {
-                      "type": "string",
-                      "description": "Human-readable service description"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "servicedDate": {
-            "type": "string",
-            "format": "date",
-            "description": "Date service will be performed"
-          },
-          "quantity": {
-            "type": "object",
-            "required": ["value"],
-            "properties": {
-              "value": {
-                "type": "number",
-                "minimum": 0,
-                "description": "Service quantity"
-              },
-              "unit": {
-                "type": "string",
-                "description": "Unit of measure"
-              }
-            }
-          },
-          "unitPrice": {
-            "type": "object",
-            "required": ["value", "currency"],
-            "properties": {
-              "value": {
-                "type": "number",
-                "minimum": 0,
-                "description": "Price per unit"
-              },
-              "currency": {
-                "type": "string",
-                "pattern": "^[A-Z]{3}$",
-                "description": "Currency code (e.g., AED)"
-              }
-            }
-          },
-          "net": {
-            "type": "object",
-            "required": ["value", "currency"],
-            "properties": {
-              "value": {
-                "type": "number",
-                "minimum": 0,
-                "description": "Net amount"
-              },
-              "currency": {
-                "type": "string",
-                "pattern": "^[A-Z]{3}$"
-              }
-            }
-          },
-          "adjudication": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["category"],
-              "properties": {
-                "category": {
-                  "type": "object",
-                  "required": ["coding"],
-                  "properties": {
-                    "coding": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": ["code"],
-                        "properties": {
-                          "code": {
-                            "type": "string",
-                            "enum": ["submitted", "benefit", "denied"]
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "amount": {
-                  "type": "object",
-                  "properties": {
-                    "value": {
-                      "type": "number"
-                    },
-                    "currency": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "reason": {
-                  "type": "object",
-                  "properties": {
-                    "coding": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "code": {
-                            "type": "string",
-                            "description": "Denial code"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "extension": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["url"],
-              "properties": {
-                "url": {
-                  "type": "string",
-                  "enum": ["activityType", "instructions"]
-                },
-                "valueInteger": {
-                  "type": "integer",
-                  "description": "Activity type code"
-                },
-                "valueString": {
-                  "type": "string",
-                  "description": "Instructions text"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "total": {
+
+    "Money": {
       "type": "object",
       "required": ["value", "currency"],
       "properties": {
         "value": {
           "type": "number",
           "minimum": 0,
-          "description": "Total claim amount"
+          "description": "Numerical value"
         },
         "currency": {
           "type": "string",
-          "pattern": "^[A-Z]{3}$"
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 4217 Currency Code (e.g., AED, USD)"
         }
       }
     },
-    "extension": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["url"],
-        "properties": {
-          "url": {
-            "type": "string",
-            "enum": [
-              "https://nazmito.com/fhir/StructureDefinition/schema-version",
-              "https://nazmito.com/fhir/StructureDefinition/original-format",
-              "https://nazmito.com/fhir/StructureDefinition/data-quality-score",
-              "https://nazmito.com/fhir/StructureDefinition/processing-timestamp",
-              "https://nazmito.com/fhir/StructureDefinition/gap-flags",
-              "https://nazmito.com/fhir/StructureDefinition/enrichment-score",
-              "https://nazmito.com/fhir/StructureDefinition/ai-confidence",
-              "https://nazmito.com/fhir/StructureDefinition/incentive-eligible",
-              "https://nazmito.com/fhir/StructureDefinition/authorization-result",
-              "https://nazmito.com/fhir/StructureDefinition/record-count",
-              "https://nazmito.com/fhir/StructureDefinition/disposition-flag"
-            ]
+
+    "Claim": {
+      "type": "object",
+      "required": [
+        "resourceType",
+        "id",
+        "status",
+        "type",
+        "use",
+        "patient",
+        "created",
+        "provider",
+        "billablePeriod",
+        "identifier",
+        "item"
+      ],
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "const": "Claim"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "profile": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "source": {
+              "type": "string",
+              "enum": ["eClaimLink", "Shafafiya"]
+            },
+            "lastUpdated": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "identifier": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "cancelled", "draft", "entered-in-error"]
+        },
+        "type": {
+          "$ref": "#/$defs/CodeableConcept"
+        },
+        "use": {
+          "type": "string",
+          "enum": ["claim", "preauthorization", "predetermination"]
+        },
+        "patient": {
+          "$ref": "#/$defs/Reference"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "provider": {
+          "$ref": "#/$defs/Reference"
+        },
+        "insurer": {
+          "$ref": "#/$defs/Reference"
+        },
+        "billablePeriod": {
+          "$ref": "#/$defs/Period"
+        },
+        "diagnosis": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["sequence", "diagnosisCodeableConcept"],
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "diagnosisCodeableConcept": {
+                "$ref": "#/$defs/CodeableConcept"
+              },
+              "type": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CodeableConcept"
+                }
+              }
+            }
+          }
+        },
+        "supportingInfo": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["sequence", "category"],
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "category": {
+                "$ref": "#/$defs/CodeableConcept"
+              },
+              "code": {
+                "$ref": "#/$defs/CodeableConcept"
+              },
+              "valueString": {
+                "type": "string"
+              },
+              "valueQuantity": {
+                "$ref": "#/$defs/Quantity"
+              },
+              "valueAttachment": {
+                "type": "object",
+                "properties": {
+                  "contentType": {"type": "string"},
+                  "url": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "item": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["sequence", "productOrService"],
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "productOrService": {
+                "$ref": "#/$defs/CodeableConcept"
+              },
+              "modifier": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CodeableConcept"
+                }
+              },
+              "servicedDate": {
+                "type": "string",
+                "format": "date"
+              },
+              "servicedPeriod": {
+                "$ref": "#/$defs/Period"
+              },
+              "locationCodeableConcept": {
+                "$ref": "#/$defs/CodeableConcept"
+              },
+              "quantity": {
+                "$ref": "#/$defs/Quantity"
+              },
+              "unitPrice": {
+                "$ref": "#/$defs/Money"
+              },
+              "net": {
+                "$ref": "#/$defs/Money"
+              },
+              "encounter": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Reference"
+                }
+              },
+              "extension": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Extension"
+                }
+              }
+            }
+          }
+        },
+        "total": {
+          "$ref": "#/$defs/Money"
+        },
+        "extension": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Extension"
+          }
+        }
+      }
+    },
+
+    "Observation": {
+      "type": "object",
+      "required": [
+        "resourceType",
+        "id",
+        "status",
+        "category",
+        "code",
+        "subject"
+      ],
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "const": "Observation"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "profile": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "source": {
+              "type": "string",
+              "enum": ["eClaimLink", "Shafafiya", "clinical-text", "lab-report"]
+            }
+          }
+        },
+        "identifier": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          }
+        },
+        "basedOn": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
           },
-          "valueString": {
-            "type": "string"
+          "description": "References to related ServiceRequest or other orders"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["registered", "preliminary", "final", "amended", "corrected", "cancelled", "entered-in-error", "unknown"]
+        },
+        "category": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
           },
-          "valueDecimal": {
-            "type": "number"
+          "description": "Classification of type of observation (e.g., laboratory, vital-signs)"
+        },
+        "code": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Type of observation (LOINC preferred)"
+        },
+        "subject": {
+          "$ref": "#/$defs/Reference",
+          "description": "Who/what the observation is about"
+        },
+        "focus": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
           },
-          "valueBoolean": {
-            "type": "boolean"
+          "description": "What the observation is about when not about the subject"
+        },
+        "encounter": {
+          "$ref": "#/$defs/Reference",
+          "description": "Healthcare event during which observation was made"
+        },
+        "effectiveDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Clinically relevant time/time-period for observation"
+        },
+        "effectivePeriod": {
+          "$ref": "#/$defs/Period"
+        },
+        "issued": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date/Time this version was made available"
+        },
+        "performer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
           },
-          "valueInteger": {
-            "type": "integer"
+          "description": "Who performed the observation"
+        },
+        "valueQuantity": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "valueCodeableConcept": {
+          "$ref": "#/$defs/CodeableConcept"
+        },
+        "valueString": {
+          "type": "string"
+        },
+        "valueBoolean": {
+          "type": "boolean"
+        },
+        "valueInteger": {
+          "type": "integer"
+        },
+        "valueRange": {
+          "type": "object",
+          "properties": {
+            "low": {"$ref": "#/$defs/Quantity"},
+            "high": {"$ref": "#/$defs/Quantity"}
+          }
+        },
+        "dataAbsentReason": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Why observation value is missing"
+        },
+        "interpretation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
           },
-          "valueDateTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "valueCodeableConcept": {
+          "description": "High, low, normal, etc."
+        },
+        "note": {
+          "type": "array",
+          "items": {
             "type": "object",
             "properties": {
-              "coding": {
+              "text": {"type": "string"},
+              "time": {"type": "string", "format": "date-time"},
+              "authorReference": {"$ref": "#/$defs/Reference"}
+            }
+          }
+        },
+        "bodySite": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Observed body part"
+        },
+        "method": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "How observation was performed"
+        },
+        "referenceRange": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "low": {"$ref": "#/$defs/Quantity"},
+              "high": {"$ref": "#/$defs/Quantity"},
+              "type": {"$ref": "#/$defs/CodeableConcept"},
+              "text": {"type": "string"}
+            }
+          }
+        },
+        "hasMember": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "Related resource that belongs to the Observation group"
+        },
+        "derivedFrom": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "Related measurements the observation is made from"
+        },
+        "extension": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Extension"
+          }
+        }
+      }
+    },
+
+    "MedicationStatement": {
+      "type": "object",
+      "required": [
+        "resourceType",
+        "id",
+        "status",
+        "subject"
+      ],
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "const": "MedicationStatement"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "profile": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "source": {
+              "type": "string",
+              "enum": ["eClaimLink", "Shafafiya", "clinical-text", "pharmacy-record"]
+            }
+          }
+        },
+        "identifier": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          }
+        },
+        "basedOn": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "References to orders that led to this medication statement"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "completed", "entered-in-error", "intended", "stopped", "on-hold", "unknown", "not-taken"]
+        },
+        "statusReason": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "Reason for current status"
+        },
+        "category": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Type of medication usage (e.g., inpatient, outpatient, community)"
+        },
+        "medicationCodeableConcept": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "What medication was taken (RxNorm preferred)"
+        },
+        "medicationReference": {
+          "$ref": "#/$defs/Reference",
+          "description": "Reference to Medication resource"
+        },
+        "subject": {
+          "$ref": "#/$defs/Reference",
+          "description": "Who is/was taking the medication"
+        },
+        "context": {
+          "$ref": "#/$defs/Reference",
+          "description": "Encounter/Episode associated with medication statement"
+        },
+        "effectiveDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date when medication was first taken"
+        },
+        "effectivePeriod": {
+          "$ref": "#/$defs/Period",
+          "description": "Over what period medication was taken"
+        },
+        "dateAsserted": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the statement was asserted"
+        },
+        "informationSource": {
+          "$ref": "#/$defs/Reference",
+          "description": "Person or organization that provided the information"
+        },
+        "derivedFrom": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "Additional supporting information"
+        },
+        "reasonCode": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "Reason for taking medication (ICD-10-AM codes)"
+        },
+        "reasonReference": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "Condition or observation that supports why medication was taken"
+        },
+        "note": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {"type": "string"},
+              "time": {"type": "string", "format": "date-time"},
+              "authorReference": {"$ref": "#/$defs/Reference"}
+            }
+          }
+        },
+        "dosage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sequence": {"type": "integer"},
+              "text": {"type": "string"},
+              "additionalInstruction": {
+                "type": "array",
+                "items": {"$ref": "#/$defs/CodeableConcept"}
+              },
+              "patientInstruction": {"type": "string"},
+              "timing": {
+                "type": "object",
+                "properties": {
+                  "event": {
+                    "type": "array",
+                    "items": {"type": "string", "format": "date-time"}
+                  },
+                  "repeat": {
+                    "type": "object",
+                    "properties": {
+                      "frequency": {"type": "integer"},
+                      "frequencyMax": {"type": "integer"},
+                      "period": {"type": "number"},
+                      "periodMax": {"type": "number"},
+                      "periodUnit": {
+                        "type": "string",
+                        "enum": ["s", "min", "h", "d", "wk", "mo", "a"]
+                      }
+                    }
+                  }
+                }
+              },
+              "route": {"$ref": "#/$defs/CodeableConcept"},
+              "method": {"$ref": "#/$defs/CodeableConcept"},
+              "doseAndRate": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "display": {
-                      "type": "string"
-                    }
+                    "type": {"$ref": "#/$defs/CodeableConcept"},
+                    "doseQuantity": {"$ref": "#/$defs/Quantity"},
+                    "rateQuantity": {"$ref": "#/$defs/Quantity"}
                   }
                 }
               }
             }
+          }
+        },
+        "extension": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Extension"
+          }
+        }
+      }
+    },
+
+    "Condition": {
+      "type": "object",
+      "required": [
+        "resourceType",
+        "id",
+        "clinicalStatus",
+        "category",
+        "code",
+        "subject"
+      ],
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "const": "Condition"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "profile": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "source": {
+              "type": "string",
+              "enum": ["eClaimLink", "Shafafiya", "clinical-text", "diagnosis-code"]
+            }
+          }
+        },
+        "identifier": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          }
+        },
+        "clinicalStatus": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "active | recurrence | relapse | inactive | remission | resolved"
+        },
+        "verificationStatus": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "unconfirmed | provisional | differential | confirmed | refuted | entered-in-error"
+        },
+        "category": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "problem-list-item | encounter-diagnosis"
+        },
+        "severity": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Subjective severity of condition"
+        },
+        "code": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Identification of the condition, problem or diagnosis (ICD-10-AM preferred)"
+        },
+        "bodySite": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "Anatomical location of condition"
+        },
+        "subject": {
+          "$ref": "#/$defs/Reference",
+          "description": "Who has the condition"
+        },
+        "encounter": {
+          "$ref": "#/$defs/Reference",
+          "description": "Encounter created as part of"
+        },
+        "onsetDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Estimated or actual date condition began"
+        },
+        "onsetAge": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "onsetPeriod": {
+          "$ref": "#/$defs/Period"
+        },
+        "onsetRange": {
+          "type": "object",
+          "properties": {
+            "low": {"$ref": "#/$defs/Quantity"},
+            "high": {"$ref": "#/$defs/Quantity"}
+          }
+        },
+        "onsetString": {
+          "type": "string"
+        },
+        "abatementDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When condition resolved"
+        },
+        "abatementAge": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "abatementPeriod": {
+          "$ref": "#/$defs/Period"
+        },
+        "abatementString": {
+          "type": "string"
+        },
+        "recordedDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date record was first recorded"
+        },
+        "recorder": {
+          "$ref": "#/$defs/Reference",
+          "description": "Who recorded the condition"
+        },
+        "asserter": {
+          "$ref": "#/$defs/Reference",
+          "description": "Person who asserts condition"
+        },
+        "stage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "summary": {"$ref": "#/$defs/CodeableConcept"},
+              "assessment": {
+                "type": "array",
+                "items": {"$ref": "#/$defs/Reference"}
+              },
+              "type": {"$ref": "#/$defs/CodeableConcept"}
+            }
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "array",
+                "items": {"$ref": "#/$defs/CodeableConcept"}
+              },
+              "detail": {
+                "type": "array",
+                "items": {"$ref": "#/$defs/Reference"}
+              }
+            }
+          }
+        },
+        "note": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {"type": "string"},
+              "time": {"type": "string", "format": "date-time"},
+              "authorReference": {"$ref": "#/$defs/Reference"}
+            }
+          }
+        },
+        "extension": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Extension"
+          }
+        }
+      }
+    },
+
+    "Procedure": {
+      "type": "object",
+      "required": [
+        "resourceType",
+        "id",
+        "status",
+        "code",
+        "subject"
+      ],
+      "properties": {
+        "resourceType": {
+          "type": "string",
+          "const": "Procedure"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "profile": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "source": {
+              "type": "string",
+              "enum": ["eClaimLink", "Shafafiya", "clinical-text", "procedure-code"]
+            }
+          }
+        },
+        "identifier": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          }
+        },
+        "instantiatesCanonical": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Instantiates FHIR protocol or definition"
+        },
+        "instantiatesUri": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Instantiates external protocol or definition"
+        },
+        "basedOn": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "A request for this procedure"
+        },
+        "partOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "Part of referenced event"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["preparation", "in-progress", "not-done", "on-hold", "stopped", "completed", "entered-in-error", "unknown"]
+        },
+        "statusReason": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Reason for current status"
+        },
+        "category": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Classification of the procedure"
+        },
+        "code": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "Identification of the procedure (CPT preferred for UAE)"
+        },
+        "subject": {
+          "$ref": "#/$defs/Reference",
+          "description": "Who the procedure was performed on"
+        },
+        "encounter": {
+          "$ref": "#/$defs/Reference",
+          "description": "Encounter created as part of"
+        },
+        "performedDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When procedure was performed"
+        },
+        "performedPeriod": {
+          "$ref": "#/$defs/Period",
+          "description": "When procedure was performed"
+        },
+        "performedString": {
+          "type": "string",
+          "description": "When procedure was performed"
+        },
+        "performedAge": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "recorder": {
+          "$ref": "#/$defs/Reference",
+          "description": "Who recorded the procedure"
+        },
+        "asserter": {
+          "$ref": "#/$defs/Reference",
+          "description": "Person who asserts this procedure"
+        },
+        "performer": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "function": {"$ref": "#/$defs/CodeableConcept"},
+              "actor": {"$ref": "#/$defs/Reference"},
+              "onBehalfOf": {"$ref": "#/$defs/Reference"}
+            }
+          }
+        },
+        "location": {
+          "$ref": "#/$defs/Reference",
+          "description": "Where procedure was performed"
+        },
+        "reasonCode": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "Coded reason procedure performed (ICD-10-AM codes)"
+        },
+        "reasonReference": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "The justification that the procedure was performed"
+        },
+        "bodySite": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "Target body sites"
+        },
+        "outcome": {
+          "$ref": "#/$defs/CodeableConcept",
+          "description": "The result of procedure"
+        },
+        "report": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "Any report resulting from the procedure"
+        },
+        "complication": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "Complication following the procedure"
+        },
+        "complicationDetail": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "A condition that is a result of the procedure"
+        },
+        "followUp": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "Instructions for follow up"
+        },
+        "note": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {"type": "string"},
+              "time": {"type": "string", "format": "date-time"},
+              "authorReference": {"$ref": "#/$defs/Reference"}
+            }
+          }
+        },
+        "focalDevice": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "action": {"$ref": "#/$defs/CodeableConcept"},
+              "manipulated": {"$ref": "#/$defs/Reference"}
+            }
+          }
+        },
+        "usedReference": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Reference"
+          },
+          "description": "Items used during procedure"
+        },
+        "usedCode": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CodeableConcept"
+          },
+          "description": "Coded items used during procedure"
+        },
+        "extension": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Extension"
           }
         }
       }

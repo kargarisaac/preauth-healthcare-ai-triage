@@ -150,18 +150,37 @@ flowchart TB
 ## Pipeline Components
 
 ### XML Ingestion Engine
-**Technologies:** Python xmlschema, lxml
+**Technologies:** Python xmlschema, xmltodict, class-based architecture
+**Implementation:** `/pipelines/` directory with factory pattern for automatic format detection
+
+**Architecture:**
+```
+XMLIngestor (Abstract Base)
+├── EClaimLinkIngestor (eClaimLink 2019/11)
+├── ShafafiyaIngestor (Shafafiya 2011)
+└── XMLIngestorFactory (Auto-detection)
+```
+
 **Supported Formats:**
-- eClaimLink 2019/11 PriorAuthorizationRequest
-- Shafafiya 2011 Prior.Authorization
-- Custom UAE payer formats (extensible)
+- **eClaimLink 2019/11** PriorAuthorizationRequest (Dubai Health Authority)
+- **Shafafiya 2011** Prior.Authorization (Abu Dhabi Department of Health)
+- **Extensible architecture** for custom UAE payer formats
 
 **Processing Flow:**
-1. Schema validation against XSD
-2. Recursive element extraction with namespace handling
-3. Code set validation (ICD-10-AM, CPT)
-4. Mapping to canonical FHIR structure
-5. Quality scoring with detailed metrics
+1. **Format Detection**: Automatic detection by root XML element
+2. **Schema Validation**: XSD validation with detailed error reporting
+3. **XML Parsing**: Conversion to Python dictionaries with error handling
+4. **Data Normalization**: Format-specific transformation to canonical schema
+5. **Quality Scoring**: Comprehensive validation and business rule checking
+
+**Key Features:**
+- Factory pattern for automatic format detection
+- Comprehensive exception hierarchy for precise error handling
+- Schema caching for performance optimization
+- Business rule validation specific to each format
+- Complete audit trail with ingestion metadata
+
+**Documentation:** See `/docs/xml_processing_guide.md` for comprehensive usage guide
 
 ### CSV Claims Parser
 **Technologies:** Pandas, DuckDB for large files

@@ -1,0 +1,819 @@
+{
+  "resourceType": "Bundle",
+  "id": "healthcare-bundle-example-001",
+  "meta": {
+    "profile": [
+      "https://nazmito.com/fhir/StructureDefinition/healthcare-bundle"
+    ],
+    "source": "eClaimLink",
+    "lastUpdated": "2025-07-31T10:30:00Z",
+    "versionId": "1"
+  },
+  "type": "collection",
+  "timestamp": "2025-07-31T10:30:00Z",
+  "total": 5,
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:claim-001",
+      "resource": {
+        "resourceType": "Claim",
+        "id": "PA-2025-000123",
+        "meta": {
+          "profile": [
+            "https://nazmito.com/fhir/StructureDefinition/uae-claim"
+          ],
+          "source": "eClaimLink",
+          "lastUpdated": "2025-07-31T10:30:00Z"
+        },
+        "identifier": [
+          {
+            "use": "official",
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "PLAC",
+                  "display": "Placer Identifier"
+                }
+              ]
+            },
+            "system": "https://eclaimlink.ae/transaction-id",
+            "value": "TXN-2025-000123"
+          }
+        ],
+        "status": "active",
+        "type": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/claim-type",
+              "code": "professional",
+              "display": "Professional"
+            }
+          ]
+        },
+        "use": "preauthorization",
+        "patient": {
+          "reference": "Patient/P123456789",
+          "identifier": {
+            "system": "https://emirates.ae/national-id",
+            "value": "784-1985-1234567-8"
+          }
+        },
+        "created": "2025-07-31T10:00:00Z",
+        "provider": {
+          "reference": "Organization/Hospital-DHA-001",
+          "display": "American Hospital Dubai"
+        },
+        "insurer": {
+          "reference": "Organization/DHA",
+          "display": "Dubai Health Authority"
+        },
+        "billablePeriod": {
+          "start": "2025-08-01T00:00:00Z",
+          "end": "2025-08-31T23:59:59Z"
+        },
+        "diagnosis": [
+          {
+            "sequence": 1,
+            "diagnosisCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/sid/icd-10-am",
+                  "code": "E11.9",
+                  "display": "Type 2 diabetes mellitus without complications"
+                }
+              ]
+            },
+            "type": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/ex-diagnosistype",
+                    "code": "principal",
+                    "display": "Principal Diagnosis"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "supportingInfo": [
+          {
+            "sequence": 1,
+            "category": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
+                  "code": "info",
+                  "display": "Information"
+                }
+              ]
+            },
+            "valueString": "Patient requires HbA1c monitoring due to suboptimal diabetes control (last HbA1c 8.5%). Clinical justification: ADA guidelines recommend quarterly monitoring for patients with HbA1c >7%."
+          }
+        ],
+        "item": [
+          {
+            "sequence": 1,
+            "productOrService": {
+              "coding": [
+                {
+                  "system": "http://www.ama-assn.org/go/cpt",
+                  "code": "83036",
+                  "display": "Hemoglobin A1c"
+                }
+              ]
+            },
+            "servicedDate": "2025-08-15",
+            "locationCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://www.cms.gov/Medicare/Coding/place-of-service-codes/Place_of_Service_Code_Set",
+                  "code": "11",
+                  "display": "Office"
+                }
+              ]
+            },
+            "quantity": {
+              "value": 1,
+              "unit": "test"
+            },
+            "unitPrice": {
+              "value": 125.00,
+              "currency": "AED"
+            },
+            "net": {
+              "value": 125.00,
+              "currency": "AED"
+            }
+          }
+        ],
+        "total": {
+          "value": 125.00,
+          "currency": "AED"
+        },
+        "extension": [
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/disposition-flag",
+            "valueString": "PRODUCTION"
+          },
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/emirate-authority",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://nazmito.com/codesystems/authorities",
+                  "code": "DHA",
+                  "display": "Dubai Health Authority"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/data-quality-score",
+            "valueDecimal": 0.95
+          },
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "extension": [
+              {
+                "url": "source-field",
+                "valueString": "PriorAuthorizationRequest/Header/TransactionID"
+              },
+              {
+                "url": "source-format",
+                "valueString": "eClaimLink-2019"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:observation-001",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "HbA1c-Previous-001",
+        "meta": {
+          "profile": [
+            "https://nazmito.com/fhir/StructureDefinition/uae-observation"
+          ],
+          "source": "clinical-text"
+        },
+        "identifier": [
+          {
+            "use": "usual",
+            "system": "https://nazmito.com/observation-id",
+            "value": "OBS-HbA1c-2025-001"
+          }
+        ],
+        "basedOn": [
+          {
+            "reference": "Claim/PA-2025-000123",
+            "display": "Related to current authorization request"
+          }
+        ],
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "4548-4",
+              "display": "Hemoglobin A1c/Hemoglobin.total in Blood"
+            },
+            {
+              "system": "http://www.ama-assn.org/go/cpt",
+              "code": "83036",
+              "display": "Hemoglobin A1c"
+            }
+          ],
+          "text": "HbA1c test"
+        },
+        "subject": {
+          "reference": "Patient/P123456789"
+        },
+        "effectiveDateTime": "2025-01-15T09:00:00Z",
+        "issued": "2025-01-15T14:30:00Z",
+        "performer": [
+          {
+            "reference": "Organization/Lab-Emirates-001",
+            "display": "Emirates Medical Laboratory"
+          }
+        ],
+        "valueQuantity": {
+          "value": 8.5,
+          "unit": "%",
+          "system": "http://unitsofmeasure.org",
+          "code": "%"
+        },
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "H",
+                "display": "High"
+              }
+            ],
+            "text": "Above target range (target <7% for diabetic patients)"
+          }
+        ],
+        "referenceRange": [
+          {
+            "low": {
+              "value": 4.0,
+              "unit": "%"
+            },
+            "high": {
+              "value": 5.6,
+              "unit": "%"
+            },
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/referencerange-meaning",
+                  "code": "normal",
+                  "display": "Normal Range"
+                }
+              ]
+            },
+            "text": "Normal range for non-diabetic adults"
+          },
+          {
+            "high": {
+              "value": 7.0,
+              "unit": "%"
+            },
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/referencerange-meaning",
+                  "code": "therapeutic",
+                  "display": "Therapeutic Target"
+                }
+              ]
+            },
+            "text": "ADA target for diabetic patients"
+          }
+        ],
+        "extension": [
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/clinical-context-score",
+            "valueDecimal": 0.88
+          },
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "extension": [
+              {
+                "url": "source-field",
+                "valueString": "extracted-from-clinical-justification-text"
+              },
+              {
+                "url": "extraction-method",
+                "valueString": "NLP-medical-entity-recognition"
+              },
+              {
+                "url": "confidence-score",
+                "valueDecimal": 0.92
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:medication-001",
+      "resource": {
+        "resourceType": "MedicationStatement",
+        "id": "Metformin-Current-001",
+        "meta": {
+          "profile": [
+            "https://nazmito.com/fhir/StructureDefinition/uae-medication-statement"
+          ],
+          "source": "clinical-text"
+        },
+        "identifier": [
+          {
+            "use": "usual",
+            "system": "https://nazmito.com/medication-statement-id",
+            "value": "MED-001-2025"
+          }
+        ],
+        "basedOn": [
+          {
+            "reference": "Claim/PA-2025-000123",
+            "display": "Current medication relevant to authorization"
+          }
+        ],
+        "status": "active",
+        "category": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/medication-statement-category",
+              "code": "community",
+              "display": "Community"
+            }
+          ]
+        },
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+              "code": "6809",
+              "display": "Metformin"
+            },
+            {
+              "system": "https://www.dha.gov.ae/drug-registry",
+              "code": "MET-500-TAB",
+              "display": "Metformin 500mg Tablet"
+            }
+          ],
+          "text": "Metformin 500mg tablets"
+        },
+        "subject": {
+          "reference": "Patient/P123456789"
+        },
+        "effectiveDateTime": "2025-01-01T00:00:00Z",
+        "dateAsserted": "2025-07-31T10:00:00Z",
+        "informationSource": {
+          "reference": "Practitioner/Dr-Ahmed-Ali",
+          "display": "Dr. Ahmed Ali - Endocrinologist"
+        },
+        "reasonCode": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/sid/icd-10-am",
+                "code": "E11.9",
+                "display": "Type 2 diabetes mellitus without complications"
+              }
+            ]
+          }
+        ],
+        "reasonReference": [
+          {
+            "reference": "Condition/Diabetes-E11.9-001",
+            "display": "Type 2 diabetes mellitus"
+          }
+        ],
+        "note": [
+          {
+            "text": "Patient tolerating well, no reported side effects. Good compliance reported.",
+            "time": "2025-07-31T10:00:00Z",
+            "authorReference": {
+              "reference": "Practitioner/Dr-Ahmed-Ali"
+            }
+          }
+        ],
+        "dosage": [
+          {
+            "sequence": 1,
+            "text": "500mg twice daily with meals",
+            "timing": {
+              "repeat": {
+                "frequency": 2,
+                "period": 1,
+                "periodUnit": "d"
+              }
+            },
+            "route": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "26643006",
+                  "display": "Oral route"
+                }
+              ]
+            },
+            "doseAndRate": [
+              {
+                "type": {
+                  "coding": [
+                    {
+                      "system": "http://terminology.hl7.org/CodeSystem/dose-rate-type",
+                      "code": "ordered",
+                      "display": "Ordered"
+                    }
+                  ]
+                },
+                "doseQuantity": {
+                  "value": 500,
+                  "unit": "mg",
+                  "system": "http://unitsofmeasure.org",
+                  "code": "mg"
+                }
+              }
+            ]
+          }
+        ],
+        "extension": [
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "extension": [
+              {
+                "url": "source-field",
+                "valueString": "extracted-from-clinical-justification-text"
+              },
+              {
+                "url": "extraction-method",
+                "valueString": "NLP-medication-extraction"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:condition-001",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "Diabetes-E11.9-001",
+        "meta": {
+          "profile": [
+            "https://nazmito.com/fhir/StructureDefinition/uae-condition"
+          ],
+          "source": "eClaimLink"
+        },
+        "identifier": [
+          {
+            "use": "usual",
+            "system": "https://nazmito.com/condition-id",
+            "value": "COND-DM-001"
+          }
+        ],
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active",
+              "display": "Active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+              "code": "confirmed",
+              "display": "Confirmed"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                "code": "problem-list-item",
+                "display": "Problem List Item"
+              }
+            ]
+          }
+        ],
+        "severity": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "255604002",
+              "display": "Mild"
+            }
+          ],
+          "text": "Mild - well controlled with medication"
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-am",
+              "code": "E11.9",
+              "display": "Type 2 diabetes mellitus without complications"
+            },
+            {
+              "system": "http://snomed.info/sct",
+              "code": "44054006",
+              "display": "Diabetes mellitus type 2"
+            }
+          ],
+          "text": "Type 2 Diabetes Mellitus"
+        },
+        "subject": {
+          "reference": "Patient/P123456789"
+        },
+        "encounter": {
+          "reference": "Encounter/Initial-Diagnosis-2020",
+          "display": "Initial diabetes diagnosis encounter"
+        },
+        "onsetDateTime": "2020-03-15T00:00:00Z",
+        "recordedDate": "2020-03-15T10:30:00Z",
+        "recorder": {
+          "reference": "Practitioner/Dr-Ahmed-Ali",
+          "display": "Dr. Ahmed Ali - Endocrinologist"
+        },
+        "asserter": {
+          "reference": "Practitioner/Dr-Ahmed-Ali",
+          "display": "Dr. Ahmed Ali - Endocrinologist"
+        },
+        "evidence": [
+          {
+            "code": [
+              {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "4548-4",
+                    "display": "Hemoglobin A1c"
+                  }
+                ]
+              }
+            ],
+            "detail": [
+              {
+                "reference": "Observation/HbA1c-Previous-001",
+                "display": "Historical HbA1c results"
+              }
+            ]
+          }
+        ],
+        "note": [
+          {
+            "text": "Well-controlled Type 2 diabetes, patient compliant with medications and dietary modifications. Regular monitoring required.",
+            "time": "2025-07-31T10:00:00Z",
+            "authorReference": {
+              "reference": "Practitioner/Dr-Ahmed-Ali"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "extension": [
+              {
+                "url": "source-field",
+                "valueString": "PriorAuthorizationRequest/Diagnosis/DiagnosisCode"
+              },
+              {
+                "url": "sequence-number",
+                "valueInteger": 1
+              }
+            ]
+          },
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/clinical-reasoning",
+            "extension": [
+              {
+                "url": "risk-score",
+                "valueDecimal": 0.65
+              },
+              {
+                "url": "guideline-adherence",
+                "valueDecimal": 0.92
+              },
+              {
+                "url": "monitoring-frequency",
+                "valueString": "quarterly-hba1c-recommended"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:procedure-001",
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "HbA1c-Previous-Procedure-001",
+        "meta": {
+          "profile": [
+            "https://nazmito.com/fhir/StructureDefinition/uae-procedure"
+          ],
+          "source": "clinical-text"
+        },
+        "identifier": [
+          {
+            "use": "usual",
+            "system": "https://nazmito.com/procedure-id",
+            "value": "PROC-HbA1c-2025-001"
+          }
+        ],
+        "basedOn": [
+          {
+            "reference": "ServiceRequest/Lab-Order-HbA1c-001",
+            "display": "Previous HbA1c lab order"
+          }
+        ],
+        "status": "completed",
+        "category": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "103693007",
+              "display": "Diagnostic procedure"
+            }
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://www.ama-assn.org/go/cpt",
+              "code": "83036",
+              "display": "Hemoglobin A1c"
+            },
+            {
+              "system": "http://snomed.info/sct",
+              "code": "43396009",
+              "display": "Hemoglobin A1c measurement"
+            }
+          ],
+          "text": "Hemoglobin A1c blood test"
+        },
+        "subject": {
+          "reference": "Patient/P123456789"
+        },
+        "encounter": {
+          "reference": "Encounter/Routine-Follow-up-2025-01",
+          "display": "Routine diabetes follow-up visit"
+        },
+        "performedDateTime": "2025-01-15T09:00:00Z",
+        "recorder": {
+          "reference": "Practitioner/Lab-Tech-001",
+          "display": "Laboratory Technician"
+        },
+        "asserter": {
+          "reference": "Practitioner/Dr-Ahmed-Ali",
+          "display": "Dr. Ahmed Ali - Ordering Physician"
+        },
+        "performer": [
+          {
+            "function": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "59058001",
+                  "display": "Laboratory technician"
+                }
+              ]
+            },
+            "actor": {
+              "reference": "Practitioner/Lab-Tech-001",
+              "display": "Laboratory Technician"
+            },
+            "onBehalfOf": {
+              "reference": "Organization/Lab-Emirates-001",
+              "display": "Emirates Medical Laboratory"
+            }
+          }
+        ],
+        "location": {
+          "reference": "Location/Lab-Emirates-001-Main",
+          "display": "Emirates Medical Laboratory - Main Branch"
+        },
+        "reasonCode": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/sid/icd-10-am",
+                "code": "E11.9",
+                "display": "Type 2 diabetes mellitus without complications"
+              }
+            ]
+          }
+        ],
+        "reasonReference": [
+          {
+            "reference": "Condition/Diabetes-E11.9-001",
+            "display": "Type 2 diabetes mellitus monitoring"
+          }
+        ],
+        "outcome": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "385669000",
+              "display": "Successful"
+            }
+          ],
+          "text": "Test completed successfully, results available"
+        },
+        "report": [
+          {
+            "reference": "DiagnosticReport/HbA1c-Report-2025-01",
+            "display": "HbA1c Laboratory Report"
+          }
+        ],
+        "note": [
+          {
+            "text": "Routine diabetes monitoring. Patient fasting appropriately. Sample collected without complications.",
+            "time": "2025-01-15T09:00:00Z",
+            "authorReference": {
+              "reference": "Practitioner/Lab-Tech-001"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "extension": [
+              {
+                "url": "source-field",
+                "valueString": "derived-from-historical-procedure-codes"
+              },
+              {
+                "url": "inference-method",
+                "valueString": "clinical-timeline-reconstruction"
+              }
+            ]
+          },
+          {
+            "url": "https://nazmito.com/fhir/StructureDefinition/clinical-context-score",
+            "valueDecimal": 0.85
+          }
+        ]
+      }
+    }
+  ],
+  "extension": [
+    {
+      "url": "https://nazmito.com/fhir/StructureDefinition/schema-version",
+      "valueString": "v0.2"
+    },
+    {
+      "url": "https://nazmito.com/fhir/StructureDefinition/processing-timestamp",
+      "valueDateTime": "2025-07-31T10:30:00Z"
+    },
+    {
+      "url": "https://nazmito.com/fhir/StructureDefinition/enrichment-score",
+      "valueDecimal": 0.88
+    },
+    {
+      "url": "https://nazmito.com/fhir/StructureDefinition/clinical-reasoning",
+      "extension": [
+        {
+          "url": "comprehensive-score",
+          "valueDecimal": 0.92
+        },
+        {
+          "url": "risk-factors-identified",
+          "valueInteger": 3
+        },
+        {
+          "url": "guideline-adherence",
+          "valueDecimal": 0.88
+        },
+        {
+          "url": "cost-effectiveness",
+          "valueDecimal": 0.95
+        }
+      ]
+    }
+  ]
+}
