@@ -1,0 +1,127 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug eClaimLink Ingestor",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pipelines/eclaim_link_ingestor.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [],
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "purpose": ["debug-test"],
+            "presentation": {
+                "hidden": false,
+                "group": "XML Ingestors",
+                "order": 1
+            }
+        },
+        {
+            "name": "Debug Shafafiya Ingestor",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pipelines/shafafiya_ingestor.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [],
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "purpose": ["debug-test"],
+            "presentation": {
+                "hidden": false,
+                "group": "XML Ingestors",
+                "order": 2
+            }
+        },
+        {
+            "name": "Debug XML Factory Pipeline",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pipelines/factory.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [],
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "purpose": ["debug-test"],
+            "presentation": {
+                "hidden": false,
+                "group": "XML Ingestors",
+                "order": 3
+            }
+        },
+        {
+            "name": "Debug eClaimLink (FHIR Bundle Mode)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pipelines/eclaim_link_ingestor.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DEBUG_OUTPUT_FORMAT": "fhir_bundle"
+            },
+            "args": [],
+            "justMyCode": false,
+            "stopOnEntry": true,
+            "purpose": ["debug-test"],
+            "presentation": {
+                "hidden": false,
+                "group": "Enhanced Clinical Extraction",
+                "order": 1
+            }
+        },
+        {
+            "name": "Debug Shafafiya (FHIR Bundle Mode)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pipelines/shafafiya_ingestor.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DEBUG_OUTPUT_FORMAT": "fhir_bundle"
+            },
+            "args": [],
+            "justMyCode": false,
+            "stopOnEntry": true,
+            "purpose": ["debug-test"],
+            "presentation": {
+                "hidden": false,
+                "group": "Enhanced Clinical Extraction",
+                "order": 2
+            }
+        },
+        {
+            "name": "Debug Clinical Intelligence Pipeline",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pipelines/clinical_extraction_methods.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [],
+            "justMyCode": false,
+            "stopOnEntry": false,
+            "purpose": ["debug-test"],
+            "presentation": {
+                "hidden": false,
+                "group": "Clinical Intelligence",
+                "order": 1
+            }
+        }
+    ]
+}
