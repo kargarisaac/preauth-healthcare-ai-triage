@@ -222,9 +222,8 @@ The test suite is organized into separate directories to eliminate repetitive te
 #### `/tests/integration/` - Integration Tests
 - `test_end_to_end_processing.py` - Complete pipeline integration tests (format detection → processing → FHIR Bundle)
 
-#### `/tests/` - Legacy Tests (Maintained for Compatibility)
-- `test_fhir_extraction.py` - Legacy FHIR extraction tests (updated imports)
-- `test_canonical_schema.py` - Legacy canonical schema tests (updated imports)
+#### `/tests/` - Essential Schema Tests
+- `test_canonical_schema.py` - Schema validation and FHIR Bundle structure tests (updated with modern imports)
 
 ### Test Execution Commands
 - **Run all tests**: `pytest`
