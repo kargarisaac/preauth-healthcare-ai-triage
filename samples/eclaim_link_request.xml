@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <!-- Header section for eClaimLink format -->
+    <Header>
+        <SenderID>PROV54321</SenderID>
+        <ReceiverID>PAYER09876</ReceiverID>
+        <!-- DateTime format: dd/mm/yyyy HH:MM -->
+        <TransactionDateTime>27/07/2025 14:15</TransactionDateTime>
+        <TransactionID>TXN-ECLAIM-2025-001789</TransactionID>
+    </Header>
+    
+    <!-- Clinical justification text for comprehensive clinical context -->
+    <JustificationText>35-year-old patient with Type 2 Diabetes Mellitus, poorly controlled (last HbA1c 9.2% from 6 months ago). Patient presents with symptoms of diabetic retinopathy - blurred vision and difficulty reading. Recent fasting glucose levels consistently above 250 mg/dL despite maximum metformin therapy. Requires comprehensive diabetes management including glycemic control assessment and retinal screening for complications. Patient is motivated and adherent to prescribed medications. Family history of diabetes and cardiovascular disease.</JustificationText>
+    
+    <!-- Service requests for multiple clinical services -->
+    <ServiceRequests>
+        <!-- HbA1c test for diabetes monitoring -->
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
+            <ct:ActivityDateTime>28/07/2025 09:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Hemoglobin A1c test for diabetes monitoring - assessing 3-month glucose control in poorly controlled Type 2 diabetes patient</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">120.00</RequestedAmount>
+        </ServiceRequest>
+        
+        <!-- Comprehensive metabolic panel -->
+        <ServiceRequest>
+            <ct:ActivityCode>80053</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
+            <ct:ActivityDateTime>28/07/2025 09:15</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Comprehensive metabolic panel including glucose, creatinine, and electrolytes for diabetes complications screening</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">85.00</RequestedAmount>
+        </ServiceRequest>
+        
+        <!-- Diabetic retinopathy screening -->
+        <ServiceRequest>
+            <ct:ActivityCode>92014</ct:ActivityCode>
+            <ct:DiagnosisCode>H36.0</ct:DiagnosisCode>
+            <ct:ActivityDateTime>28/07/2025 11:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Comprehensive eye examination with ophthalmoscopy for diabetic retinopathy screening - patient reports visual symptoms</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">250.00</RequestedAmount>
+        </ServiceRequest>
+        
+        <!-- Diabetes education and counseling -->
+        <ServiceRequest>
+            <ct:ActivityCode>98960</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
+            <ct:ActivityDateTime>30/07/2025 10:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Diabetes self-management education session focusing on glucose monitoring and medication adherence</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">180.00</RequestedAmount>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>
