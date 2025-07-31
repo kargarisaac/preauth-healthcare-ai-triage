@@ -1,141 +1,181 @@
 # Nazmito – Intelligent AI-Powered Pre‑Authorization Platform
 
-## Problem Statement
+## Overview
 
-Mandatory pre-authorization processes in UAE healthcare insurance are highly inefficient, manual, and reactive. Current systems primarily use static rule engines managed by third-party administrators (TPAs) or internal insurer portals, which lack proactive intelligence. This manual approach generates unnecessary administrative costs, delays patient care by days, frustrates healthcare providers, and misses significant opportunities for proactive chronic care management.
+Nazmito transforms manual healthcare pre-authorization processes in the UAE into intelligent clinical decision opportunities. Our AI-powered platform ingests multi-format healthcare data (XML, CSV, PDF, scanned documents), normalizes it to FHIR standards, and provides explainable clinical intelligence that reduces costs while improving patient outcomes.
 
-Chronic conditions, such as diabetes, hypertension, and cardiovascular diseases, represent a substantial portion of healthcare costs. Specifically, chronic diseases account for approximately 35% of healthcare spending due to complications that could often be prevented through early, targeted interventions. Manual reviews add costs and complexity, with roughly 40% of requests still manually processed, taking approximately 3 days on average.
+**Key Differentiators:**
+- **Deep UAE Integration**: Native support for eClaimLink (Dubai) and Shafafiya (Abu Dhabi) standards
+- **Multi-Format Intelligence**: Handle structured data, PDFs, and scanned documents with OCR and NLP
+- **Clinical Context**: AI agents provide explainable recommendations based on patient history and guidelines
+- **Regulatory Compliance**: Built for UAE PDPL, ADHICS, and ISO 27001 requirements
 
-## Nazmito’s Solution
+## Business Impact
 
-Nazmito introduces an intelligent, proactive AI-driven layer to the existing pre-authorization workflows, transforming them from mere administrative checkpoints into opportunities for cost savings, quality improvement, and enhanced patient outcomes.
+### Market Opportunity
+- **TAM**: USD 224M–560M annually (9.3M UAE insured lives)
+- **Target**: 30% chronic condition cohort (~2.8M lives)
+- **Pricing**: USD 2–5 Per Member Per Month (PMPM)
 
-### Detailed Workflow
+### Value Proposition
+- **40% reduction** in manual review processes
+- **50% faster** authorization turnaround times
+- **25% improvement** in clinical guideline adherence
+- **Proactive chronic care** management preventing costly complications
 
-1. **Ingestion & Enrichment:**
+## Technology Stack
 
-   * Data Sources: Claims data (XML/EDI), pharmacy records, lab results; EMR data via HL7/FHIR (planned).
-   * Process: Data normalization, quality scoring, identification of clinical guideline gaps.
+### Architecture
+- **Medallion Data Architecture**: Bronze (raw) → Silver (cleaned) → Gold (FHIR canonical)
+- **AI-Powered Processing**: Vector embeddings, knowledge graphs, LLM agents
+- **Event-Driven**: Kafka streaming for real-time processing
+- **FHIR-Compliant**: International standards with UAE extensions
 
-2. **Decision & Incentivization:**
+### Core Capabilities
+1. **Multi-Format Ingestion**: XML (eClaimLink/Shafafiya), CSV, PDF table extraction, OCR for scanned documents
+2. **Clinical NLP**: Fine-tuned models for Arabic/English medical text processing
+3. **Knowledge Graphs**: Clinical reasoning with patient history and drug interactions
+4. **Explainable AI**: Transparent decision-making with audit trails
 
-   * AI Engine: Applies rule-based and machine learning (ML) algorithms to identify optimal care pathways.
-   * Output: Returns enriched, pre-approved care pathways, bundles overdue tests or screenings, suggests cost-effective equivalent medications, and includes provider incentives to encourage guideline adherence.
+## Quick Start
 
-3. **Explanation & Learning:**
+### Prerequisites
+- Python 3.11+
+- Docker & Docker Compose
+- `uv` package manager (ultra-fast Python dependency management)
 
-   * Transparency: Audit trails showing detailed rationale, rules triggered, model versions, and citations.
-   * Continuous Improvement: Feedback loops from outcomes, quarterly updates to models and rules, publication of confusion matrices, and performance benchmarks.
+### Installation
+```bash
+# Install uv package manager
+curl -Ls https://astral.sh/uv/install.sh | sh
 
-## Market Opportunity
+# Clone repository
+git clone https://github.com/isaackargar/nazmito.git
+cd nazmito
 
-### Total Addressable Market (TAM)
+# Set up environment
+uv venv .venv && source .venv/bin/activate
+uv pip install -r pyproject.toml
 
-* UAE Insured Population: \~9.3 million insured lives by 2025.
-* Pricing Model: USD 2–5 Per Member Per Month (PMPM).
-* TAM: USD 224M–560M annually (9.3M lives × USD 2–5 × 12 months).
+# Start development environment
+make demo
+```
 
-### Serviceable Available Market (SAM)
+### Access Points
+- **Streamlit UI**: http://localhost:8501 (Data audit and processing interface)
+- **FastAPI Docs**: http://localhost:8000/docs (REST API documentation)
+- **Kafka UI**: http://localhost:8080 (Event streaming dashboard)
 
-* Chronic Condition Cohort: Approximately 30% of insured lives (\~2.8 million).
-* SAM: Approximately USD 84M annually (2.8M chronic lives × USD 2.5 PMPM × 12 months).
+### Quick Demo
+```bash
+# Load sample data (XML, CSV, PDF)
+make ingest-sample
 
-### Serviceable Obtainable Market (SOM)
+# View processed results in UI
+open http://localhost:8501
 
-* Target Market by Year 3: Approximately 120,000 chronic members across initial payers.
-* SOM: Approximately USD 3.6M annual recurring revenue (120,000 × USD 2.5 PMPM × 12 months).
+# Query via API
+curl http://localhost:8000/claim/PA-2025-000123
+```
 
-## Competitive Landscape
+## Architecture & Documentation
 
-Nazmito differentiates itself clearly from existing competitors by providing proactive, AI-driven, chronic-care focused authorization processes specifically tailored to UAE regulations and practices.
+### Technical Documentation
+- **System Architecture**: [`docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md) - Complete technical design and data flow
+- **FHIR Strategy**: [`docs/FHIR_GUIDE.md`](/docs/FHIR_GUIDE.md) - UAE FHIR implementation and clinical enhancements
+- **Development Roadmap**: [`docs/todo_list.md`](/docs/todo_list.md) - Sprint-based development timeline
 
-### Incumbent TPAs
+### Data Standards
+- **UAE Compliance**: eClaimLink (Dubai), Shafafiya (Abu Dhabi), ICD-10-AM, CPT codes
+- **FHIR Resources**: Claim, ServiceRequest, Observation, MedicationStatement with UAE extensions
+- **Security**: AES-256 encryption, TLS 1.2+, RBAC, immutable audit logs
 
-* **NAS, Neuron, NextCare, MedNet:** Provide basic, static rule engines with manual-intensive processes. Limited proactive management of chronic care or automated incentives.
+## 28-Day MVP Timeline
 
-### Clinical Guidelines Providers
+Our accelerated development approach delivers a complete platform in four 7-day sprints:
 
-* **InterQual, MCG (Milliman Care Guidelines):** Offer static, evidence-based guidelines. Lack personalization and proactive, patient-centric recommendations or gap closures.
+- **Sprint 1 (Days 1-7)**: Core data pipeline with multi-format ingestion
+- **Sprint 2 (Days 8-14)**: Production API, audit UI, and demo packaging
+- **Sprint 3 (Days 15-21)**: Advanced AI with knowledge graphs and semantic search
+- **Sprint 4 (Days 22-28)**: LLM agents and explainable clinical decision support
 
-### Global Technology Companies
+See [`docs/todo_list.md`](/docs/todo_list.md) for detailed daily breakdown and implementation plan.
 
-* **Optum, eviCore:** Primarily US-focused, powerful technology but limited regional presence, local compliance, or direct UAE market integration.
+## Competitive Advantage
 
-### Local and Regional Health Tech Companies
+### vs. Traditional TPAs (NAS, Neuron, NextCare)
+- **AI-Driven**: Proactive clinical intelligence vs. static rule engines
+- **Comprehensive**: Multi-format data handling vs. limited XML processing
+- **Clinical Context**: Historical data analysis vs. transaction-level decisions
 
-* **AppliedAI:** UAE-based startup focusing on insurance claims automation and billing processes, but lacks a dedicated pre-authorization or proactive chronic care management solution.
-* **OlaDoc/Okadoc:** Patient-facing apps primarily for doctor appointment booking and basic insurance integration, but limited direct involvement in proactive authorization.
-* **Klaim, Wellx.ai, HealthGena, Bayzat:** Regional players mostly focused on claims management, insurance brokerage, or patient experience apps without deep pre-authorization intelligence or chronic care proactive management.
+### vs. Global Tech (Optum, eviCore)
+- **UAE-Native**: Deep integration with local standards and regulations
+- **Regional Expertise**: Arabic language support, Islamic calendar, local clinical practices
+- **Regulatory Alignment**: PDPL/ADHICS compliance from the ground up
 
-### Nazmito’s Unique Value Proposition
+### vs. Regional Players (AppliedAI, Klaim, Wellx.ai)
+- **Clinical Intelligence**: Advanced AI reasoning vs. basic automation
+- **Pre-Authorization Focus**: Specialized authorization workflows vs. general claims processing
+- **Explainable AI**: Transparent clinical decision-making vs. black-box algorithms
 
-* Deep integration with existing UAE digital rails (Shafafiya in Abu Dhabi, eClaimLink in Dubai).
-* Robust compliance tailored to UAE standards (PDPL, ADHICS, ISO 27001).
-* AI-driven proactive intervention specifically targeting chronic-care cost containment.
-* Transparent audit trails providing clear rationales and measurable ROI.
+## Business Model & Go-to-Market
 
-## Technology and Governance
+### Revenue Streams
+- **Primary**: SaaS PMPM fees (USD 2-5 per member per month)
+- **Pilot**: Per-request pricing for initial integrations
+- **Value-Share**: 15-30% of validated medical cost savings
 
-* **Inputs:** Claims, labs, pharmacy data (initially), HL7/FHIR EMR integration (later).
-* **Pipeline:** Data ingestion → quality scoring → rules & ML algorithms → optimization & incentives → decision & rationale generation.
-* **Governance Structure:** Clinical Advisory Board consisting of two medical doctors and one coder, quarterly audits, and continuous outcome monitoring.
-* **Compliance Roadmap:**
+### Go-to-Market Strategy
+1. **MVP Demo** (Month 2): Synthetic UAE data showcase
+2. **Pilot Partners** (Months 3-4): LOIs with major UAE payers
+3. **Technical Integration** (Months 3-6): 3-month integration + 3-month pilot
+4. **Market Expansion** (Months 6-12): Additional payers and employers
 
-  * Month 3: Complete PDPL/DHA compliance gap analysis, appoint Data Protection Officer.
-  * Month 6: Initiate ISO 27001 certification process.
-  * Month 9: Achieve ADHICS attestation.
-  * Month 12: Obtain SOC 2 Type I compliance.
-* **Security Measures:** AES-256 encryption at rest, TLS 1.2+ encryption in transit, role-based access controls (RBAC), and immutable audit logs.
+## Compliance & Security
 
-## Business Model
+### UAE Regulatory Compliance
+- **PDPL**: Personal Data Protection Law compliance framework
+- **ADHICS**: Abu Dhabi Healthcare Cyber Security standards
+- **DHA Standards**: Dubai Health Authority integration requirements
+- **ISO 27001**: Information security management (certification planned Month 6)
 
-* **Primary Model:** SaaS-based PMPM fee.
-* **Alternate Pilot Model:** Per-request fees for initial pilots.
-* **Value-Share Option:** 15–30% of validated medical cost savings, capped to ensure affordability.
-* **Liability & Insurance:** Decision support only (insurers retain final authorization responsibility). Nazmito maintains professional indemnity and tech E\&O coverage.
+### Data Protection
+- **Encryption**: AES-256 at rest, TLS 1.2+ in transit
+- **Access Control**: Role-based permissions with audit logging
+- **Data Residency**: UAE data localization compliance
+- **Immutable Audits**: Complete decision trail for regulatory review
 
-## Go-To-Market & Traction Strategy
+## Investment & Funding
 
-* **Initial Steps:**
+### Current Round
+- **Amount**: USD 500K Seed funding
+- **Use of Funds**: 50% Product Development, 30% Go-to-Market, 20% Compliance
+- **Runway**: 18 months to first revenue and Series A preparation
 
-  * Develop and showcase synthetic live demonstration (Month 2).
-  * Secure Letters of Intent (LOIs) and Memoranda of Understanding (MOUs) from initial pilot partners (Month 3–4).
-* **Pilot Plan:**
+### Team
+- **Founder**: Isaac Kargar - AI scientist with GCC healthcare experience
+- **Planned Hires**: Head of Engineering (FHIR expertise), Regulatory Lead
+- **Advisors**: Former DHA/ADHICS officials, ex-Daman medical directors, UAE TPA executives
 
-  * Execute 3-month technical integration followed by a 3-month operational pilot.
-  * Measure key performance indicators (KPIs): reduced manual review percentage, turnaround times, and proxy medical loss ratio (MLR) impacts.
-* **Growth & Expansion:**
+## Next Steps
 
-  * Use pilot outcomes to produce case studies.
-  * Expand to additional payers and self-funded employers.
-  * Enhance product offerings with advanced forecasting and fraud, waste, and abuse (FWA) modules.
+### For Developers
+1. Follow the Quick Start guide above
+2. Review [`docs/todo_list.md`](/docs/todo_list.md) for development roadmap
+3. Check [`docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md) for technical deep-dive
 
-## 18-Month Roadmap (With Seed Funding)
+### For Investors
+1. Schedule live demo with synthetic UAE healthcare data
+2. Review detailed compliance roadmap and data protection policies
+3. Discuss pilot partnership opportunities with UAE payers
 
-* **Months 0–3:** Synthetic demo, initial compliance roadmap, hire advisory team.
-* **Months 3–6:** First pilot execution, ISO preparation, initial EMR integration.
-* **Months 6–12:** Second pilot launch, publish performance results, SOC 2 Type I compliance.
-* **Months 12–18:** Launch additional product features (forecasting, FWA analytics), prepare for next funding round (Seed+ or Series A).
+### For Payers/Partners
+1. Explore integration with existing authorization workflows
+2. Review FHIR compliance and data mapping capabilities
+3. Initiate pilot LOI/MOU discussions
 
-## Team
+**Contact**: [info@nazmito.com](mailto:info@nazmito.com) | [Schedule Demo](https://calendly.com/nazmito-demo)
 
-* **Founder & CEO:** Isaac, AI scientist with extensive experience in healthcare-focused ML product development and GCC regional healthcare ecosystem.
-* **Planned Hires:**
+---
 
-  * Founding Head of Engineering (FHIR/claims expertise).
-  * Regulatory & Compliance Lead.
-* **Advisors:** Experienced professionals including former DHA/ADHICS officials, ex-Daman medical directors, and senior executives from major UAE TPAs (e.g., NAS).
-
-## Funding Request
-
-* **Amount:** USD 500K Seed.
-* **Use of Funds:** Product Development (50%), Go-To-Market Activities (30%), Compliance and Operational Costs (20%).
-* **Runway:** 18 months.
-
-## Next Steps for Investors
-
-* Schedule a detailed live product demonstration with synthetic UAE claims.
-* Review compliance roadmap and data protection policies.
-* Finalize and initiate pilot LOI/MOU and integration activities.
-
-Nazmito transforms pre-authorization from administrative paperwork to proactive clinical intervention, significantly reducing healthcare costs and improving patient care in the UAE.
+*Nazmito transforms pre-authorization from administrative paperwork to proactive clinical intervention, significantly reducing healthcare costs while improving patient care in the UAE.*

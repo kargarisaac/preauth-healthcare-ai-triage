@@ -1,0 +1,501 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nazmito.com/schemas/canonical/v0.1/prior-authorization.json",
+  "title": "Nazmito Canonical Prior Authorization Schema",
+  "description": "Unified schema for healthcare prior authorization data, based on FHIR resources with Nazmito extensions",
+  "type": "object",
+  "required": [
+    "resourceType",
+    "id",
+    "meta",
+    "status",
+    "type",
+    "use",
+    "patient",
+    "created",
+    "provider",
+    "billablePeriod",
+    "identifier",
+    "item"
+  ],
+  "properties": {
+    "resourceType": {
+      "type": "string",
+      "const": "Claim",
+      "description": "FHIR resource type"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
+      "description": "Logical id of this artifact"
+    },
+    "meta": {
+      "type": "object",
+      "required": ["profile", "source"],
+      "properties": {
+        "profile": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Profiles this resource claims to conform to"
+        },
+        "source": {
+          "type": "string",
+          "description": "Original data format (XML/CSV/PDF)"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the resource version last changed"
+        }
+      }
+    },
+    "identifier": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "value"],
+        "properties": {
+          "type": {
+            "type": "object",
+            "required": ["coding"],
+            "properties": {
+              "coding": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["code"],
+                  "properties": {
+                    "system": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": ["transaction", "authorization", "sender", "receiver"]
+                    }
+                  }
+                }
+              }
+            }
+
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the identifier"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "cancelled", "draft", "entered-in-error"],
+      "description": "Status of the claim"
+    },
+    "type": {
+      "type": "object",
+      "required": ["coding"],
+      "properties": {
+        "coding": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["code"],
+            "properties": {
+              "system": {
+                "type": "string",
+                "const": "http://terminology.hl7.org/CodeSystem/claim-type"
+              },
+              "code": {
+                "type": "string",
+                "enum": ["institutional", "oral", "pharmacy", "professional", "vision"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "use": {
+      "type": "string",
+      "enum": ["claim", "preauthorization", "predetermination"],
+      "description": "The purpose of the claim"
+    },
+    "patient": {
+      "type": "object",
+      "required": ["reference"],
+      "properties": {
+        "reference": {
+          "type": "string",
+          "pattern": "^Patient/[A-Za-z0-9\\-\\.]{1,64}$",
+          "description": "Reference to Patient resource"
+        },
+        "identifier": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "Patient identifier/MRN"
+            }
+          }
+        }
+      }
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the authorization request was created"
+    },
+    "provider": {
+      "type": "object",
+      "required": ["reference"],
+      "properties": {
+        "reference": {
+          "type": "string",
+          "pattern": "^(Practitioner|Organization)/[A-Za-z0-9\\-\\.]{1,64}$",
+          "description": "Reference to provider"
+        }
+      }
+    },
+    "billablePeriod": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Authorization start date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Authorization end date"
+        }
+      }
+    },
+    "diagnosis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sequence", "diagnosisCodeableConcept"],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Diagnosis sequence number"
+          },
+          "diagnosisCodeableConcept": {
+            "type": "object",
+            "required": ["coding"],
+            "properties": {
+              "coding": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["system", "code"],
+                  "properties": {
+                    "system": {
+                      "type": "string",
+                      "const": "http://hl7.org/fhir/sid/icd-10"
+                    },
+                    "code": {
+                      "type": "string",
+                      "pattern": "^[A-Z][0-9]{2}(\\.[0-9]{1,4})?$",
+                      "description": "ICD-10 diagnosis code"
+                    },
+                    "display": {
+                      "type": "string",
+                      "description": "Human-readable diagnosis description"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "supportingInfo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sequence", "category"],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "category": {
+            "type": "object",
+            "required": ["coding"],
+            "properties": {
+              "coding": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["code"],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": ["justification", "comments", "instructions"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "valueString": {
+            "type": "string",
+            "description": "Supporting information text"
+          }
+        }
+      }
+    },
+    "item": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["sequence", "productOrService", "servicedDate", "quantity", "unitPrice"],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Line item sequence number"
+          },
+          "productOrService": {
+            "type": "object",
+            "required": ["coding"],
+            "properties": {
+              "coding": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["system", "code"],
+                  "properties": {
+                    "system": {
+                      "type": "string",
+                      "enum": ["http://www.ama-assn.org/go/cpt", "https://eclaimlink.ae/codes"]
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "CPT or service code"
+                    },
+                    "display": {
+                      "type": "string",
+                      "description": "Human-readable service description"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "servicedDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Date service will be performed"
+          },
+          "quantity": {
+            "type": "object",
+            "required": ["value"],
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Service quantity"
+              },
+              "unit": {
+                "type": "string",
+                "description": "Unit of measure"
+              }
+            }
+          },
+          "unitPrice": {
+            "type": "object",
+            "required": ["value", "currency"],
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Price per unit"
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "description": "Currency code (e.g., AED)"
+              }
+            }
+          },
+          "net": {
+            "type": "object",
+            "required": ["value", "currency"],
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Net amount"
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            }
+          },
+          "adjudication": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["category"],
+              "properties": {
+                "category": {
+                  "type": "object",
+                  "required": ["coding"],
+                  "properties": {
+                    "coding": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["code"],
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": ["submitted", "benefit", "denied"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "number"
+                    },
+                    "currency": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "reason": {
+                  "type": "object",
+                  "properties": {
+                    "coding": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "description": "Denial code"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "extension": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["url"],
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "enum": ["activityType", "instructions"]
+                },
+                "valueInteger": {
+                  "type": "integer",
+                  "description": "Activity type code"
+                },
+                "valueString": {
+                  "type": "string",
+                  "description": "Instructions text"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "total": {
+      "type": "object",
+      "required": ["value", "currency"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total claim amount"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "extension": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": {
+            "type": "string",
+            "enum": [
+              "https://nazmito.com/fhir/StructureDefinition/schema-version",
+              "https://nazmito.com/fhir/StructureDefinition/original-format",
+              "https://nazmito.com/fhir/StructureDefinition/data-quality-score",
+              "https://nazmito.com/fhir/StructureDefinition/processing-timestamp",
+              "https://nazmito.com/fhir/StructureDefinition/gap-flags",
+              "https://nazmito.com/fhir/StructureDefinition/enrichment-score",
+              "https://nazmito.com/fhir/StructureDefinition/ai-confidence",
+              "https://nazmito.com/fhir/StructureDefinition/incentive-eligible",
+              "https://nazmito.com/fhir/StructureDefinition/authorization-result",
+              "https://nazmito.com/fhir/StructureDefinition/record-count",
+              "https://nazmito.com/fhir/StructureDefinition/disposition-flag"
+            ]
+          },
+          "valueString": {
+            "type": "string"
+          },
+          "valueDecimal": {
+            "type": "number"
+          },
+          "valueBoolean": {
+            "type": "boolean"
+          },
+          "valueInteger": {
+            "type": "integer"
+          },
+          "valueDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valueCodeableConcept": {
+            "type": "object",
+            "properties": {
+              "coding": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "display": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

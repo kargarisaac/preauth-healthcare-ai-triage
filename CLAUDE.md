@@ -46,20 +46,23 @@ Nazmito is an intelligent AI-powered pre-authorization platform for UAE healthca
    - Marketing website and investor pitch materials
    - Two versions: original in `website/`, modern redesign in `new-ui/`
 
-### Planned Architecture (from docs/todo_list.md)
+### Architecture Overview (See docs/ARCHITECTURE.md)
 
-The system follows a medallion architecture with three data layers:
-- **Bronze**: Raw ingested data (XML, CSV, PDF)
-- **Silver**: Cleaned, source-shaped data
-- **Gold**: Fully normalized canonical JSON with FHIR compliance
+The system implements a modern medallion architecture with AI-powered processing:
+- **Bronze Layer**: Raw ingested data with immutable storage and SHA-256 hashing
+- **Silver Layer**: Cleaned, source-shaped data with basic validation
+- **Gold Layer**: FHIR-compliant canonical schema with UAE extensions
+- **AI Layer**: Vector embeddings, knowledge graphs (KuzuDB), and LLM agents (LangGraph)
 
 Key pipeline stages:
-1. Format detection (XML/JSON/CSV/PDF)
-2. Schema validation and data extraction
-3. Canonical mapping to FHIR + Nazmito extensions
-4. Data quality scoring
-5. Storage in medallion layers
-6. Event publishing via Kafka
+1. Multi-format ingestion (XML/CSV/PDF/OCR)
+2. Data quality scoring and validation
+3. FHIR canonical mapping with UAE extensions
+4. AI enrichment with clinical context
+5. Event streaming via Kafka
+6. Explainable decision support
+
+**Detailed Technical Design**: See `/docs/ARCHITECTURE.md` for complete system architecture
 
 ## Key UAE Healthcare Standards
 
@@ -76,14 +79,18 @@ Key pipeline stages:
 - Check both 2019/11 and 2011 format compatibility
 
 ### When building new features
-- Follow the planned architecture in `docs/mvp.md` and `docs/todo_list.md`
+- Follow the sprint-based architecture in `docs/todo_list.md` (28-day MVP timeline)
+- Reference complete technical design in `docs/ARCHITECTURE.md`
+- Use FHIR implementation guide in `docs/FHIR_GUIDE.md` for clinical data handling
 - Maintain compatibility with UAE healthcare standards (eClaimLink, Shafafiya)
 - Ensure PDPL (Personal Data Protection Law) compliance for UAE
 
 ### API and Integration Points
-- Future REST API planned with FastAPI (`/ingest`, `/claim/{id}`, `/search`)
+- REST API implemented with FastAPI (`/ingest`, `/claim/{id}`, `/search`, `/chat`)
 - Kafka event streaming for real-time data flow
-- FHIR-compliant canonical schema for interoperability
+- FHIR-compliant canonical schema with UAE extensions
+- WebSocket support for conversational AI interfaces
+- Server-sent events for real-time dashboard updates
 
 ## Testing Strategy
 - Create tests in `tests/` directory (currently not present but planned)

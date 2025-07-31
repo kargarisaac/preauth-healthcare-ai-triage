@@ -1,340 +1,1214 @@
-## 🛠️ Agent Quick-Start Guide
+# Nazmito Development Roadmap & Task List
 
-You are inside the **nazmito** repo (health-claims MVP). Some hints:
+## Executive Summary
 
-1. we use `uv` for package management.
-2. write test cases in `tests/` for each step and confim it works as expected.
+**Goal:** Build an intelligent AI-powered pre-authorization platform that transforms UAE healthcare authorization workflows from reactive manual processes into proactive clinical intelligence opportunities. The accelerated sprint timeline below delivers a complete MVP in 28 days, moving from basic data pipeline to advanced AI agents with clinical decision support.
 
-### Key Specs & Data References
-- eClaimLink Common Types XSD – <https://www.eclaimlink.ae/dhd/commontypes_20191113_xsd.html>
-- PriorAuthorization.xsd (repo path: `schemas/PriorAuthorization.xsd`)
-- Shafafiya Prior-Request/Authorization dict – <https://www.doh.gov.ae/en/shafafiya/dictionary/Prior-Request-Authorization>
-- FHIR overview – <https://hl7.org/fhir/overview.html>
-- CMS DE-SynPUF sample claims – <https://www.cms.gov/data-research-statistics-trends-and-reports/medicare-claims-synthetic-public-use-files>
-- PubTables-1M PDF tables – <https://huggingface.co/datasets/bsmock/pubtables-1m>
-- DocBank scanned docs – <https://doc-analysis.github.io/docbank-page>
-- Asclepius Synthetic Notes – <https://huggingface.co/datasets/starmpcc/Asclepius-Synthetic-Clinical-Notes>
+## MVP Scope & Vision
 
-### High-Level Architecture
-```mermaid
-flowchart TD
-    A["Inbound File/API Event"] --> B{"Detect Format?"}
-    B -->|"XML/JSON"| C["Schema Validator (eClaimLink/Shafafiya XSD)"]
-    B -->|"CSV/XLSX"| D["CSV Parser + Header Mapper"]
-    B -->|"PDF"| E["PDF Text & Table Extractor\n(pdfplumber/Camelot/Table-Transformer)"]
-    B -->|"Image/PDF Scan"| F["OCR Layer\n(Tesseract/TrOCR) -> Text Blocks"]
-    B -->|"Free Text Field"| G["NLP Extractor\n(ICD/CPT lookup, guideline gaps)"]
+Transform real-world UAE payer data (Shafafiya/eClaimLink XML, CSV batches, PDFs with tables, scanned images) into intelligent clinical decisions through:
 
-    C --> H["Canonical Mapper"]
-    D --> H
-    E --> H
-    F --> E
-    G --> H
+1. **Multi-format data ingestion** with quality scoring and lineage tracking
+2. **FHIR-compliant canonical schema** with UAE healthcare extensions
+3. **AI-powered clinical reasoning** using knowledge graphs and LLM agents
+4. **Explainable decision support** with audit trails and clinical context
+5. **Production-ready API and UI** for seamless payer integration
 
-    H --> I["Data Quality Scoring\n(missing codes, invalid dates)"]
-    I --> J["Canonical Store (FHIR + Nazmito Extensions)"]
-    J --> K["Event Bus (Kafka/SNS): 'normalized_claim'"]
-    K --> L["Rules/ML Layer (next MVP step)"]
-    J --> M["Audit Log & Lineage Store"]
-```
+## Architecture & Documentation References
 
----
+* **System Architecture**: `/docs/ARCHITECTURE.md` - Complete technical design and medallion data layers
+* **FHIR Strategy**: `/docs/FHIR_GUIDE.md` - UAE FHIR implementation with clinical enhancements
+* **Field Mappings**: `docs/mappings/field_map_v0.csv` - Complete source-to-FHIR mappings
+* **Canonical Schema**: `schemas/canonical_schema.json` - JSON Schema validation
 
-## Phase 1 - Data Ingestion & Normalization & Audit UI
+## Accelerated Sprint Timeline (28-Day MVP)
 
-> Goal: a working end-to-end pipeline (file ingest → canonical JSON → audit UI) by **Day 14**. All tools use **uv** (https://github.com/astral-sh/uv) for dependency management.
->
-> **Glossary** (learn these before Day 1)
-> * **uv** – lightning-fast Python package manager & virtual-env tool (drop-in for *pip*).
-> * **FHIR** – *Fast Healthcare Interoperability Resources* standard for healthcare data exchange.
-> * **ICD-10** – *International Classification of Diseases* codes (diagnoses).
-> * **CPT** – *Current Procedural Terminology* codes (services).
-> * **UMLS** – *Unified Medical Language System* (master vocab).
-> * **OCR** – *Optical Character Recognition* (turn images into text).
-> * **TrOCR** – Transformer-based OCR model from Microsoft.
-> * **Parquet** – columnar file format for analytics.
-> * **Kafka** – high-throughput event bus.
+### Sprint 1 (Days 1-7): Core Data Pipeline
+**Objective:** Build complete data ingestion pipeline that handles all UAE formats and normalizes to canonical FHIR schema with quality scoring.
 
----
+**Daily Breakdown:**
 
-### 📚 Pre-Sprint Reading (evenings before Day 1)
-- HL7 intro to FHIR resources – <https://hl7.org/fhir/overview.html>
-- eClaimLink Provider Manual (Sections 5 & 6) – <https://eclaimlink.ae/eClaimLink/Samples/eClaimLink_Provider_Manual.pdf>
-- Shafafiya web-service dictionary – <https://www.doh.gov.ae/en/shafafiya/dictionary/Prior-Request-Authorization>
-- Blog: "How to Validate XML with Python *xmlschema*" – <https://blog.datadive.io/xml-validation-python>
-- Article: "Parsing Tables from PDFs with *pdfplumber*" – <https://towardsdatascience.com/>
+**Day 1 - Environment & Schema Foundation**
+- [x] Install uv (`curl -Ls https://astral.sh/uv/install.sh | sh`)
+- [x] Create .venv via `uv venv .venv && source .venv/bin/activate`
+- [x] Set up pre-commit hooks and code quality tools
+- [x] Finalize canonical FHIR schema with UAE extensions
+- [x] Create field mapping documentation
 
----
+**Day 2 - XML Ingestion (eClaimLink)**
 
-### 🗓 Day 1 — Environment & Repo Bootstrap
-- [x] Install **uv** (`curl -Ls https://astral.sh/uv/install.sh | sh`)
-- [x] Create `.venv` via `uv venv .venv && source .venv/bin/activate`
-- [x] `uv pip install --upgrade uv black ruff pytest`  → write `requirements.in`
-- [x] Set up `pre-commit` (`uv pip install pre-commit && pre-commit install`)
-- [x] Read: uv quick-start docs – <https://astral.sh/blog/uv-quickstart>
+**Objective:** Establish the core XML ingestion pipeline for eClaimLink format, the primary data source for Dubai Health Authority claims. This day focuses on creating a robust, class-based architecture that can handle the complexity of UAE healthcare XML schemas while maintaining extensibility for future formats.
 
-### 🗓 Day 2 — Canonical Schema Draft
+**Why This Matters:** eClaimLink processes thousands of prior authorization requests daily across Dubai's healthcare system. A reliable XML parser with proper schema validation is critical for data integrity and regulatory compliance. The class-based design allows for easy testing and future enhancements.
 
-> **Objective:** Establish a single, vendor-agnostic “source of truth” data model that every upstream format (XML, CSV, PDF-extracted JSON) can be transformed into. This *canonical schema* is a streamlined subset of the HL7 FHIR standard—augmented with Nazmito-specific fields—that captures only the attributes we need for the MVP (patient info, service requests, monetary amounts, diagnoses, dates, status). By mapping eClaimLink, Shafafiya, CMS CSV, and OCR/NLP outputs into this schema we (1) decouple parsing logic from downstream analytics and rules, (2) guarantee that every record—regardless of origin—looks the same to the quality scorer, Kafka event bus, and UI layers, and (3) future-proof the platform for interoperability with other FHIR-capable systems such as payer APIs or electronic medical records. Today’s work is therefore crucial: it defines the contract that all subsequent pipeline stages will rely on.
+**Technical Context:** The existing `data_pipelines/eclaim_link.py` contains functional code but needs restructuring into a proper class hierarchy for better maintainability and testing. The Dubai Health Authority requires strict schema compliance, making XSD validation essential.
 
-- [ ] 2.1 Review FHIR resources *Claim*, *ClaimResponse*, *ServiceRequest*, *Observation*, *MedicationStatement* (read spec links below)
-- [ ] 2.2 Create mapping spreadsheet (`docs/mappings/field_map_v0.xlsx`) aligning eClaimLink/Shafafiya tags → FHIR fields
-- [ ] 2.3 Define minimal MVP field list (patient, encounter, service, amount, diagnosis, status)
-- [ ] 2.4 Draft JSON Schema `schemas/canonical_schema.json` (use `$schema":"https://json-schema.org/draft/2020-12/schema"`)
-- [ ] 2.5 Add sample `canonical/examples/claim_example.json` conforming to schema
-- [ ] 2.6 Write pytest `tests/test_canonical_schema.py` that loads example and validates with `jsonschema`
-- [ ] 2.7 Update `README.md` with canonical schema overview and link to mapping doc
-- [ ] 2.8 Commit and push branch `feat/canonical-schema` for PR review
-
-### 🗓 Day 3 — XML Ingestion (eClaimLink)
-
-> **Objective:** Prove end-to-end ingestion of a real-world UAE schema. We’ll take Dubai Health Authority’s eClaimLink *Prior Authorization Request* XML, validate it against its official XSD, and convert it into the canonical JSON we defined on Day 2. Deliverables include a reusable `XmlIngestor` class, unit tests, and at least one successfully normalized sample. This establishes the pattern all other format ingestors will follow and gives us concrete data to run through quality scoring and the UI later in the sprint.
-
-- [ ] Move `/data_pipelines/eclaim_link.py` → `pipelines/xml_ingest.py` (class API)
+**Tasks:**
+- [ ] Refactor `/data_pipelines/eclaim_link.py` → `pipelines/xml_ingest.py` with class-based API
+- [ ] Implement XMLIngestor class with validate(), parse(), and normalize() methods
 - [ ] Validate sample `samples/prior_auth_request.xml` against `schemas/PriorAuthorization.xsd`
-- [ ] Write 10 unit tests for mapper
-- [ ] Dataset: request 5 sandbox XMLs from **Mohammad Al-Suwaidi** (DHA)
-  Contact: mohammad@dha.gov.ae
+- [ ] Write 10 comprehensive unit tests covering edge cases and error handling
+- [ ] Contact Mohammad Al-Suwaidi (DHA) for 5 additional sandbox XMLs: mohammad@dha.gov.ae
+- [ ] Add logging and error handling for malformed XML documents
+- [ ] Create documentation for XML processing workflow
 
-### 🗓 Day 4 — XML Ingestion (Shafafiya)
+**Deliverables:**
+- Production-ready XMLIngestor class
+- Comprehensive test suite with >90% coverage
+- Schema validation pipeline
+- Documentation and example usage
 
-> **Objective:** Expand XML coverage to Abu Dhabi’s Shafafiya standard, ensuring our pipeline can handle schema variations across UAE payers. We will implement support for the 2011 `Prior.Authorization` structure defined in `CommonTypes_20191113.xsd`, normalize it to the canonical schema, and create regression tests. Achieving dual-payer compatibility showcases interoperability to investors and sets a template for onboarding additional formats with minimal effort.
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Key Achievements:** [List major accomplishments]
+- **Challenges Encountered:** [Any blockers or issues]
+- **Code Quality Metrics:** [Test coverage, lint score]
+- **Next Day Preparation:** [Any setup needed for Day 3]
 
-- [ ] Add 2011 schema support (`CommonTypes_20191113.xsd`)
-- [ ] Unit tests for edge cases (multiple activities, missing codes)
-- [ ] Dataset: download 3 example XMLs from Shafafiya docs portal
+---
 
-### 🗓 Day 5 — CSV Claims Path
+**Day 3 - XML Ingestion (Shafafiya) & FHIR Resource Foundation**
 
-> **Objective:** Demonstrate that the pipeline isn’t limited to XML by ingesting flat-file claims feeds common in many payer data exchanges. We’ll parse a small slice of the open CMS DE-SynPUF dataset and a handful of synthetic CSVs generated by Synthea, then map each row into the canonical schema. Successfully handling CSV proves versatility to investors and gives us a second modality (after XML) to run through the quality-scoring engine.
->
-> **Dataset rationale:**
-> • **CMS DE-SynPUF** (U.S. Medicare) is freely available, well-documented, and large enough to contain realistic claim line items (HCPCS/CPT, diagnosis, charge amounts). Although U.S. coding differs (ICD-10-CM vs. UAE ICD-10-AM), the column structure (patient ID, provider ID, service code, amount) mirrors what UAE payers transmit in CSV feeds, so field mapping effort is minimal.
-> • **Synthea** generates fully synthetic patient journeys; we can configure its code system output to include *ICD-10-AM* or *CPT*-like procedure codes. This lets us create UAE-flavored examples without PHI.
-> • **Adapting to UAE:** When real UAE CSV samples arrive, we swap the header mapping and extend the code-set translation layer; the ingestion logic itself remains unchanged.
+**Objective:** Extend XML ingestion capabilities to support Shafafiya format and establish comprehensive FHIR resource support beyond Claim and ServiceRequest. This creates the foundation for rich clinical context extraction from UAE healthcare data.
 
-- [ ] `uv pip install pandas`  → parse **CMS DE-SynPUF** (5 rows only)
-- [ ] Generate 5 synthetic CSVs via **Synthea** (`brew install synthea && synthea -p 5`)
-- [ ] Map to canonical JSON & tests
-- [ ] Read: blog "Parsing Large CSVs Efficiently in Python" – <https://jakevdp.github.io/posts/python-csv-performance>
+**Why This Matters:** Shafafiya processes claims for Abu Dhabi's healthcare ecosystem, using a different XML schema (2011 format) than eClaimLink. Additionally, comprehensive FHIR resource support enables extraction of clinical context (observations, medications, conditions, procedures) that dramatically improves authorization decision quality.
 
-### 🗓 Day 6 — Data-Quality Rules
+**Technical Context:** The 2011 Shafafiya schema has structural differences from the 2019 eClaimLink format. Our canonical schema must support all 6 core FHIR resources: Claim, ServiceRequest, Observation, MedicationStatement, Condition, and Procedure for complete clinical intelligence.
 
-> **Objective:** Quantify trustworthiness of incoming data by codifying domain rules (e.g., no missing ICD-10, valid CPT codes, sensible dates/amounts). The quality score accompanies every record and will later feed investor-facing metrics dashboards. Today we’ll wire lookup tables from UMLS, implement rule checks, and build pytest coverage so future ingestors automatically inherit the same validation.
->
-> **What are data-quality rules?** Simple boolean or numeric checks that flag bad or suspicious data. Examples:
-> • *Completeness* – patient DOB present, service date present
-> • *Conformance* – ICD-10 code exists in lookup; amount field is numeric
-> • *Range/Logic* – service date ≤ today; amount > 0; start date ≤ end date
-> • *Uniqueness* – record identifier not already ingested
->
-> **ICD-10 refresher:** The *International Classification of Diseases, Tenth Revision* is a global diagnostic code set. Example codes:
-> • **E11.9** – Type 2 diabetes mellitus without complications
-> • **I10** – Essential (primary) hypertension
-> • **S06.5X1A** – Traumatic subdural hemorrhage w/ LOC >24h, initial encounter
-> UAE uses the *ICD-10-AM* variant; mappings can be loaded from the UMLS dump.
+**Tasks:**
+- [ ] Extend XMLIngestor to support dual schema detection (2019 vs 2011)
+- [ ] Implement Shafafiya-specific parsing logic for `CommonTypes_20191113.xsd`
+- [ ] Add schema version detection based on XML namespace and root elements
+- [ ] **Extend canonical schema to support additional FHIR resources:**
+  - [ ] **Observation** resource (lab results, vitals, clinical findings)
+  - [ ] **MedicationStatement** resource (current medications, treatment history)
+  - [ ] **Condition** resource (diagnosed problems, medical conditions)
+  - [ ] **Procedure** resource (past procedures, medical interventions)
+- [ ] Create comprehensive unit tests for edge cases:
+  - [ ] Multiple activities within single authorization
+  - [ ] Missing diagnostic codes
+  - [ ] Optional fields handling
+  - [ ] Mixed schema validation
+  - [ ] **FHIR resource extraction from clinical sections**
+- [ ] Download 3 representative XMLs from Shafafiya documentation portal
+- [ ] Add Shafafiya-specific field mappings to all 6 FHIR resources
+- [ ] Implement backward compatibility tests
 
-- [ ] Rules: missing ICD-10, invalid CPT, negative amounts, future dates
-- [ ] Source code sets from **UMLS 2023AB** – <https://uts.nlm.nih.gov/> (register)
-- [ ] Implement rule engine (`dq/checks.py`) + pytest coverage
+**Deliverables:**
+- Multi-schema XMLIngestor with automatic format detection
+- Shafafiya-specific test suite
+- Field mapping documentation for both formats
+- Performance benchmarks for schema detection
 
-### 🗓 Day 7 — PDF Table Extraction
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Schema Compatibility:** [Both formats working/Issues found]
+- **Test Results:** [Number of tests passing/failing]
+- **Performance Metrics:** [Processing time for both formats]
+- **Documentation Updates:** [Mapping tables, examples added]
 
-> **Objective:** Tackle semi-structured documents by extracting tables from provider invoices and manuals. Using pdfplumber (text layout) and Camelot (lattice mode) we’ll convert table rows into structured JSON, then flow them into the canonical schema. Stress-testing on the PubTables-1M subset validates robustness and sets the stage for the OCR fallback on Day 8.
->
-> **Why not LLM/vision today?** Day 7 assumes PDFs already contain embedded vector text or clear table borders. For scanned images or complex layouts we’ll introduce computer-vision OCR and potentially transformer-based *vision-language* models (*e.g.* TrOCR) **tomorrow in Day 8**. Separating the concerns keeps scope manageable and lets us benchmark traditional table extractors first.
+---
 
-- [ ] `uv pip install pdfplumber camelot-py[cv]` (needs poppler)
-- [ ] Extract tables from eClaimLink Manual (Section 6 examples)
-- [ ] Stress test on 50 PDFs from **PubTables-1M** subset – <https://huggingface.co/datasets/bsmock/pubtables-1m>
-- [ ] Read: Medium article "Camelot vs. Tabula" – <https://medium.com/>
+**Day 4 - CSV Claims Path & Clinical Data Mapping**
 
-### 🗓 Day 8 — OCR Fallback
+**Objective:** Build CSV ingestion capabilities with comprehensive clinical data extraction to all 6 FHIR resources. This enables rich clinical context from structured CSV exports containing lab results, medication history, and procedure records.
 
-> **Objective:** Unlock the ability to ingest *scanned* or *faxed* documents that have no embedded text layer—common in UAE provider workflows where approvals are printed, stamped, and re-uploaded. We will integrate two complementary OCR approaches:
-> 1. **Tesseract 5.x** with English + Arabic language packs for fast, on-CPU text extraction. Ideal for clear, high-contrast scans (e.g., black-and-white forms).
-> 2. **TrOCR-base** (Vision-Encoder/Decoder Transformer) running on GPU for tough cases—low resolution, skewed, or colored stamps. TrOCR provides state-of-the-art accuracy by jointly reasoning over image patches and text tokens.
->
-> Pipeline wiring today:
-> • Detect whether a PDF page lacks text via pdfplumber’s `char_margin` heuristic → if yes, route page images to OCR.
-> • Post-process OCR output with rule-based line merging, remove headers/footers, and feed into the **PDF Table Extraction** flow from Day 7 (tables may appear after OCR).
-> • Emit a JSON object `{page, ocr_text, bbox_coords}` and attach to the *bronze* layer for audit.
-> • Map any recovered structured data (e.g., Activity Code table) into canonical schema.
->
-> **Investor value:** Demonstrates robustness against real-world, low-quality uploads and shows that we can handle Arabic content—critical for regional deployment. Produces compelling before-and-after screenshots for the pitch deck.
+**Why This Matters:** Many UAE payers receive monthly or weekly CSV exports containing not just claims but clinical data (lab results, medication lists, procedure histories). Mapping this to comprehensive FHIR resources enables clinical intelligence that transforms authorization decisions.
 
-- [ ] `uv pip install pytesseract torch torchvision`
-- [ ] Install Arabic traineddata (`wget https://github.com/tesseract-ocr/tessdata_best/.../ara.traineddata -P /usr/share/tessdata`)
-- [ ] Integrate Tesseract fallback in `pipelines/pdf_ingest.py`
-- [ ] Prototype TrOCR inference script for 10 pages from **DocBank** + 5 partner scans
-- [ ] Save OCR JSON alongside PDF metadata; write unit test that asserts non-empty text for scanned sample
+**Technical Context:** CSV files in healthcare often contain multiple data types across columns - claims data alongside clinical observations, medication records, and diagnostic information. Our CSV processor must intelligently route data to appropriate FHIR resource types.
 
-### 🗓 Day 9 — NLP on Justification Text
+**Tasks:**
+- [ ] Install pandas with `uv pip install pandas pyarrow fastparquet`
+- [ ] Create CSVIngestor class following XMLIngestor architecture pattern
+- [ ] Parse CMS DE-SynPUF sample (limit to 5 rows for initial testing)
+- [ ] Implement automatic schema detection and column mapping
+- [ ] Generate 5 synthetic CSV files using Synthea:
+  - [ ] Install Synthea: `brew install synthea`
+  - [ ] Generate sample data: `synthea -p 5 --exporter.csv.export true`
+- [ ] **Map CSV columns to all 6 FHIR resources:**
+  - [ ] **Claims data → Claim resource**
+  - [ ] **Service requests → ServiceRequest resource**
+  - [ ] **Lab values, vitals → Observation resource**
+  - [ ] **Medication lists → MedicationStatement resource**
+  - [ ] **Diagnosis codes → Condition resource**
+  - [ ] **Procedure codes → Procedure resource**
+- [ ] Create comprehensive test suite covering:
+  - [ ] Missing values handling
+  - [ ] Date format variations
+  - [ ] Numeric precision issues
+  - [ ] Special characters in text fields
+  - [ ] **Clinical data type detection and routing**
+- [ ] Add data quality scoring for CSV ingestion across all FHIR resources
+- [ ] Implement memory-efficient processing for large files
 
-> **Objective:** Extract clinically meaningful signals from free-text fields such as *JustificationText*, *Comments*, or physician notes—essential for automated approval rules in later phases. We will:
-> 1. **Rule-based extraction** for quick wins (regex on ICD/CPT mentions, negation patterns, "failed conservative therapy").
-> 2. **Fine-tune an LM**: Use Hugging Face’s distilled `bert-mini` (~11 M params) as a Named-Entity-Recognition (NER) model to capture diagnoses, medications, and procedures. Training corpus: **Asclepius Synthetic Notes** (labeled) augmented with 200 hand-tagged snippets from UAE XMLs.
->
-> Processing flow:
-> • Clean text (Unicode normalize, strip PHI placeholders).
-> • Run rule-based extractor → tag obvious entities.
-> • Feed residual text to fine-tuned BERT for NER slots.
-> • Map entities to canonical schema fields (`justification.diagnosisCodes`, `justification.previousTreatments`) using ICD-10 & CPT lookups.
-> • Emit confidence scores; flag anything <0.7 for manual review in the UI.
->
-> **Why this matters:** Prior-auth decisions hinge on narrative justification. Automating its parsing reduces manual nurse review time and showcases advanced NLP capability—an investor differentiator.
+**Deliverables:**
+- Production-ready CSVIngestor class
+- Automatic schema detection system
+- Comprehensive mapping to canonical JSON
+- Performance benchmarks for large file processing
+- Quality scoring metrics
 
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **File Processing:** [Number of files successfully processed]
+- **Performance Metrics:** [Rows per second, memory usage]
+- **Quality Scores:** [Average data quality across test files]
+- **Error Handling:** [Types of errors caught and handled]
+
+---
+
+**Day 5 - Data Quality Rules for All FHIR Resources**
+
+**Objective:** Implement a comprehensive data quality framework that validates all 6 FHIR resources against clinical and business rules. This ensures high-quality clinical data flows through to enhanced decision-making processes.
+
+**Why This Matters:** Poor data quality is the leading cause of incorrect prior authorization decisions. With comprehensive FHIR resource support, we can validate not just claims but clinical context (labs, medications, conditions) to prevent clinical decision errors.
+
+**Technical Context:** Healthcare data quality requires validation across all clinical domains. Beyond ICD-10-AM and CPT codes, we need validation for LOINC lab codes, RxNorm medication codes, and SNOMED-CT clinical terminology used in UAE healthcare.
+
+**Tasks:**
+- [ ] Create DataQuality class with rule engine architecture
+- [ ] Implement quality rules for all FHIR resources:
+  - [ ] **Claim/ServiceRequest**: Missing or invalid ICD-10-AM diagnostic codes, Invalid CPT procedure codes
+  - [ ] **Observation**: Invalid LOINC codes, out-of-range lab values, inconsistent units
+  - [ ] **MedicationStatement**: Invalid RxNorm codes, dangerous drug interactions, dosage validation
+  - [ ] **Condition**: Invalid SNOMED-CT codes, temporal inconsistencies, severity validation
+  - [ ] **Procedure**: Invalid CPT codes, temporal sequence validation, outcome consistency
+  - [ ] **Cross-resource**: Patient demographic consistency, temporal relationship validation
+- [ ] Register and download comprehensive code sets:
+  - [ ] UMLS 2023AB from uts.nlm.nih.gov
+  - [ ] LOINC codes for lab observations
+  - [ ] RxNorm for medication validation
+  - [ ] SNOMED-CT for clinical terminology
+- [ ] Build code validation lookup tables for:
+  - [ ] ICD-10-AM (Australian modification used in UAE)
+  - [ ] CPT codes (current procedural terminology)
+  - [ ] **LOINC codes (lab and vital signs)**
+  - [ ] **RxNorm codes (medications)**
+  - [ ] **SNOMED-CT codes (clinical conditions)**
+  - [ ] UAE-specific provider codes
+- [ ] Create rule engine framework in `dq/checks.py`:
+  - [ ] Rule registration system
+  - [ ] Severity levels (error, warning, info)
+  - [ ] Configurable thresholds
+  - [ ] Batch processing capabilities
+  - [ ] **Cross-resource validation rules**
+- [ ] Implement comprehensive quality scoring algorithm (0.0-1.0 scale)
+- [ ] Add pytest coverage for all FHIR resource validation rules
+- [ ] Create detailed quality report generation
+
+**Deliverables:**
+- Extensible rule engine framework
+- Comprehensive code validation system
+- Quality scoring algorithm
+- Detailed test coverage and documentation
+- Quality reporting dashboard
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Rules Implemented:** [Number of validation rules active]
+- **Code Sets Loaded:** [ICD-10, CPT coverage statistics]
+- **Test Coverage:** [Percentage of rule engine covered]
+- **Performance:** [Rules processed per second]
+
+---
+
+**Day 6 - PDF Table Extraction**
+
+**Objective:** Build robust PDF table extraction capabilities to handle semi-structured documents common in healthcare workflows. This enables processing of lab reports, provider invoices, and authorization forms that arrive as PDFs with embedded tables.
+
+**Why This Matters:** UAE healthcare providers frequently submit supporting documentation as PDFs containing structured data in table format. Automated table extraction eliminates manual data entry, reduces errors, and accelerates authorization processing times.
+
+**Technical Context:** PDF table extraction requires handling various layouts, merged cells, spanning columns, and different table styles. Healthcare PDFs often contain complex medical terminology and multi-language content (Arabic/English), requiring robust parsing algorithms.
+
+**Tasks:**
+- [ ] Install PDF processing dependencies:
+  - [ ] `uv pip install pdfplumber camelot-py[cv]`
+  - [ ] Install poppler-utils for camelot: `brew install poppler`
+- [ ] Create PDFTableExtractor class with multiple extraction strategies
+- [ ] Implement extraction methods:
+  - [ ] pdfplumber for simple tables
+  - [ ] camelot for complex layouts
+  - [ ] Fallback strategy selection
+- [ ] Extract tables from eClaimLink Manual Section 6 examples:
+  - [ ] Provider directory tables
+  - [ ] Service code tables
+  - [ ] Authorization workflow tables
+- [ ] Add table structure detection and validation
+- [ ] Implement stress testing pipeline:
+  - [ ] Download 50 PDFs from PubTables-1M subset
+  - [ ] Measure extraction accuracy and performance
+  - [ ] Identify edge cases and failure modes
+- [ ] Add confidence scoring for extracted tables
+- [ ] Create table-to-JSON mapping logic
+- [ ] Implement error handling for malformed PDFs
+
+**Deliverables:**
+- Multi-strategy PDF table extractor
+- Accuracy benchmarks on healthcare documents
+- Performance metrics for batch processing
+- Confidence scoring system
+- Integration with canonical schema
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Extraction Accuracy:** [Percentage of tables correctly parsed]
+- **Performance Metrics:** [Tables processed per minute]
+- **Strategy Effectiveness:** [Success rates by extraction method]
+- **Error Categories:** [Types of PDFs that failed processing]
+
+---
+
+**Day 7 - OCR Fallback & Pipeline Integration**
+
+**Objective:** Complete the data ingestion pipeline by adding OCR capabilities for scanned documents and integrating all format processors into a unified, production-ready system. This final integration day ensures seamless processing of any document format encountered in UAE healthcare workflows.
+
+**Why This Matters:** Many healthcare documents arrive as scanned images within PDFs (faxed forms, stamped approvals, handwritten notes). OCR fallback ensures no data is lost due to format limitations, providing complete coverage of real-world document scenarios.
+
+**Technical Context:** OCR for healthcare documents requires high accuracy for medical terminology and multi-language support (Arabic/English). The integration phase must handle format detection, routing, error recovery, and maintain data lineage across all processing paths.
+
+**Tasks:**
+- [ ] Install OCR dependencies:
+  - [ ] `uv pip install pytesseract torch torchvision transformers`
+  - [ ] Install Tesseract with Arabic support: `brew install tesseract`
+  - [ ] Download Arabic traineddata: `wget https://github.com/tesseract-ocr/tessdata/raw/main/ara.traineddata`
+- [ ] Create OCRProcessor class with multiple engines:
+  - [ ] Tesseract for standard text extraction
+  - [ ] TrOCR (Microsoft) for complex layouts
+  - [ ] Confidence-based engine selection
+- [ ] Implement OCR fallback in `pipelines/pdf_ingest.py`:
+  - [ ] Detect when table extraction fails
+  - [ ] Route to appropriate OCR engine
+  - [ ] Post-process OCR output for structure
+- [ ] Prototype TrOCR inference for scanned documents:
+  - [ ] Load pre-trained TrOCR model
+  - [ ] Implement batch processing
+  - [ ] Add confidence scoring
+- [ ] Create unified pipeline orchestrator:
+  - [ ] Format detection (XML, CSV, PDF, image)
+  - [ ] Route to appropriate processor
+  - [ ] Handle processing errors gracefully
+  - [ ] Maintain data lineage throughout
+- [ ] Run comprehensive end-to-end test:
+  - [ ] XML (eClaimLink) → Canonical JSON
+  - [ ] CSV (CMS DE-SynPUF) → Canonical JSON
+  - [ ] PDF (table extraction) → Canonical JSON
+  - [ ] Scanned PDF (OCR) → Canonical JSON
+- [ ] Validate complete pipeline performance and accuracy
+
+**Deliverables:**
+- Complete multi-format ingestion pipeline
+- OCR processing with Arabic support
+- End-to-end validation and testing
+- Performance benchmarks across all formats
+- Production-ready pipeline orchestrator
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **OCR Accuracy:** [Text extraction accuracy by language]
+- **Pipeline Performance:** [End-to-end processing times]
+- **Format Coverage:** [Successful processing rates by format]
+- **Integration Issues:** [Any cross-component problems found]
+
+---
+
+### Sprint 2 (Days 8-14): API, UI & Demo Ready
+**Objective:** Create production-ready API, audit UI, and complete demo package that investors can run independently with real UAE data examples.
+
+**Daily Breakdown:**
+
+**Day 8 - NLP on Justification Text**
 - [ ] `uv pip install transformers datasets`
-- [ ] Prepare training data: convert Asclepius JSON → CoNLL format + add UAE snippets
-- [ ] Fine-tune `bert-mini` for 3 epochs on GPU; log F1 ≥ 0.85
-- [ ] Implement `nlp/extract_justification.py` returning entity list + confidence
-- [ ] Pytest with sample texts; ensure mapping into canonical JSON
-- [ ] Update quality rules to drop into "needs-review" queue when NLP confidence low
+- [ ] Prepare training data: Asclepius JSON → CoNLL format + UAE snippets
+- [ ] Fine-tune `bert-mini` for clinical NER (3 epochs, F1 ≥ 0.85)
+- [ ] Implement `nlp/extract_justification.py` with confidence scoring
 
-### 🗓 Day 10 — Bronze/Silver/Gold Storage & Kafka
-
-> **Objective:** Formalize our data lake and real-time event backbone so every downstream consumer—dashboards, rules engine, future AI agents—receives consistent, traceable data. We’ll implement a **medallion architecture**:
-> • **Bronze** – raw artifacts (original XML/CSV/PDF + OCR JSON) stored verbatim; immutable, SHA-256 hashed.
-> • **Silver** – cleaned but source-shaped data (e.g., flattened XML, parsed CSV) with basic type casting.
-> • **Gold** – fully normalized canonical JSON conforming to `canonical_schema.json` plus quality-score metadata.
-> Files will be written as columnar **Parquet** partitions (`/data/{layer}/ingest_date=*`) for efficient analytics.
->
-> In parallel we’ll stand up a **local Kafka cluster** (Docker) and publish a `normalized_claim` topic for each Gold record. This enables near-real-time subscriptions (e.g., rule engine, BI, or chat agent) without polling storage.
->
-> **Audit & compliance value:** Immutability + hashes support regulatory traceability; clear layering accelerates debugging and data science exploration.
-
+**Day 9 - Bronze/Silver/Gold Storage & Kafka**
 - [ ] `uv pip install pyarrow fastparquet confluent-kafka`
-- [ ] Create directory structure `/data/{raw|clean|normalized}`
-- [ ] Implement Parquet writer utility in `storage/medallion.py`
-- [ ] Compute SHA-256 and store alongside each file in `.manifest` JSON
-- [ ] Docker Compose services: `kafka`, `zookeeper`; configure topic `normalized_claim`
-- [ ] Publish Gold JSON to Kafka after each successful ingest; integration test with `kafkacat`
-- [ ] Update README with medallion diagram and consumer example
+- [ ] Create medallion directory structure `/data/{raw|clean|normalized}`
+- [ ] Implement Parquet writer with SHA-256 hashing in `storage/medallion.py`
+- [ ] Docker Compose: kafka, zookeeper; configure `normalized_claim` topic
 
-### 🗓 Day 11 — Audit UI (Streamlit)
+**Day 10 - Audit UI (Streamlit)**
+- [ ] `uv pip install streamlit deepdiff duckdb pandas`
+- [ ] Create `ui/app.py` with 4 tabs: Upload/Parse, Diff Viewer, Search/Filter, Quality Dashboard
+- [ ] Implement diff component using deepdiff → HTML visualization
+- [ ] Wire upload endpoint to FastAPI backend
 
-> **Objective:** Give stakeholders a visual window into the pipeline—vital for trust and demo flair. The Streamlit app will:
-> 1. **Upload & Parse Tab:** drag-and-drop a file → backend calls ingestion pipeline → displays status, elapsed time, data-quality score.
-> 2. **Diff Viewer Tab:** side-by-side Raw (Bronze) vs. Normalized (Gold) JSON with color-coded highlights using `deepdiff`.
-> 3. **Search / Filter Tab:** simple full-text search over Gold Parquet (DuckDB) so users can query by diagnosis, service code, etc. (lays groundwork for vector search Phase 2).
-> 4. **Quality Dashboard:** bar chart of pass/fail counts, average score, most common rule violations.
->
-> **Technical stack:** Streamlit front-end, FastAPI backend endpoints (`/ingest`, `/claim/{id}`, `/search`). Communication via REST; backend reads Parquet Gold or consumes from Kafka for live updates.
->
-> **Investor impact:** Visual proof of end-to-end flow in <30 s; showcases transparency and analytics readiness.
+**Day 11 - REST API (FastAPI)**
+- [ ] `uv pip install fastapi uvicorn[standard] python-multipart`
+- [ ] Create `api/main.py` with routers: ingest, claim, search, events
+- [ ] Hook `/ingest` to pipeline orchestrator with job ID + status
+- [ ] Implement Kafka consumer for Server-Sent Events endpoint
+- [ ] Enable Swagger UI at `/docs` with example requests
 
-- [ ] `uv pip install streamlit deepdiff duckdb pandas`  # duckdb for fast local SQL over Parquet
-- [ ] Create `ui/app.py` with four tabs described above
-- [ ] Implement diff component using `deepdiff` → HTML diff
-- [ ] Wire upload endpoint to FastAPI service started on Day 12 (temporary local call)
-- [ ] Query Gold layer via DuckDB for Search tab; show first 100 matches
-- [ ] Dashboard plots with Streamlit `st.chart`
-- [ ] Add pytest `tests/test_ui_smoke.py` to ensure app starts
-- [ ] Update `docker-compose.yml` to include `ui` service exposed on port 8501
+**Day 12 - Investor Demo Packaging**
+- [ ] Write `docker-compose.yml` with all services: api, ui, kafka, zookeeper, worker
+- [ ] Build production Dockerfiles with uv sync
+- [ ] Create Makefile targets: `demo`, `ingest-sample`, `stop`, `clean`
+- [ ] Seed script `scripts/load_samples.py` with XML, CSV, PDF samples
 
-### 🗓 Day 12 — REST API (FastAPI)
+**Day 13 - End-to-End Testing & Metrics**
+- [ ] Run comprehensive e2e script `scripts/e2e_smoke.sh`
+- [ ] Generate `metrics/report.md` with KPI tables (latency ≤30s, quality ≥0.8)
+- [ ] Capture UI screenshots for documentation
+- [ ] Create Mermaid architecture diagram
 
-> **Objective:** Expose the normalized data and ingestion actions via a production-ready HTTP interface so external systems—or demo scripts—can interact with the platform programmatically. The API will: (1) provide CRUD-like access to Gold records (`GET /claim/{id}`, `GET /claims?query=`), (2) offer an `/ingest` endpoint used by the Streamlit UI’s upload tab, and (3) stream recent events with Server-Sent Events (`/events/normalized`) by tailing the Kafka topic. We’ll ship auto-generated Swagger / OpenAPI docs, simple **Basic Auth** middleware (enough for MVP), and Docker healthchecks.
->
-> **Business value:** Investors and integration partners can test the system without seeing the codebase—just hit the API. It also sets the stage for microservices that consume normalized data (e.g., rule engine, AI chat agent).
-
-- [ ] `uv pip install fastapi uvicorn[standard] python-multipart` (file uploads)
-- [ ] Create `api/main.py` with routers: `ingest`, `claim`, `search`, `events`
-- [ ] Hook `/ingest` to pipeline orchestrator; return job ID + status
-- [ ] Implement Kafka consumer that forwards JSON to SSE endpoint
-- [ ] Add pydantic models mirroring `canonical_schema.json` for type safety
-- [ ] Enable Swagger UI at `/docs`; add example requests
-- [ ] Basic Auth via `fastapi.security.HTTPBasic` + env var credentials
-- [ ] Add pytest `tests/test_api_routes.py`
-- [ ] Add `api` service to `docker-compose.yml` listening on 8000 with healthcheck
-
-### 🗓 Day 13 — Investor Demo Packaging
-
-> **Objective:** Bundle the entire stack—API, UI, Kafka, pipeline worker, and sample datasets—into a one-command deployment so an investor or advisor can run the demo on their laptop or a cloud VM. We’ll use **Docker Compose** to orchestrate services and a `Makefile` for convenience tasks (build, run, ingest-sample, clean). Screenshots, an architecture diagram, and clear instructions will be added to the README.
->
-> **Success criteria:** `make demo` spins up containers, seeds three sample files, and the user can (a) view them in the Audit UI, (b) fetch via REST, and (c) see that Kafka messages are flowing—all within five minutes.
-
-- [ ] Write `docker-compose.yml` with services: `api`, `ui`, `kafka`, `zookeeper`, `worker` (celery or simple loop)
-- [ ] Build minimal production Dockerfiles (`python:3.11-slim` + uv sync)
-- [ ] Makefile targets: `demo`, `ingest-sample`, `stop`, `clean`
-- [ ] Seed script `scripts/load_samples.py` publishes XML, CSV, PDF scan
-- [ ] Capture UI screenshots and save to `docs/assets/`
-- [ ] Generate Mermaid architecture diagram -> PNG and embed in README
-- [ ] Smoke-test on a fresh clone; document any gotchas
-
-### 🗓 Day 14 — Dry-Run & Pitch Assets
-
-> **Objective:** Validate the full MVP under realistic conditions and package all collateral for the investor pitch. Activities include latency benchmarking, quality-score analysis, video recording, and final documentation polish.
->
-> • **E2E Test:** Ingest 1 XML, 1 CSV, 1 scanned PDF; ensure canonical JSON produced, UI displays diff, API returns 200, Kafka offsets advance.
-> • **KPIs:** Latency ≤30 s from upload to Gold; mean quality score ≥0.8; rule failures <10 %.
-> • **Assets:** 3-min Loom video walkthrough, GIF of diff viewer, metrics slide, and one-pager describing medallion + AI roadmap.
->
-> **Deliverable:** A shareable GitHub repo link + Docker Compose and assets that an investor can run and review independently.
-
-- [ ] Run end-to-end script `scripts/e2e_smoke.sh`; export timing metrics
-- [ ] Generate `metrics/report.md` with KPI tables and graphs (matplotlib)
-- [ ] Record Loom video demo; store link in README
-- [ ] Update pitch deck slide with screenshots and KPI numbers
-- [ ] Final README polish: quick-start, tech stack, roadmap Phase 2 (AI search)
+**Day 14 - Demo Polish & Documentation**
+- [ ] Record 3-min Loom video walkthrough
+- [ ] Final README polish with quick-start guide
+- [ ] Update pitch deck with screenshots and KPI numbers
 - [ ] Tag git release `v0.1-mvp`
 
----
+### Sprint 3 (Days 15-21): Advanced AI & Knowledge Graphs
+**Objective:** Implement semantic search with vector embeddings, knowledge graph construction, and intelligent clinical reasoning using LangGraph + KuzuDB.
 
-### Cross-Cutting (Do Anytime)
-- [ ] GitHub Actions CI: lint, tests on push
-- [ ] LICENSE & NOTICE for datasets, models
-- [ ] Continuous reading list: bookmark every spec or blog you touch and add to `docs/reading_list.md`
+**Daily Breakdown:**
 
----
+**Day 15 - Vector Embeddings & Enhanced Clinical Context**
 
-## 🚀 Phase 2 – Smart Retrieval & AI Agent (Weeks 3–4)
+**Objective:** Establish semantic search foundation with comprehensive clinical context extraction from all FHIR resources. This enables intelligent authorization decisions by understanding relationships between observations, medications, conditions, and procedures.
 
-> **Vision:** Turn the normalized data lake into an interactive knowledge platform. We’ll leverage **KuzuDB** (embedded graph DB with vector support), **LangGraph** for declarative LLM workflows, and **BAML** for structured prompt/agent definitions.
+**Why This Matters:** Authorization decisions improve dramatically with clinical context. A diabetes patient requesting insulin coverage should be automatically approved if recent A1C observations show poor control, while the same request without clinical context might require manual review.
 
-### Week 3 – Semantic Index & Search API
+**Technical Context:** The `intfloat/e5-small` model provides efficient embeddings optimized for retrieval tasks. With all 6 FHIR resources, we can create rich clinical embeddings that capture patient state, treatment history, and clinical relationships.
 
-**Objective:** Enable fast keyword *and* semantic retrieval across Gold records using KuzuDB’s vector index.
+**Tasks:**
+- [ ] Install vector processing dependencies: `uv pip install sentence-transformers kuzu faiss-cpu`
+- [ ] Set up `intfloat/e5-small` model for medical text embeddings
+- [ ] Create VectorEmbedding class with caching and batch processing
+- [ ] Implement text preprocessing for medical terminology
+- [ ] Generate embeddings for all FHIR resource text fields:
+  - [ ] **Claims**: Clinical justification text, diagnosis descriptions
+  - [ ] **ServiceRequests**: Procedure descriptions, provider notes
+  - [ ] **Observations**: Lab result interpretations, vital sign notes
+  - [ ] **MedicationStatements**: Medication notes, adherence comments
+  - [ ] **Conditions**: Condition descriptions, severity notes
+  - [ ] **Procedures**: Procedure notes, outcome descriptions
+- [ ] **Implement clinical context synthesis:**
+  - [ ] Patient clinical profile generation from all resources
+  - [ ] Treatment timeline embedding creation
+  - [ ] Comorbidity relationship extraction
+- [ ] Initialize KuzuDB with vector index configuration
+- [ ] Create embedding storage schema in KuzuDB for all resource types
+- [ ] Implement batch embedding generation pipeline
+- [ ] Add similarity search functionality across clinical contexts
+- [ ] Benchmark embedding generation performance across all resources
 
-- [ ] **Day 15–16: Embedding Generation**
-  • `uv pip install sentence-transformers kuzu`
-  • Encode Gold JSON (`claim_id + service text + diagnosis text`) with `intfloat/e5-small`.
-  • Create Kuzu database `kuzu/claims.kuzu`; write `Claim` nodes with properties `id`, `text`, `embedding` (vector).
-  • Create cosine similarity index on `embedding` column.
-- [ ] **Day 17: Search Endpoint & UI Tab**
-  • Extend FastAPI with `GET /search?q=`: encode query → Kuzu vector search + fallback BM25 via DuckDB.
-  • Add *Semantic Search* tab in Streamlit—top-k results with highlight snippets.
-- [ ] **Day 18: Relevancy Evaluation**
-  • Generate 20 query–result pairs; compute nDCG.
-  • Iterate on prompt-embedding or hybrid retrieval as needed.
+**Deliverables:**
+- Production-ready embedding generation system
+- KuzuDB vector index configuration
+- Batch processing pipeline for text fields
+- Performance benchmarks and optimization
 
-### Week 4 – Conversational Agent & Graph Reasoning
-
-**Objective:** Provide an AI assistant that answers questions like “Why was claim 123 denied?” using LangGraph + Kuzu knowledge graph.
-
-- [ ] **Day 19–20: Graph Construction**
-  • Define Kuzu schema: `Patient`, `Claim`, `Service`, `Diagnosis` nodes; relationships `HAS_SERVICE`, `HAS_DIAGNOSIS`.
-  • Import 100 claims; verify Cypher-like queries (`MATCH (c:Claim)-[:HAS_DIAGNOSIS]->(d) WHERE d.code='E11.9' RETURN c`).
-- [ ] **Day 21: LangGraph + BAML RAG Pipeline**
-  • `uv pip install langgraph baml openai`
-  • Use BAML to declare agents: `Retriever`, `Reranker`, `AnswerGenerator`.
-  • Compose with LangGraph: user Q → Retriever (vector + graph walk) → Reranker → AnswerGenerator (OpenAI GPT-3.5) → Response.
-  • Return JSON `{answer, sources}`.
-- [ ] **Day 22: Chat UI & API**
-  • Add `/chat` WebSocket endpoint; Streamlit chat component using LangGraph chain.
-  • Expandable citation cards showing Kuzu record snippets.
-- [ ] **Day 23: Guardrails & Monitoring**
-  • Add BAML policies: max tokens, allowed content; PHI leak regex.
-  • Log prompt/response pairs to Parquet.
-- [ ] **Day 24: Investor Demo v2**
-  • Script: “List diabetic claims with hypertension meds” → semantic search.
-  • “Explain denial reason for claim X” → chat agent citing rule outputs and graph paths.
-  • Update deck with screen recordings & graph visualization.
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Embedding Performance:** [Embeddings generated per second]
+- **Storage Efficiency:** [Vector index size and query speed]
+- **Quality Metrics:** [Similarity accuracy on test cases]
 
 ---
 
-### Post-Phase 2 Backlog (Not yet scheduled)
-- Rules/ML layer for auto-approve/deny logic
-- Real-time alerting (Kafka → Slack) for low-quality ingests
-- Multi-tenant auth & RBAC
+**Day 16 - Vector Index Optimization**
+
+**Objective:** Optimize vector storage and retrieval performance in KuzuDB, implementing efficient indexing strategies for healthcare-scale datasets. Focus on query performance and storage efficiency for production deployment.
+
+**Why This Matters:** Healthcare datasets can contain millions of records. Efficient vector indexing ensures sub-second search response times even at scale, critical for real-time authorization workflows where delays impact patient care.
+
+**Technical Context:** KuzuDB's graph-native vector indexing allows combining semantic search with relationship traversals. This enables complex queries like "find similar cases for patients with related conditions" that pure vector databases cannot support.
+
+**Tasks:**
+- [ ] Implement hierarchical clustering for vector index optimization
+- [ ] Configure KuzuDB vector index parameters:
+  - [ ] Dimension optimization for e5-small (384 dimensions)
+  - [ ] Distance metric selection (cosine vs euclidean)
+  - [ ] Index rebuild strategies
+- [ ] Create vector search query optimization:
+  - [ ] Query planning for hybrid vector + graph searches
+  - [ ] Result ranking algorithms
+  - [ ] Performance monitoring
+- [ ] Implement incremental index updates for new embeddings
+- [ ] Add vector similarity threshold tuning
+- [ ] Create benchmark suite for vector search performance
+- [ ] Test with large-scale synthetic healthcare data
+- [ ] Implement caching layer for frequent queries
+- [ ] Add monitoring and alerting for index performance
+
+**Deliverables:**
+- Optimized vector indexing configuration
+- Performance benchmarks at healthcare scale
+- Incremental update mechanisms
+- Production monitoring tools
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Query Performance:** [Average search response time]
+- **Index Size:** [Storage requirements and compression ratios]
+- **Scalability:** [Performance at different dataset sizes]
+
+---
+
+**Day 17 - Hybrid Semantic Search**
+
+**Objective:** Build sophisticated hybrid retrieval combining vector similarity with traditional BM25 keyword search. This provides the best of both worlds: semantic understanding for clinical concepts and exact matching for specific codes and identifiers.
+
+**Why This Matters:** Healthcare search requires both semantic matching ("chest pain" ≈ "cardiac discomfort") and exact matching (ICD-10 codes, patient IDs). Hybrid search ensures comprehensive retrieval while maintaining precision for regulatory compliance.
+
+**Technical Context:** BM25 excels at exact term matching while vectors capture semantic relationships. The challenge is optimal score fusion and result ranking to surface the most clinically relevant matches first.
+
+**Tasks:**
+- [ ] Install BM25 search dependencies: `uv pip install rank-bm25 elasticsearch`
+- [ ] Create HybridSearchEngine class combining vector and BM25 approaches
+- [ ] Implement BM25 indexing for structured fields:
+  - [ ] ICD-10 and CPT codes
+  - [ ] Patient and provider identifiers
+  - [ ] Structured data fields
+- [ ] Build vector search for unstructured text:
+  - [ ] Clinical justifications
+  - [ ] Free-text notes
+  - [ ] Diagnosis descriptions
+- [ ] Implement score fusion algorithms:
+  - [ ] Weighted combination strategies
+  - [ ] Reciprocal rank fusion
+  - [ ] Field-specific boosting
+- [ ] Create unified search API endpoint
+- [ ] Add search result explanation and scoring transparency
+- [ ] Implement query expansion for medical terminology
+- [ ] Add search analytics and query performance monitoring
+- [ ] Create comprehensive search test suite
+
+**Deliverables:**
+- Production hybrid search API
+- Score fusion algorithms
+- Search result explanation system
+- Comprehensive test coverage
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Search Quality:** [Precision and recall metrics]
+- **Response Times:** [Average query processing time]
+- **Result Relevance:** [User satisfaction scores]
+
+---
+
+**Day 18 - Search Relevancy Evaluation**
+
+**Objective:** Implement comprehensive evaluation metrics for search quality, focusing on nDCG (Normalized Discounted Cumulative Gain) and other information retrieval metrics. This ensures our search system meets clinical information needs effectively.
+
+**Why This Matters:** Poor search results in healthcare can lead to missed clinical insights and incorrect decisions. Rigorous evaluation using information retrieval metrics ensures our search system delivers clinically relevant results consistently.
+
+**Technical Context:** nDCG measures ranking quality by considering both relevance and position, crucial for healthcare where the most relevant case should appear first. We need both automated metrics and clinical expert evaluation.
+
+**Tasks:**
+- [ ] Create search evaluation framework with multiple metrics:
+  - [ ] nDCG (Normalized Discounted Cumulative Gain)
+  - [ ] MAP (Mean Average Precision)
+  - [ ] MRR (Mean Reciprocal Rank)
+  - [ ] Precision@K and Recall@K
+- [ ] Build clinical relevance judgment dataset:
+  - [ ] Create test queries from real healthcare scenarios
+  - [ ] Generate ground truth relevance scores
+  - [ ] Include edge cases and challenging queries
+- [ ] Implement automated evaluation pipeline:
+  - [ ] Batch query processing
+  - [ ] Statistical significance testing
+  - [ ] Performance regression detection
+- [ ] Create search quality dashboard:
+  - [ ] Real-time metrics visualization
+  - [ ] Query performance trends
+  - [ ] Failure case analysis
+- [ ] Implement A/B testing framework for search algorithms
+- [ ] Add user feedback collection mechanisms
+- [ ] Create search quality monitoring and alerting
+- [ ] Generate comprehensive evaluation reports
+
+**Deliverables:**
+- Comprehensive search evaluation framework
+- Clinical relevance test dataset
+- Automated quality monitoring
+- Search performance dashboard
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Quality Metrics:** [nDCG, MAP, MRR scores achieved]
+- **Test Coverage:** [Number of test queries and scenarios]
+- **Performance Trends:** [Quality improvements over baseline]
+
+---
+
+**Day 19 - Comprehensive Knowledge Graph with All FHIR Resources**
+
+**Objective:** Design and implement comprehensive knowledge graph schema incorporating all 6 FHIR resources. This creates rich clinical intelligence by modeling patients, claims, services, diagnoses, observations, medications, conditions, and procedures with their complex clinical relationships.
+
+**Why This Matters:** Complete clinical context enables sophisticated queries like "find diabetes patients with recent A1C >8.5 who are requesting insulin coverage" - impossible without comprehensive FHIR resource relationships in the knowledge graph.
+
+**Technical Context:** The graph schema must represent clinical reality: observations inform conditions, conditions indicate procedures, procedures affect outcomes, medications treat conditions. This clinical knowledge graph enables evidence-based authorization decisions.
+
+**Tasks:**
+- [ ] Design comprehensive healthcare entity schema:
+  - [ ] Patient nodes (demographics, history, relationships)
+  - [ ] Claim nodes (authorization requests, status, amounts)
+  - [ ] Service nodes (procedures, treatments, outcomes)
+  - [ ] **Observation nodes (lab results, vitals, clinical findings)**
+  - [ ] **MedicationStatement nodes (current meds, treatment history)**
+  - [ ] **Condition nodes (diagnosed problems, severity, status)**
+  - [ ] **Procedure nodes (past procedures, outcomes, complications)**
+  - [ ] Provider nodes (facilities, practitioners, specialties)
+  - [ ] Payer nodes (insurance plans, coverage rules)
+- [ ] Define comprehensive relationship types:
+  - [ ] **Patient-Observation**: has_observation, vital_signs
+  - [ ] **Patient-MedicationStatement**: takes_medication, medication_history
+  - [ ] **Patient-Condition**: has_condition, condition_history
+  - [ ] **Patient-Procedure**: underwent_procedure, procedure_history
+  - [ ] **Condition-Observation**: indicated_by, supports_diagnosis
+  - [ ] **Condition-MedicationStatement**: treated_by, responds_to
+  - [ ] **Procedure-Condition**: treats, addresses
+  - [ ] **ServiceRequest-Observation**: justified_by, based_on
+  - [ ] Existing relationships: Patient-Claim, Claim-Service, Provider-Patient
+  - [ ] Temporal relationships (before, during, after) across all resources
+- [ ] Implement KuzuDB schema creation scripts for all 6 resources
+- [ ] Create comprehensive data ingestion pipeline from canonical JSON to graph
+- [ ] Add schema validation and constraint enforcement
+- [ ] Implement graph data quality checks across all resource types
+- [ ] Create sample graph with synthetic clinical data showing relationships
+- [ ] Add graph visualization capabilities for clinical pathways
+- [ ] Document clinical reasoning patterns enabled by comprehensive schema
+
+**Deliverables:**
+- Complete healthcare knowledge graph schema
+- Data ingestion pipeline to graph format
+- Schema validation and quality checks
+- Sample graph with documentation
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Schema Completeness:** [Entity types and relationships defined]
+- **Data Ingestion:** [Records successfully loaded to graph]
+- **Quality Metrics:** [Graph consistency and completeness scores]
+
+---
+
+**Day 20 - Knowledge Graph Population**
+
+**Objective:** Populate the knowledge graph with processed healthcare data from all ingestion pipelines, ensuring data quality and relationship accuracy. This transforms our canonical JSON data into an intelligent, queryable knowledge representation.
+
+**Why This Matters:** A knowledge graph is only as valuable as the data it contains. Accurate population with high-quality healthcare data enables sophisticated clinical reasoning and pattern discovery that drives better authorization decisions.
+
+**Technical Context:** Graph population requires careful handling of entity resolution (matching patients across records), relationship inference, and data quality validation. The process must be incremental and handle updates to existing entities.
+
+**Tasks:**
+- [ ] Implement graph population pipeline:
+  - [ ] Entity extraction from canonical JSON
+  - [ ] Entity resolution and deduplication
+  - [ ] Relationship inference and creation
+  - [ ] Incremental updates and versioning
+- [ ] Create entity matching algorithms:
+  - [ ] Patient matching across records
+  - [ ] Provider identification and normalization
+  - [ ] Service and diagnosis code resolution
+- [ ] Implement relationship inference rules:
+  - [ ] Clinical pathways and treatment sequences
+  - [ ] Comorbidity relationships
+  - [ ] Provider-service associations
+- [ ] Add data validation and quality scoring:
+  - [ ] Entity completeness checks
+  - [ ] Relationship consistency validation
+  - [ ] Temporal relationship verification
+- [ ] Create graph statistics and monitoring:
+  - [ ] Node and edge count tracking
+  - [ ] Relationship distribution analysis
+  - [ ] Data quality trend monitoring
+- [ ] Implement batch processing for large datasets
+- [ ] Add graph backup and recovery mechanisms
+- [ ] Create graph exploration and debugging tools
+
+**Deliverables:**
+- Complete graph population pipeline
+- Entity resolution and matching system
+- Data quality validation framework
+- Graph monitoring and statistics tools
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Graph Population:** [Nodes and edges created successfully]
+- **Entity Resolution:** [Duplicate entities identified and merged]
+- **Data Quality:** [Overall graph quality score]
+
+---
+
+**Day 21 - Clinical Graph Reasoning**
+
+**Objective:** Implement advanced graph querying capabilities using Cypher-like syntax for clinical reasoning. This enables complex analytical queries that leverage the knowledge graph structure to discover clinical insights and support authorization decisions.
+
+**Why This Matters:** Graph queries can reveal patterns invisible to traditional analytics: patient treatment pathways, provider practice variations, and clinical outcome correlations. This intelligence directly improves authorization accuracy and identifies opportunities for better patient care.
+
+**Technical Context:** KuzuDB supports graph pattern matching and traversal queries. We'll create a clinical query language that abstracts complex graph operations into healthcare-meaningful queries that clinical staff can understand and use.
+
+**Tasks:**
+- [ ] Design clinical query language and patterns:
+  - [ ] Patient journey queries (treatment pathways)
+  - [ ] Provider pattern analysis (practice variations)
+  - [ ] Outcome correlation queries (treatment effectiveness)
+  - [ ] Population health queries (disease prevalence)
+- [ ] Implement graph traversal algorithms:
+  - [ ] Shortest path for care coordination
+  - [ ] Community detection for patient cohorts
+  - [ ] Centrality measures for key providers
+  - [ ] Pattern matching for clinical guidelines
+- [ ] Create clinical reasoning engine:
+  - [ ] Rule-based inference on graph patterns
+  - [ ] Anomaly detection in care patterns
+  - [ ] Predictive modeling using graph features
+- [ ] Build query optimization for large graphs:
+  - [ ] Query planning and execution strategies
+  - [ ] Index usage optimization
+  - [ ] Result caching for common patterns
+- [ ] Implement graph analytics API endpoints:
+  - [ ] Clinical insight queries
+  - [ ] Provider performance analytics
+  - [ ] Patient risk stratification
+- [ ] Create graph query validation and security
+- [ ] Add query performance monitoring
+- [ ] Generate clinical reasoning documentation
+
+**Deliverables:**
+- Clinical graph query language
+- Graph reasoning and analytics engine
+- Performance-optimized query execution
+- Clinical insight generation system
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Query Performance:** [Complex query execution times]
+- **Clinical Insights:** [Types of patterns discovered]
+- **API Functionality:** [Graph analytics endpoints working]
+
+---
+
+### Sprint 4 (Days 22-28): LLM Agents & Decision Support
+**Objective:** Deploy conversational AI agents with explainable clinical decision support, automated approval workflows, and advanced NLP for clinical text analysis.
+
+**Daily Breakdown:**
+
+**Day 22 - LangGraph RAG with Comprehensive Clinical Context**
+
+**Objective:** Build comprehensive clinical question-answering using LangGraph and BAML with rich context from all 6 FHIR resources. This enables sophisticated authorization decisions by synthesizing patient observations, medications, conditions, and procedures.
+
+**Why This Matters:** Authorization decisions requiring clinical context become dramatically more accurate. Instead of "Patient requests MRI for back pain" (simple case), the system can reason: "Patient with chronic lower back pain (Condition), recent physical therapy (Procedure), elevated inflammatory markers (Observation), on NSAIDs (MedicationStatement) - MRI justified for treatment planning."
+
+**Technical Context:** LangGraph provides structured agent workflows while BAML ensures reliable structured outputs. The RAG pipeline must synthesize information across all FHIR resources to provide comprehensive clinical context for authorization decisions.
+
+**Tasks:**
+- [ ] Install LangGraph and BAML dependencies:
+  - [ ] `uv pip install langgraph langchain-community baml-py`
+  - [ ] Configure OpenAI/Azure OpenAI API access
+- [ ] Create comprehensive RAG pipeline architecture:
+  - [ ] **Multi-resource document retrieval from knowledge graph**
+  - [ ] **Clinical context synthesis across all 6 FHIR resources**
+  - [ ] Context preparation and clinical relevance ranking
+  - [ ] LLM prompt engineering for clinical accuracy
+  - [ ] Response generation with comprehensive source attribution
+- [ ] Implement BAML schemas for structured outputs:
+  - [ ] **Enhanced clinical assessment schema (includes all FHIR resources)**
+  - [ ] **Comprehensive authorization recommendation schema**
+  - [ ] **Multi-factor risk assessment schema**
+  - [ ] **Clinical context summary schema**
+- [ ] Create LangGraph agent workflows:
+  - [ ] **Multi-resource query understanding and intent classification**
+  - [ ] **Clinical context gathering across observations, medications, conditions, procedures**
+  - [ ] Multi-step reasoning for complex clinical questions
+  - [ ] Evidence gathering and synthesis from all resource types
+  - [ ] Response validation and clinical fact-checking
+- [ ] Build comprehensive clinical knowledge base integration:
+  - [ ] Medical guidelines and protocols
+  - [ ] Drug interaction databases (integrated with MedicationStatement)
+  - [ ] **Lab value interpretation (integrated with Observation)**
+  - [ ] **Clinical pathway guidelines (integrated with Procedure/Condition)**
+  - [ ] Clinical decision support rules
+- [ ] Implement comprehensive response citation system
+- [ ] Add clinical safety guardrails
+- [ ] Create testing framework with clinical context examples
+
+**Deliverables:**
+- Production-ready RAG pipeline
+- LangGraph agent workflows
+- BAML structured output schemas
+- Clinical knowledge integration
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **RAG Accuracy:** [Response quality metrics]
+- **Knowledge Coverage:** [Clinical domains supported]
+- **Response Time:** [Query processing latency]
+
+---
+
+**Day 23 - Advanced Clinical Q&A**
+
+**Objective:** Enhance the RAG system with sophisticated clinical reasoning capabilities, multi-step query decomposition, and specialized medical knowledge integration. Focus on handling complex clinical scenarios that require contextual understanding.
+
+**Why This Matters:** Clinical decisions often require synthesizing information from multiple sources, understanding temporal relationships, and considering patient-specific factors. Advanced Q&A capabilities enable more sophisticated clinical decision support.
+
+**Technical Context:** Complex clinical queries require query decomposition, multi-hop reasoning, and careful attention to medical accuracy. The system must handle uncertainty gracefully and provide confidence scores for clinical recommendations.
+
+**Tasks:**
+- [ ] Implement advanced query processing:
+  - [ ] Query decomposition for complex questions
+  - [ ] Multi-hop reasoning across healthcare entities
+  - [ ] Temporal reasoning for patient timelines
+  - [ ] Comparative analysis (treatment options)
+- [ ] Enhance clinical knowledge integration:
+  - [ ] ICD-10 and CPT code relationships
+  - [ ] Drug-drug interaction checking
+  - [ ] Clinical guideline compliance
+  - [ ] Evidence-based medicine integration
+- [ ] Create specialized medical reasoners:
+  - [ ] Diagnostic reasoning agent
+  - [ ] Treatment planning agent
+  - [ ] Risk assessment agent
+  - [ ] Cost-effectiveness analyzer
+- [ ] Implement confidence scoring and uncertainty handling:
+  - [ ] Response confidence calculation
+  - [ ] Uncertainty quantification
+  - [ ] Alternative hypothesis generation
+- [ ] Add clinical context preservation:
+  - [ ] Patient history integration
+  - [ ] Provider preference learning
+  - [ ] Regulatory requirement checking
+- [ ] Create advanced prompt engineering:
+  - [ ] Chain-of-thought prompting for clinical reasoning
+  - [ ] Few-shot examples for medical scenarios
+  - [ ] Self-consistency checking
+- [ ] Implement response validation and fact-checking
+
+**Deliverables:**
+- Advanced clinical reasoning system
+- Multi-step query processing
+- Confidence scoring and uncertainty handling
+- Specialized medical knowledge agents
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Reasoning Quality:** [Complex query handling accuracy]
+- **Clinical Safety:** [Medical fact-checking effectiveness]
+- **System Integration:** [Knowledge graph query performance]
+
+---
+
+**Day 24 - Clinical Intelligence Chat Interface**
+
+**Objective:** Build a production-ready chat interface showcasing clinical intelligence through comprehensive FHIR resource integration. This demonstrates the dramatic difference between simple claim-based decisions and rich clinical context-based authorization.
+
+**Why This Matters:** The chat interface must clearly demonstrate our value proposition: clinical intelligence that transforms authorization decisions. Side-by-side comparisons of "without clinical context" vs "with clinical context" show investors the transformational power of comprehensive FHIR resource integration.
+
+**Technical Context:** Real-time chat requires WebSocket connections for low-latency interactions. Citation cards must clearly show data sources for regulatory compliance. The interface must handle streaming responses and maintain conversation context.
+
+**Tasks:**
+- [ ] Create WebSocket-based chat backend:
+  - [ ] Real-time message handling
+  - [ ] Session management and persistence
+  - [ ] Streaming response generation
+  - [ ] Connection state management
+- [ ] Build responsive chat UI components:
+  - [ ] Message thread display
+  - [ ] Typing indicators and status
+  - [ ] File upload for documents
+  - [ ] Rich media message support
+- [ ] Implement citation and source attribution:
+  - [ ] Citation card components
+  - [ ] Source document preview
+  - [ ] Confidence score visualization
+  - [ ] Link to original data sources
+- [ ] Add conversation management features:
+  - [ ] Chat history and search
+  - [ ] Conversation bookmarking
+  - [ ] Export functionality
+  - [ ] Conversation sharing (with privacy controls)
+- [ ] Create specialized chat modes:
+  - [ ] Clinical consultation mode
+  - [ ] Authorization review mode
+  - [ ] Analytics and reporting mode
+  - [ ] Training and education mode
+- [ ] Implement user authentication and authorization
+- [ ] Add accessibility features and mobile responsiveness
+- [ ] Create comprehensive error handling and user feedback
+- [ ] Implement chat analytics and usage monitoring
+
+**Deliverables:**
+- Production-ready chat interface
+- WebSocket real-time communication
+- Citation and source attribution system
+- Conversation management features
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **User Experience:** [Interface responsiveness and usability]
+- **WebSocket Performance:** [Connection stability and latency]
+- **Citation Accuracy:** [Source attribution correctness]
+
+---
+
+**Day 25 - Clinical Decision Agents**
+
+**Objective:** Create specialized AI agents for clinical decision-making, including automated approval workflows, risk assessment, and treatment recommendation systems. These agents augment human decision-making with AI-powered clinical intelligence.
+
+**Why This Matters:** Clinical decision-making involves complex reasoning over patient data, medical guidelines, and regulatory requirements. AI agents can process vast amounts of information quickly while maintaining consistency and identifying patterns humans might miss.
+
+**Technical Context:** Decision agents require careful prompt engineering, robust error handling, and clear explainability. They must integrate with existing healthcare workflows while maintaining appropriate human oversight and regulatory compliance.
+
+**Tasks:**
+- [ ] Create specialized decision agent classes:
+  - [ ] AuthorizationAgent for approval/denial decisions
+  - [ ] RiskAssessmentAgent for patient risk stratification
+  - [ ] TreatmentAgent for care pathway recommendations
+  - [ ] ComplianceAgent for regulatory requirement checking
+- [ ] Implement decision logic frameworks:
+  - [ ] Rule-based decision trees
+  - [ ] Probabilistic reasoning models
+  - [ ] Multi-criteria decision analysis
+  - [ ] Ensemble decision aggregation
+- [ ] Create clinical workflow integration:
+  - [ ] Prior authorization workflow automation
+  - [ ] Claim review and flagging
+  - [ ] Provider notification systems
+  - [ ] Appeal and reconsideration handling
+- [ ] Add explainable AI capabilities:
+  - [ ] Decision rationale generation
+  - [ ] Evidence presentation
+  - [ ] Alternative scenario analysis
+  - [ ] Confidence interval reporting
+- [ ] Implement human-in-the-loop workflows:
+  - [ ] Escalation triggers and thresholds
+  - [ ] Human review interfaces
+  - [ ] Override capabilities and audit trails
+  - [ ] Feedback incorporation mechanisms
+- [ ] Create agent performance monitoring:
+  - [ ] Decision accuracy tracking
+  - [ ] Processing time metrics
+  - [ ] Error rate monitoring
+  - [ ] User satisfaction measurement
+- [ ] Add agent coordination and communication
+
+**Deliverables:**
+- Specialized clinical decision agents
+- Automated workflow integration
+- Explainable AI decision support
+- Human oversight and monitoring systems
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Decision Accuracy:** [Agent performance on test cases]
+- **Workflow Integration:** [Automation success rates]
+- **Explainability:** [Quality of decision explanations]
+
+---
+
+**Day 26 - Automated Approval Workflows**
+
+**Objective:** Build end-to-end automated approval workflows that can handle routine authorization requests without human intervention while ensuring appropriate escalation for complex cases. This dramatically reduces processing time and administrative overhead.
+
+**Why This Matters:** Routine prior authorization requests often follow predictable patterns that can be safely automated. Automation reduces costs, improves consistency, and frees clinical staff to focus on complex cases requiring human judgment.
+
+**Technical Context:** Automated workflows require robust error handling, clear escalation criteria, and comprehensive audit trails. The system must balance automation efficiency with clinical safety and regulatory compliance.
+
+**Tasks:**
+- [ ] Design automated workflow engine:
+  - [ ] Workflow definition and configuration
+  - [ ] State management and transitions
+  - [ ] Conditional logic and branching
+  - [ ] Parallel processing capabilities
+- [ ] Implement approval decision logic:
+  - [ ] Automatic approval criteria (low-risk, routine cases)
+  - [ ] Automatic denial criteria (clear policy violations)
+  - [ ] Escalation triggers (complex or high-risk cases)
+  - [ ] Partial approval handling
+- [ ] Create workflow orchestration:
+  - [ ] Task scheduling and queuing
+  - [ ] Dependency management
+  - [ ] Timeout and retry mechanisms
+  - [ ] Error recovery and rollback
+- [ ] Add comprehensive audit and logging:
+  - [ ] Decision trail documentation
+  - [ ] Regulatory compliance tracking
+  - [ ] Performance metrics collection
+  - [ ] Security event logging
+- [ ] Implement notification and communication:
+  - [ ] Provider notification systems
+  - [ ] Patient communication workflows
+  - [ ] Internal escalation alerts
+  - [ ] Status tracking and updates
+- [ ] Create workflow monitoring and analytics:
+  - [ ] Processing time analysis
+  - [ ] Approval rate tracking
+  - [ ] Error pattern identification
+  - [ ] Performance optimization recommendations
+- [ ] Add workflow testing and validation
+- [ ] Implement disaster recovery and failover
+
+**Deliverables:**
+- Complete automated workflow engine
+- Approval decision logic system
+- Comprehensive audit and compliance tracking
+- Monitoring and analytics dashboard
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Automation Rate:** [Percentage of cases processed automatically]
+- **Processing Speed:** [Average workflow completion time]
+- **Error Handling:** [Recovery success rates]
+
+---
+
+**Day 27 - AI Guardrails & Compliance**
+
+**Objective:** Implement comprehensive AI safety guardrails, monitoring systems, and PHI (Protected Health Information) leak protection to ensure the AI system operates safely and compliantly in healthcare environments.
+
+**Why This Matters:** AI systems in healthcare must operate under strict safety and privacy constraints. Robust guardrails prevent harmful outputs, protect patient privacy, and ensure regulatory compliance while maintaining system functionality.
+
+**Technical Context:** Healthcare AI requires multi-layered protection: input validation, output filtering, privacy preservation, and continuous monitoring. The system must balance safety with functionality while providing clear audit trails for regulatory compliance.
+
+**Tasks:**
+- [ ] Implement AI safety guardrails:
+  - [ ] Input validation and sanitization
+  - [ ] Output content filtering
+  - [ ] Harmful content detection
+  - [ ] Bias detection and mitigation
+- [ ] Create PHI protection systems:
+  - [ ] PII detection and masking
+  - [ ] Data minimization techniques
+  - [ ] Access control and authorization
+  - [ ] Encryption and secure storage
+- [ ] Add continuous monitoring and alerting:
+  - [ ] Anomaly detection in AI behavior
+  - [ ] Performance degradation alerts
+  - [ ] Security incident detection
+  - [ ] Compliance violation monitoring
+- [ ] Implement audit and compliance frameworks:
+  - [ ] Decision audit trails
+  - [ ] Data access logging
+  - [ ] Regulatory reporting automation
+  - [ ] Compliance dashboard creation
+- [ ] Create safety testing and validation:
+  - [ ] Adversarial testing frameworks
+  - [ ] Edge case scenario testing
+  - [ ] Safety metric definition and tracking
+  - [ ] Regular safety assessments
+- [ ] Add human oversight mechanisms:
+  - [ ] Escalation triggers and workflows
+  - [ ] Human review interfaces
+  - [ ] Override capabilities
+  - [ ] Feedback and learning systems
+- [ ] Implement disaster recovery and incident response
+- [ ] Create comprehensive documentation and training materials
+
+**Deliverables:**
+- Comprehensive AI safety framework
+- PHI protection and privacy systems
+- Continuous monitoring and alerting
+- Compliance and audit capabilities
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Safety Metrics:** [Guardrail effectiveness measurements]
+- **Privacy Protection:** [PHI leak prevention success]
+- **Compliance Status:** [Regulatory requirement coverage]
+
+---
+
+**Day 28 - Investor Demo v2 & Final Integration**
+
+**Objective:** Create the final investor demonstration showcasing the complete AI-powered clinical decision support platform. This comprehensive demo highlights all advanced capabilities including AI agents, clinical reasoning, and automated workflows.
+
+**Why This Matters:** The final demo must convincingly demonstrate Nazmito's value proposition to investors: a complete, AI-powered healthcare authorization platform that improves outcomes while reducing costs. This demo directly impacts funding success.
+
+**Technical Context:** The demo must be polished, reliable, and showcase real-world scenarios that investors can understand. It should demonstrate both technical sophistication and practical business value through concrete use cases.
+
+**Tasks:**
+- [ ] Create comprehensive demo scenarios:
+  - [ ] End-to-end authorization workflow
+  - [ ] AI agent clinical reasoning demonstration
+  - [ ] Real-time chat interface showcase
+  - [ ] Knowledge graph insights and analytics
+- [ ] Build investor-focused presentation materials:
+  - [ ] Executive dashboard with key metrics
+  - [ ] ROI calculation and cost savings demonstration
+  - [ ] Clinical outcome improvement examples
+  - [ ] Competitive advantage visualization
+- [ ] Implement demo data and scenarios:
+  - [ ] Realistic patient cases and workflows
+  - [ ] Provider interaction simulations
+  - [ ] Complex clinical decision examples
+  - [ ] Multi-format data processing demonstrations
+- [ ] Create guided demo walkthrough:
+  - [ ] Interactive demo script
+  - [ ] Self-guided exploration features
+  - [ ] Technical deep-dive options
+  - [ ] Business impact storytelling
+- [ ] Polish user interface and experience:
+  - [ ] Professional styling and branding
+  - [ ] Responsive design optimization
+  - [ ] Performance optimization
+  - [ ] Error handling and edge cases
+- [ ] Add demo analytics and tracking:
+  - [ ] User interaction monitoring
+  - [ ] Performance metrics collection
+  - [ ] Feedback capture mechanisms
+  - [ ] Usage analytics dashboard
+- [ ] Create deployment and distribution package:
+  - [ ] Docker containerization
+  - [ ] Cloud deployment scripts
+  - [ ] Demo setup automation
+  - [ ] Documentation and guides
+- [ ] Final testing and quality assurance
+
+**Deliverables:**
+- Complete investor demonstration platform
+- Comprehensive demo scenarios and materials
+- Professional UI/UX and branding
+- Deployment-ready distribution package
+
+**Daily Report Template:**
+*[To be filled after completion]*
+- **Completion Status:** [Completed/Partially Complete/Blocked]
+- **Demo Quality:** [Professional presentation readiness]
+- **Technical Performance:** [System stability and responsiveness]
+- **Business Impact:** [Value proposition demonstration effectiveness]
+- **Investor Readiness:** [Overall platform completeness]
+
+---
+
+## Key UAE Healthcare Standards & Compliance
+
+- **eClaimLink** (Dubai Health Authority): XML-based claims and authorization system
+- **Shafafiya** (Abu Dhabi Department of Health): Healthcare data exchange platform
+- **ICD-10-AM**: Australian modification of ICD-10 used in UAE
+- **CPT**: Current Procedural Terminology codes
+- **PDPL**: Personal Data Protection Law compliance required
+- **ADHICS**: Abu Dhabi Healthcare Information and Cyber Security standards
+- **ISO 27001**: Certification planned for Month 6
+
+## Data Sources & Training Materials
+
+### UAE Healthcare Rails (Real Specifications)
+* **eClaimLink (Dubai Health Authority)**: XML schemas/XSDs and provider manuals - https://www.eclaimlink.ae/dhd/commontypes_20191113_xsd.html
+* **Shafafiya (Department of Health Abu Dhabi)**: Prior Request/Authorization dictionary - https://www.doh.gov.ae/en/shafafiya/dictionary/Prior-Request-Authorization
+
+### Synthetic Claims for Development
+* **CMS DE-SynPUF (US Medicare)**: Large, realistic claims CSV files - https://www.cms.gov/data-research/statistics-trends-and-reports/medicare-claims-synthetic-public-use-files
+* **Synthea (MITRE)**: Generates synthetic patient records in FHIR, C-CDA, CSV - https://synthea.mitre.org/downloads
+
+### PDF/Table Extraction Resources
+* **PubTables-1M (CVPR'22)**: 1M+ tables from PDFs - https://huggingface.co/datasets/bsmock/pubtables-1m
+* **Microsoft Table-Transformer**: Code/models for PDF table extraction - https://github.com/microsoft/table-transformer
+
+### Clinical NLP Training Data
+* **Asclepius-Synthetic-Clinical-Notes**: For NLP pipelines on justification text - https://huggingface.co/datasets/starmpcc/Asclepius-Synthetic-Clinical-Notes
+
+## Data Modalities to Handle
+
+1. **Structured transactional feeds** (CSV/Excel, XML/JSON): Most claims and prior-auth payloads from Shafafiya/eClaimLink
+2. **Semi-structured PDFs** (provider uploads, lab reports, invoices): Contain text and embedded tables
+3. **Scanned images inside PDFs** (faxed forms, stamped approvals): Need OCR before parsing
+4. **Free-text fields** (clinical justification, notes): Short paragraphs requiring NLP for diagnoses, labs
+5. **(Optional later) DICOM/radiology images**: Rarely needed for PA logic; treat as URL/reference
+
+## Technical Infrastructure & Tools
+
+**Package Management**: `uv` (ultra-fast Python package manager)
+**Testing Framework**: pytest with comprehensive unit and integration tests
+**Architecture**: Medallion architecture (Bronze/Silver/Gold) with FHIR canonical schema
+**Event Streaming**: Kafka for real-time data flow
+**Vector Database**: KuzuDB for graph + vector search
+**LLM Framework**: LangGraph + BAML for structured AI agents
+**API Framework**: FastAPI with Swagger documentation
+**UI Framework**: Streamlit for rapid prototyping and audit interfaces
+**Containerization**: Docker Compose for full-stack deployment
+
+## Clinical Context & Decision Enhancement Examples
+
+### Without Clinical Context (Traditional Authorization):
+**Request**: "Patient requests insulin coverage"
+**Decision**: Manual review required - insufficient information
+**Processing Time**: 3-5 business days
+**Outcome**: Often delayed or denied due to incomplete information
+
+### With Comprehensive Clinical Context (Nazmito):
+**Request**: "Patient requests insulin coverage"
+**Clinical Context from FHIR Resources**:
+- **Condition**: Type 2 Diabetes, diagnosed 2019, poorly controlled
+- **Observation**: Recent A1C = 9.2% (target <7%), fasting glucose 285 mg/dL
+- **MedicationStatement**: Current metformin 1000mg BID, compliance 85%
+- **Procedure**: Recent diabetic eye exam showing early retinopathy
+
+**AI Decision**: **APPROVED** - Clinical indicators clearly justify insulin therapy
+**Reasoning**: "Patient with poorly controlled T2DM (A1C 9.2%) despite maximum metformin therapy and developing complications (retinopathy). Insulin coverage aligns with ADA guidelines for A1C >9% with complications."
+**Processing Time**: <30 seconds
+**Clinical Citations**: ADA 2023 Guidelines, patient's last 3 lab results, medication adherence data
+
+See `/docs/FHIR_GUIDE.md` for comprehensive coverage of our clinical intelligence approach, including:
+- Complete FHIR resource integration (Claim, ServiceRequest, Observation, MedicationStatement, Condition, Procedure)
+- Enhanced decision support with comprehensive clinical context
+- Explainability examples showing clinical reasoning across all resource types
+- Detailed comparison: "Without vs with clinical context" decision flows
+- Clinical pathway analysis using procedure and condition relationships
+
+## Development Quick-Start
+
+1. **Environment Setup**: `uv venv .venv && source .venv/bin/activate`
+2. **Install Dependencies**: `uv pip install -r pyproject.toml`
+3. **Run Tests**: `pytest tests/`
+4. **Start Demo**: `make demo`
+5. **View UI**: Open http://localhost:8501 for Streamlit interface
+6. **API Docs**: Open http://localhost:8000/docs for FastAPI Swagger
+
+## Future Roadmap (Post-28 Days)
+
+### Phase 2: Advanced Clinical Intelligence (Months 2-3)
+- Multi-payer integration with real UAE data feeds
+- Advanced ML models for approval prediction
+- Provider incentive optimization algorithms
+- Real-time alerting and dashboard analytics
+
+### Phase 3: Market Expansion (Months 4-6)
+- Multi-tenant auth & RBAC implementation
 - Integration with payer FHIR APIs for push-out
+- Advanced fraud, waste, and abuse (FWA) detection
+- Regulatory compliance certification (ISO 27001, SOC 2)
+
+## Success Metrics
+
+**Technical KPIs:**
+- Data ingestion latency ≤30 seconds from upload to Gold layer
+- Mean data quality score ≥0.8 across all formats
+- Rule validation failures <10% of processed records
+- API response times <500ms for search queries
+
+**Business KPIs:**
+- Reduction in manual review percentage by 40%
+- Average authorization turnaround time reduced by 50%
+- Clinical guideline adherence improvement of 25%
+- Cost savings through proactive chronic care management
+
+## Getting Started
+
+Ready to dive in? Start with Sprint 1, Day 2 (XML Ingestion) after completing the environment setup. Each sprint builds systematically toward a complete, investor-ready platform that showcases advanced AI capabilities in healthcare authorization workflows.
+
+The accelerated timeline ensures rapid progress while maintaining code quality and comprehensive documentation. By Day 28, you'll have a fully functional platform ready for pilot deployments with UAE payers.
