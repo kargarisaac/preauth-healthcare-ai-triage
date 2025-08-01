@@ -1,0 +1,4 @@
+patient_id,claim_id,service_code,amount
+P001,CLM001,83036,125.00
+P002,CLM002,92014,250.00
+P003,CLM003,80053,85.00

@@ -64,6 +64,40 @@ def temp_xml_file():
 
 
 @pytest.fixture
+def temp_csv_file():
+    """
+    Fixture that provides a temporary CSV file that gets cleaned up.
+
+    Returns:
+        Generator that yields a function to create temp CSV files
+    """
+    temp_files = []
+
+    def create_temp_csv(content: str, filename: str = "test.csv") -> str:
+        """Create a temporary CSV file with given content."""
+        temp_file = tempfile.NamedTemporaryFile(
+            mode='w',
+            suffix='.csv',
+            prefix=filename.replace('.csv', '_'),
+            delete=False,
+            encoding='utf-8',
+        )
+        temp_file.write(content)
+        temp_file.close()
+        temp_files.append(temp_file.name)
+        return temp_file.name
+
+    yield create_temp_csv
+
+    # Cleanup
+    for temp_file in temp_files:
+        try:
+            os.unlink(temp_file)
+        except (OSError, FileNotFoundError):
+            pass
+
+
+@pytest.fixture
 def mock_logger():
     """Fixture providing a mock logger for testing."""
     return Mock(spec=logging.Logger)
@@ -308,6 +342,187 @@ def test_data_factory():
 </Prior.Authorization>'''
 
     return TestDataFactory()
+
+
+@pytest.fixture
+def csv_test_data_factory():
+    """
+    Fixture providing a factory for creating CSV test data structures.
+
+    Returns:
+        CSVTestDataFactory instance for generating various CSV test data
+    """
+
+    class CSVTestDataFactory:
+        """Factory for creating standardized CSV test data."""
+
+        def create_basic_claims_csv(self, record_count: int = 3) -> str:
+            """Create basic claims CSV with specified record count."""
+            header = "claim_id,patient_id,provider_id,service_date,diagnosis_code,procedure_code,amount,currency,status,description\n"
+            records = []
+
+            for i in range(1, record_count + 1):
+                records.append(
+                    f"TXN-CSV-{i:03d},P{100000+i},PROV{i:03d},2025-07-{30-i%7:02d},E11.{i%10},8303{i%10},{100+i*25}.{i%100:02d},AED,{'pending' if i%2 else 'approved'},Test description {i}"
+                )
+
+            return header + "\n".join(records)
+
+        def create_header_variations_csv(self) -> str:
+            """Create CSV with different header variations."""
+            return """ID,Member_ID,Clinic_ID,Date_of_Service,ICD_Code,CPT_Code,Billed_Amount,Status,Service_Description
+REF001,M8765432,FAC101,31/07/2025,E11.9,83036,125.50,Pending,Hemoglobin A1c test
+REF002,M7654321,FAC102,30/07/2025,I10,99213,250.00,Approved,Office consultation"""
+
+        def create_malformed_csv(self) -> str:
+            """Create CSV with malformed data for testing edge cases."""
+            return """claim_id,patient_id,amount,notes
+VALID001,P123456,125.50,This is a valid record
+INVALID002,,INVALID_AMOUNT,Missing patient ID
+INCOMPLETE003,P789012,,Missing amount
+SPECIAL004,P456789,"2,500.50","Amount with comma formatting"
+EMPTY_ROW_FOLLOWS,P999888,75.25,Record before empty row
+
+,,WEIRD_AMT,This row has mostly empty values
+FINAL007,P111222,999.99,Last valid record"""
+
+        def create_numeric_variations_csv(self) -> str:
+            """Create CSV with various numeric formats."""
+            return """claim_id,patient_id,amount
+TXN-001,P123456,"1,250.50"
+TXN-002,P789012,$750.25
+TXN-003,P456789,500.00 AED
+TXN-004,P321654,300
+TXN-005,P654987,INVALID_NUMBER"""
+
+        def create_encoding_test_csv(self) -> str:
+            """Create CSV with special characters for encoding tests."""
+            return """claim_id,patient_id,description
+TXN-001,P123456,Regular description
+TXN-002,P789012,Description with café and naïve
+TXN-003,P456789,Arabic text: مريض بحاجة إلى علاج"""
+
+        def create_large_dataset_csv(self, record_count: int = 50) -> str:
+            """Create large CSV dataset for performance testing."""
+            header = "claim_id,patient_id,provider_id,service_date,diagnosis_code,procedure_code,amount,currency,status,description\n"
+            records = []
+
+            for i in range(1, record_count + 1):
+                records.append(
+                    f"TXN-LARGE-{i:03d},P{200000+i},PROV{(i%5)+1:03d},2025-07-{(i%28)+1:02d},"
+                    f"{'E11.9' if i%3==0 else 'I10' if i%3==1 else 'Z00.00'},"
+                    f"{'83036' if i%3==0 else '99213' if i%3==1 else '80061'},"
+                    f"{100 + (i*17)%400}.{(i*7)%100:02d},AED,"
+                    f"{'pending' if i%2 else 'approved' if i%3 else 'rejected'},"
+                    f"Large dataset test record {i}"
+                )
+
+            return header + "\n".join(records)
+
+        def create_quality_test_scenarios(self) -> dict:
+            """Create different CSV scenarios for data quality testing."""
+            return {
+                "high_quality": """claim_id,patient_id,procedure_code,amount,service_date,diagnosis_code
+TXN-001,P123456,83036,125.50,2025-07-31,E11.9
+TXN-002,P789012,99213,250.00,2025-07-30,I10
+TXN-003,P456789,80061,175.75,2025-07-29,Z00.00""",
+                "medium_quality": """claim_id,patient_id,procedure_code,amount
+TXN-001,P123456,83036,125.50
+TXN-002,,99213,250.00
+TXN-003,P456789,,175.75""",
+                "low_quality": """claim_id,patient_id,amount
+TXN-001,,INVALID
+,P789012,
+TXN-003,P456789,175.75""",
+                "empty": "claim_id,patient_id,amount",
+                "duplicates": """claim_id,patient_id,amount
+TXN-001,P123456,125.50
+TXN-001,P123456,125.50
+TXN-002,P789012,250.00
+TXN-001,P123456,125.50""",
+            }
+
+        def create_field_mapping_test_csv(self) -> str:
+            """Create CSV to test all field mapping variations."""
+            return """ref_no,insurance_id,facility_id,treatment_date,primary_diagnosis,service_code,total_cost,authorization_status,notes
+REF-001,INS123456,FAC001,2025-07-31,E11.9,83036,125.50,pending,Diabetes monitoring
+REF-002,INS789012,FAC002,2025-07-30,I10,99213,250.00,approved,Hypertension follow-up"""
+
+    return CSVTestDataFactory()
+
+
+@pytest.fixture
+def create_test_csv_files(tmp_path, csv_test_data_factory):
+    """
+    Fixture that creates various test CSV files in a temporary directory.
+
+    Returns:
+        Dictionary mapping file types to file paths
+    """
+    files = {}
+
+    # Basic valid CSV
+    basic_file = tmp_path / "basic_claims.csv"
+    basic_file.write_text(
+        csv_test_data_factory.create_basic_claims_csv(), encoding="utf-8"
+    )
+    files["basic"] = str(basic_file)
+
+    # Header variations CSV
+    variations_file = tmp_path / "header_variations.csv"
+    variations_file.write_text(
+        csv_test_data_factory.create_header_variations_csv(), encoding="utf-8"
+    )
+    files["variations"] = str(variations_file)
+
+    # Malformed CSV
+    malformed_file = tmp_path / "malformed.csv"
+    malformed_file.write_text(
+        csv_test_data_factory.create_malformed_csv(), encoding="utf-8"
+    )
+    files["malformed"] = str(malformed_file)
+
+    # Numeric variations CSV
+    numeric_file = tmp_path / "numeric_variations.csv"
+    numeric_file.write_text(
+        csv_test_data_factory.create_numeric_variations_csv(), encoding="utf-8"
+    )
+    files["numeric"] = str(numeric_file)
+
+    # Large dataset CSV
+    large_file = tmp_path / "large_dataset.csv"
+    large_file.write_text(
+        csv_test_data_factory.create_large_dataset_csv(25), encoding="utf-8"
+    )
+    files["large"] = str(large_file)
+
+    # Quality test scenarios
+    quality_scenarios = csv_test_data_factory.create_quality_test_scenarios()
+    for scenario_name, csv_content in quality_scenarios.items():
+        scenario_file = tmp_path / f"quality_{scenario_name}.csv"
+        scenario_file.write_text(csv_content, encoding="utf-8")
+        files[f"quality_{scenario_name}"] = str(scenario_file)
+
+    # Field mapping test CSV
+    mapping_file = tmp_path / "field_mapping.csv"
+    mapping_file.write_text(
+        csv_test_data_factory.create_field_mapping_test_csv(), encoding="utf-8"
+    )
+    files["field_mapping"] = str(mapping_file)
+
+    # Empty file
+    empty_file = tmp_path / "empty.csv"
+    empty_file.write_text("", encoding="utf-8")
+    files["empty"] = str(empty_file)
+
+    # Encoding test file
+    encoding_file = tmp_path / "encoding_test.csv"
+    encoding_file.write_text(
+        csv_test_data_factory.create_encoding_test_csv(), encoding="utf-8"
+    )
+    files["encoding"] = str(encoding_file)
+
+    return files
 
 
 @pytest.fixture
@@ -1082,7 +1297,7 @@ def sample_xml_paths():
     base_path = Path(__file__).parent.parent / "samples"
     return {
         "eclaim_link": str(base_path / "eclaim_link_request.xml"),
-        "shafafiya": str(base_path / "prior_auth_request.xml"),
+        "shafafiya": str(base_path / "shafafiya_prior_auth_request.xml"),
     }
 
 

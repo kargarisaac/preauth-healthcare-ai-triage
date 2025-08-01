@@ -1,271 +1,273 @@
 """
-Unit tests for Shafafiya ingestor functionality.
+Unit tests for XMLProcessor Shafafiya functionality.
 
-This module tests the Shafafiya ingestor in isolation,
-focusing on XML parsing, normalization, and error handling.
+This module tests the XMLProcessor Shafafiya processing method,
+focusing on XML parsing, field mapping, and output structure.
 """
 
 import pytest
-from pipelines.shafafiya_ingestor import ShafafiyaIngestor
-from pipelines.exceptions import UnsupportedFormatError, DataNormalizationError
+from pipelines.xml_processor import XMLProcessor
 
 
-class TestShafafiyaIngestor:
-    """Unit tests for Shafafiya ingestor."""
-
-    @pytest.fixture
-    def ingestor(self):
-        """Create Shafafiya ingestor instance."""
-        return ShafafiyaIngestor(enable_validation=False)
+class TestShafafiyaProcessor:
+    """Unit tests for XMLProcessor Shafafiya processing."""
 
     @pytest.fixture
-    def fhir_bundle_ingestor(self):
-        """Create Shafafiya ingestor with FHIR Bundle output."""
-        return ShafafiyaIngestor(enable_validation=False, output_format='fhir_bundle')
+    def processor(self):
+        """Create XMLProcessor instance."""
+        return XMLProcessor()
 
-    def test_supported_root_elements(self, ingestor):
-        """Test that correct root elements are supported."""
-        supported = ingestor.get_supported_root_elements()
-        assert 'Prior.Authorization' in supported
-        assert len(supported) == 1
+    def test_basic_shafafiya_processing(self, processor, temp_xml_file):
+        """Test basic Shafafiya XML processing."""
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+        <DispositionFlag>TEST</DispositionFlag>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-2025-000123</ID>
+        <IDPayer>PAYER67890</IDPayer>
+        <Start>25/07/2025 00:00</Start>
+        <End>25/08/2025 23:59</End>
+        <Limit>1000.00</Limit>
+        <Comments>Authorization approved for treatment.</Comments>
+        <Activity>
+            <ID>1</ID>
+            <Type>3</Type>
+            <Code>83036</Code>
+            <Quantity>1</Quantity>
+            <UnitCost>120.00</UnitCost>
+            <Amount>120.00</Amount>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-    def test_format_info(self, ingestor):
-        """Test format information metadata."""
-        info = ingestor.get_format_info()
-        assert info['format_name'] == 'Shafafiya'
-        assert info['schema_version'] == '2011'
-        assert info['authority'] == 'Abu Dhabi Department of Health (DoH)'
-        assert info['system'] == 'Shafafiya'
+        xml_file = temp_xml_file(shafafiya_xml, "test_shafafiya.xml")
+        result = processor.process_shafafiya(xml_file)
 
-    def test_unsupported_root_element_error(self, ingestor):
-        """Test error handling for unsupported root elements."""
-        invalid_data = {'InvalidRoot': {'data': 'test'}}
-
-        with pytest.raises(UnsupportedFormatError) as exc_info:
-            ingestor.normalize(invalid_data)
-
-        assert 'InvalidRoot' in str(exc_info.value)
-        assert 'Prior.Authorization' in str(exc_info.value)
-
-    def test_legacy_output_format(self, ingestor, test_data_factory):
-        """Test legacy output format structure."""
-        xml_data = test_data_factory.create_shafafiya_xml()
-
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
-
-        # Validate legacy structure
-        assert result['format_name'] == 'Shafafiya'
-        assert result['schema_version'] == '2011'
-        assert 'services' in result  # Activities normalized to services
-        assert 'resourceType' not in result
-        assert 'authorization_id' in result
-        assert 'result' in result
-
-    def test_fhir_bundle_output_format(self, fhir_bundle_ingestor, test_data_factory):
-        """Test FHIR Bundle output format structure."""
-        xml_data = test_data_factory.create_shafafiya_xml(
-            auth_overrides={'Comments': 'Patient with diabetes requiring monitoring'}
-        )
-
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = fhir_bundle_ingestor.normalize(parsed_data)
-
-        # Validate FHIR Bundle structure
+        # Test canonical JSON structure
         assert result['resourceType'] == 'Bundle'
-        assert result['type'] == 'collection'
         assert result['meta']['source'] == 'Shafafiya'
-        assert 'entry' in result
-        assert 'total' in result
-        assert len(result['entry']) == result['total']
+        assert result['authorization_id'] == 'PA-2025-000123'
+        assert result['sender'] == 'PROV12345'
+        assert result['receiver'] == 'PAYER67890'
+        assert result['authorization_result'] == 'Yes'
+        assert result['comments'] == 'Authorization approved for treatment.'
 
-    def test_activity_normalization(self, ingestor, test_data_factory):
-        """Test activity normalization to services."""
-        activities = [
-            test_data_factory.create_activity('1'),
-            test_data_factory.create_activity('2'),
-        ]
-        xml_data = test_data_factory.create_shafafiya_xml(activities=activities)
+    def test_activities_extraction(self, processor, temp_xml_file):
+        """Test activity extraction from Shafafiya XML."""
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>2</RecordCount>
+        <DispositionFlag>TEST</DispositionFlag>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-2025-000123</ID>
+        <Activity>
+            <ID>1</ID>
+            <Type>3</Type>
+            <Code>83036</Code>
+            <Description>Blood test</Description>
+            <Quantity>1</Quantity>
+            <UnitCost>120.00</UnitCost>
+            <Amount>120.00</Amount>
+        </Activity>
+        <Activity>
+            <ID>2</ID>
+            <Type>3</Type>
+            <Code>83037</Code>
+            <Description>Lab analysis</Description>
+            <Quantity>2</Quantity>
+            <UnitCost>75.00</UnitCost>
+            <Amount>150.00</Amount>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-        import xmltodict
+        xml_file = temp_xml_file(shafafiya_xml, "test_shafafiya_activities.xml")
+        result = processor.process_shafafiya(xml_file)
 
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
+        # Test activities extraction
+        assert len(result['activities']) == 2
 
-        assert len(result['services']) == 2
-        for service in result['services']:
-            assert 'id' in service
-            assert 'type' in service
-            assert 'code' in service
-            assert service['source_format'] == 'Shafafiya'
+        activity1 = result['activities'][0]
+        assert activity1['id'] == '1'
+        assert activity1['type'] == '3'
+        assert activity1['code'] == '83036'
+        assert activity1['description'] == 'Blood test'
+        assert activity1['quantity'] == '1'
+        assert activity1['unit_cost'] == '120.00'
+        assert activity1['amount'] == '120.00'
 
-    def test_embedded_observations_extraction(self, ingestor, test_data_factory):
-        """Test extraction of embedded observations from activities."""
-        observation = test_data_factory.create_observation(
-            'LAB', Code='HBA1C', Value='9.2', ValueType='PERCENT'
+        activity2 = result['activities'][1]
+        assert activity2['id'] == '2'
+        assert activity2['code'] == '83037'
+        assert activity2['description'] == 'Lab analysis'
+
+    def test_raw_data_preservation(self, processor, temp_xml_file):
+        """Test that raw XML data is preserved in output."""
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-2025-000123</ID>
+        <Activity>
+            <ID>1</ID>
+            <Code>83036</Code>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
+
+        xml_file = temp_xml_file(shafafiya_xml, "test_shafafiya_raw.xml")
+        result = processor.process_shafafiya(xml_file)
+
+        # Test raw data preservation
+        assert 'raw_data' in result
+        assert 'Prior.Authorization' in result['raw_data']
+        assert (
+            result['raw_data']['Prior.Authorization']['Header']['SenderID']
+            == 'PROV12345'
         )
-        activity = test_data_factory.create_activity('1')
-        activity['observations'] = [observation]
 
-        xml_data = test_data_factory.create_shafafiya_xml(activities=[activity])
+    def test_minimal_xml_handling(self, processor, temp_xml_file):
+        """Test handling of minimal XML structure."""
+        minimal_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>TEST123</SenderID>
+        <ReceiverID>PAYER999</ReceiverID>
+        <TransactionDate>01/01/2025 12:00</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>MIN-001</ID>
+        <Activity>
+            <ID>1</ID>
+            <Type>3</Type>
+            <Code>99213</Code>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-        import xmltodict
+        xml_file = temp_xml_file(minimal_xml, "test_minimal.xml")
+        result = processor.process_shafafiya(xml_file)
 
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
-
-        service = result['services'][0]
-        assert 'observations' in service
-        assert len(service['observations']) == 1
-        obs = service['observations'][0]
-        assert obs['type'] == 'LAB'
-        assert obs['code'] == 'HBA1C'
-        assert obs['value'] == '9.2'
-        assert obs['value_type'] == 'PERCENT'
-
-    def test_business_rule_validation(self, ingestor, test_data_factory):
-        """Test business rule validation specific to Shafafiya."""
-        xml_data = test_data_factory.create_shafafiya_xml()
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
-
-        warnings = ingestor.validate_business_rules(result)
-        assert isinstance(warnings, list)
-
-    def test_authorization_result_validation(self, ingestor, test_data_factory):
-        """Test validation of authorization results."""
-        # Test with invalid result
-        xml_data = test_data_factory.create_shafafiya_xml(
-            auth_overrides={'Result': 'Maybe'}
-        )
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
-
-        warnings = ingestor.validate_business_rules(result)
-        assert any('authorization result' in warning.lower() for warning in warnings)
-
-    def test_record_count_validation(self, ingestor, test_data_factory):
-        """Test record count consistency validation."""
-        # Create data with mismatched record count
-        xml_data = test_data_factory.create_shafafiya_xml(
-            header_overrides={'RecordCount': '5'},  # But only 2 activities
-            activities=[
-                test_data_factory.create_activity('1'),
-                test_data_factory.create_activity('2'),
-            ],
-        )
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
-
-        warnings = ingestor.validate_business_rules(result)
-        assert any('record count mismatch' in warning.lower() for warning in warnings)
-
-    def test_minimal_data_handling(self, ingestor):
-        """Test handling of minimal required data."""
-        minimal_data = {
-            'Prior.Authorization': {
-                'Header': {
-                    'SenderID': 'TEST123',
-                    'ReceiverID': 'PAYER999',
-                    'TransactionDate': '01/01/2025 12:00',
-                    'RecordCount': '1',
-                },
-                'Authorization': {
-                    'Result': 'Yes',
-                    'ID': 'MIN-001',
-                    'Start': '01/01/2025',
-                    'End': '31/01/2025',
-                    'Activity': {
-                        'ID': '1',
-                        'Type': '3',
-                        'Code': '99213',
-                        'Net': '100.00',
-                        'PaymentAmount': '80.00',
-                    },
-                },
-            }
-        }
-
-        result = ingestor.normalize(minimal_data)
-        assert result['format_name'] == 'Shafafiya'
+        assert result['resourceType'] == 'Bundle'
         assert result['authorization_id'] == 'MIN-001'
-        assert len(result['services']) == 1
+        assert result['sender'] == 'TEST123'
+        assert result['authorization_result'] == 'Yes'
+        assert len(result['activities']) == 1
+        assert result['activities'][0]['code'] == '99213'
 
-    def test_missing_authorization_error(self, ingestor):
-        """Test error handling for missing authorization section."""
-        invalid_data = {
-            'Prior.Authorization': {
-                'Header': {
-                    'SenderID': 'TEST123',
-                    'ReceiverID': 'PAYER999',
-                    'TransactionDate': '01/01/2025 12:00',
-                }
-            }
-        }
+    def test_missing_file_error(self, processor):
+        """Test error handling for missing XML file."""
+        with pytest.raises(FileNotFoundError):
+            processor.process_shafafiya("nonexistent_file.xml")
 
-        with pytest.raises(DataNormalizationError) as exc_info:
-            ingestor.normalize(invalid_data)
+    def test_bundle_metadata(self, processor, temp_xml_file):
+        """Test Bundle metadata generation."""
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-2025-000456</ID>
+    </Authorization>
+</Prior.Authorization>'''
 
-        assert 'Authorization' in str(exc_info.value)
+        xml_file = temp_xml_file(shafafiya_xml, "test_metadata.xml")
+        result = processor.process_shafafiya(xml_file)
 
-    def test_payment_amount_extraction(self, ingestor, test_data_factory):
-        """Test payment amount extraction from activities."""
-        activity = test_data_factory.create_activity(
-            '1', Net='150.50', PaymentAmount='120.00'
-        )
-        xml_data = test_data_factory.create_shafafiya_xml(activities=[activity])
+        # Test Bundle structure
+        assert result['resourceType'] == 'Bundle'
+        assert 'id' in result
+        assert result['id'].startswith('Shafafiya-')
+        assert result['type'] == 'collection'
 
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
-
-        service = result['services'][0]
-        assert service['net'] == '150.50'
-        assert service['payment_amount'] == '120.00'
-
-    def test_observation_value_type_mapping(
-        self, fhir_bundle_ingestor, test_data_factory
-    ):
-        """Test proper mapping of observation value types in FHIR Bundle."""
-        observations = [
-            test_data_factory.create_observation(
-                'LAB', Code='HBA1C', Value='9.2', ValueType='NUMERIC'
-            ),
-            test_data_factory.create_observation(
-                'LAB', Code='STATUS', Value='positive', ValueType='TEXT'
-            ),
-            test_data_factory.create_observation(
-                'LAB', Code='DONE', Value='true', ValueType='BOOLEAN'
-            ),
+        # Test meta information
+        meta = result['meta']
+        assert meta['source'] == 'Shafafiya'
+        assert 'lastUpdated' in meta
+        assert 'versionId' in meta
+        assert meta['profile'] == [
+            'https://nazmito.com/fhir/StructureDefinition/healthcare-bundle'
         ]
 
-        activity = test_data_factory.create_activity('1')
-        activity['observations'] = observations
+    def test_single_activity_vs_multiple_activities(self, processor, temp_xml_file):
+        """Test handling of single activity vs multiple activities."""
+        # Test single activity (not in list)
+        single_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-SINGLE</ID>
+        <Activity>
+            <ID>1</ID>
+            <Code>83036</Code>
+            <Amount>100.00</Amount>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-        xml_data = test_data_factory.create_shafafiya_xml(activities=[activity])
+        xml_file = temp_xml_file(single_xml, "test_single.xml")
+        result = processor.process_shafafiya(xml_file)
 
-        import xmltodict
+        assert len(result['activities']) == 1
+        assert result['activities'][0]['id'] == '1'
+        assert result['activities'][0]['amount'] == '100.00'
 
-        parsed_data = xmltodict.parse(xml_data)
-        result = fhir_bundle_ingestor.normalize(parsed_data)
+    def test_authorization_dates(self, processor, temp_xml_file):
+        """Test extraction of authorization start and end dates."""
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-DATES</ID>
+        <Start>01/08/2025 00:00</Start>
+        <End>31/08/2025 23:59</End>
+        <Activity>
+            <ID>1</ID>
+            <Code>83036</Code>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-        # Find observation resources
-        obs_entries = [
-            entry
-            for entry in result['entry']
-            if entry['resource']['resourceType'] == 'Observation'
-        ]
+        xml_file = temp_xml_file(shafafiya_xml, "test_dates.xml")
+        result = processor.process_shafafiya(xml_file)
 
-        # Should have extracted structured observations
-        assert len(obs_entries) >= 0  # May vary based on clinical extraction
+        assert result['authorization_start'] == '01/08/2025 00:00'
+        assert result['authorization_end'] == '31/08/2025 23:59'

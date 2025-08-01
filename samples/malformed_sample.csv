@@ -1,0 +1,11 @@
+patient_id;claim_id;service_code;amount_aed;notes
+P001,CLM-001,83036,125.00,Basic diabetes test
+P002;CLM-002;92014;250.00;"Eye exam, diabetic retinopathy"
+P003,CLM-003,80053,85.00
+"P004""CLM-004""98960""180.00""Diabetes education with ""quotes"""
+P005,CLM-005,93016,195.00,Cardiac evaluation
+,CLM-006,80061,,Missing patient ID and amount
+P007,CLM-007,,140.00,Missing service code
+P008,,85025,50.00,Missing claim ID
+P009,CLM-009,81001,25.00,Standard urinalysis
+P010,CLM-010,82270,45.00,Stool test with special characters: café naïve résumé

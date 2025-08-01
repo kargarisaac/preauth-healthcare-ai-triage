@@ -1,0 +1,796 @@
+2025-08-01 15:51:25.085 | INFO     | api.main:lifespan:36 - Starting Nazmito Healthcare XML API...
+2025-08-01 15:51:25.085 | INFO     | api.main:lifespan:42 - API Version: 1.0.0
+2025-08-01 15:51:25.085 | INFO     | api.main:lifespan:43 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 15:51:25.085 | INFO     | api.main:lifespan:44 - Max file size: 10MB
+2025-08-01 15:51:25.085 | INFO     | api.main:lifespan:46 - Nazmito Healthcare XML API started successfully
+2025-08-01 15:54:21.953 | INFO     | api.main:list_sample_files:351 - Found 2 sample files
+2025-08-01 15:54:30.242 | INFO     | pipelines.xml_processor:process_eclaim_link:36 - Processing eClaimLink XML: /Users/isaackargar/codes/personal/nazmito/samples/eclaim_link_request.xml
+2025-08-01 15:54:30.245 | INFO     | pipelines.xml_processor:process_eclaim_link:84 - Successfully processed eClaimLink XML: 4 services found
+2025-08-01 15:54:45.268 | INFO     | pipelines.xml_processor:process_shafafiya:97 - Processing Shafafiya XML: /Users/isaackargar/codes/personal/nazmito/samples/prior_auth_request.xml
+2025-08-01 15:54:45.268 | INFO     | pipelines.xml_processor:process_shafafiya:148 - Successfully processed Shafafiya XML: 2 activities found
+2025-08-01 15:55:00.839 | INFO     | api.main:process_eclaim_xml:211 - Processing eClaimLink XML file: eclaim_link_request.xml
+2025-08-01 15:55:00.840 | INFO     | api.main:save_temp_file:147 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ajig5wyv.xml
+2025-08-01 15:55:00.841 | INFO     | pipelines.xml_processor:process_eclaim_link:36 - Processing eClaimLink XML: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ajig5wyv.xml
+2025-08-01 15:55:00.841 | INFO     | pipelines.xml_processor:process_eclaim_link:84 - Successfully processed eClaimLink XML: 4 services found
+2025-08-01 15:55:00.841 | INFO     | api.main:process_eclaim_xml:234 - Successfully processed eClaimLink XML: eclaim_link_request.xml in 0.002s
+2025-08-01 15:55:00.841 | INFO     | api.main:cleanup_temp_file:166 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ajig5wyv.xml
+2025-08-01 15:55:54.578 | INFO     | api.main:list_sample_files:351 - Found 2 sample files
+2025-08-01 15:55:54.580 | INFO     | pipelines.xml_processor:process_eclaim_link:36 - Processing eClaimLink XML: /Users/isaackargar/codes/personal/nazmito/samples/eclaim_link_request.xml
+2025-08-01 15:55:54.581 | INFO     | pipelines.xml_processor:process_eclaim_link:84 - Successfully processed eClaimLink XML: 4 services found
+2025-08-01 15:55:54.582 | INFO     | pipelines.xml_processor:process_shafafiya:97 - Processing Shafafiya XML: /Users/isaackargar/codes/personal/nazmito/samples/prior_auth_request.xml
+2025-08-01 15:55:54.583 | INFO     | pipelines.xml_processor:process_shafafiya:148 - Successfully processed Shafafiya XML: 2 activities found
+2025-08-01 15:55:54.585 | INFO     | api.main:process_eclaim_xml:211 - Processing eClaimLink XML file: test_eclaim.xml
+2025-08-01 15:55:54.585 | INFO     | api.main:save_temp_file:147 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_7bt7o863.xml
+2025-08-01 15:55:54.585 | INFO     | pipelines.xml_processor:process_eclaim_link:36 - Processing eClaimLink XML: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_7bt7o863.xml
+2025-08-01 15:55:54.585 | INFO     | pipelines.xml_processor:process_eclaim_link:84 - Successfully processed eClaimLink XML: 4 services found
+2025-08-01 15:55:54.585 | INFO     | api.main:process_eclaim_xml:234 - Successfully processed eClaimLink XML: test_eclaim.xml in 0.001s
+2025-08-01 15:55:54.585 | INFO     | api.main:cleanup_temp_file:166 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_7bt7o863.xml
+2025-08-01 16:10:06.892 | INFO     | api.main:lifespan:51 - Shutting down Nazmito Healthcare XML API...
+2025-08-01 16:10:30.338 | INFO     | api.main:lifespan:36 - Starting Nazmito Healthcare XML API...
+2025-08-01 16:10:30.338 | INFO     | api.main:lifespan:42 - API Version: 1.0.0
+2025-08-01 16:10:30.339 | INFO     | api.main:lifespan:43 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 16:10:30.339 | INFO     | api.main:lifespan:44 - Max file size: 10MB
+2025-08-01 16:10:30.339 | INFO     | api.main:lifespan:46 - Nazmito Healthcare XML API started successfully
+2025-08-01 20:46:24.239 | INFO     | api.main:lifespan:38 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 20:46:24.239 | INFO     | api.main:lifespan:44 - API Version: 1.0.0
+2025-08-01 20:46:24.239 | INFO     | api.main:lifespan:45 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 20:46:24.239 | INFO     | api.main:lifespan:46 - Max file size: 10MB
+2025-08-01 20:46:24.239 | INFO     | api.main:lifespan:47 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 20:46:24.239 | INFO     | api.main:lifespan:49 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:01:03.785 | INFO     | api.main:list_sample_files:521 - Found 9 sample files
+2025-08-01 21:01:03.787 | INFO     | api.main:list_csv_sample_files:566 - Found 7 CSV sample files
+2025-08-01 21:02:24.443 | INFO     | api.main:process_csv_file:373 - Processing CSV file: cms_claims_sample.csv
+2025-08-01 21:02:24.444 | WARNING  | api.main:validate_csv_file:161 - Unexpected content type: application/octet-stream for file: cms_claims_sample.csv
+2025-08-01 21:02:24.444 | INFO     | api.main:save_temp_file:183 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_93wyt21d.csv
+2025-08-01 21:02:24.445 | ERROR    | api.main:process_csv_file:429 - Failed to process CSV file: 'CSVProcessor' object has no attribute 'process_csv_file'
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 383, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 443, in auto_detect_and_process_csv
+    result = csv_processor.process_csv_file(csv_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'CSVProcessor' object has no attribute 'process_csv_file'
+
+2025-08-01 21:02:24.445 | INFO     | api.main:cleanup_temp_file:202 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_93wyt21d.csv
+2025-08-01 21:02:33.711 | INFO     | api.main:lifespan:54 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 21:02:34.318 | INFO     | api.main:lifespan:38 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 21:02:34.318 | INFO     | api.main:lifespan:44 - API Version: 1.0.0
+2025-08-01 21:02:34.318 | INFO     | api.main:lifespan:45 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 21:02:34.318 | INFO     | api.main:lifespan:46 - Max file size: 10MB
+2025-08-01 21:02:34.318 | INFO     | api.main:lifespan:47 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 21:02:34.318 | INFO     | api.main:lifespan:49 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:02:38.262 | INFO     | api.main:lifespan:54 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 21:02:38.689 | INFO     | api.main:lifespan:38 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 21:02:38.689 | INFO     | api.main:lifespan:44 - API Version: 1.0.0
+2025-08-01 21:02:38.689 | INFO     | api.main:lifespan:45 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 21:02:38.689 | INFO     | api.main:lifespan:46 - Max file size: 10MB
+2025-08-01 21:02:38.689 | INFO     | api.main:lifespan:47 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 21:02:38.689 | INFO     | api.main:lifespan:49 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:02:49.301 | INFO     | api.main:lifespan:54 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 21:02:57.261 | INFO     | api.main:lifespan:38 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 21:02:57.261 | INFO     | api.main:lifespan:44 - API Version: 1.0.0
+2025-08-01 21:02:57.261 | INFO     | api.main:lifespan:45 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 21:02:57.261 | INFO     | api.main:lifespan:46 - Max file size: 10MB
+2025-08-01 21:02:57.261 | INFO     | api.main:lifespan:47 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 21:02:57.261 | INFO     | api.main:lifespan:49 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:03:03.146 | INFO     | api.main:process_csv_file:373 - Processing CSV file: cms_claims_sample.csv
+2025-08-01 21:03:03.146 | WARNING  | api.main:validate_csv_file:161 - Unexpected content type: application/octet-stream for file: cms_claims_sample.csv
+2025-08-01 21:03:03.147 | INFO     | api.main:save_temp_file:183 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ukc_q_ug.csv
+2025-08-01 21:03:03.147 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ukc_q_ug.csv
+2025-08-01 21:03:03.150 | ERROR    | api.main:process_csv_file:429 - Failed to process CSV file: Error tokenizing data. C error: Expected 17 fields in line 19, saw 18
+
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 383, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 443, in auto_detect_and_process_csv
+    result = csv_processor.process_claims_csv(csv_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 42, in process_claims_csv
+    df = pd.read_csv(csv_file_path, encoding=encoding)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "pandas/_libs/parsers.pyx", line 905, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 874, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "pandas/_libs/parsers.pyx", line 891, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "pandas/_libs/parsers.pyx", line 2061, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 17 fields in line 19, saw 18
+
+
+2025-08-01 21:03:03.150 | INFO     | api.main:cleanup_temp_file:202 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ukc_q_ug.csv
+2025-08-01 21:03:06.685 | INFO     | api.main:process_csv_file:373 - Processing CSV file: minimal_data_sample.csv
+2025-08-01 21:03:06.685 | WARNING  | api.main:validate_csv_file:161 - Unexpected content type: application/octet-stream for file: minimal_data_sample.csv
+2025-08-01 21:03:06.685 | INFO     | api.main:save_temp_file:183 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ikcy_w4l.csv
+2025-08-01 21:03:06.685 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ikcy_w4l.csv
+2025-08-01 21:03:06.691 | INFO     | pipelines.csv_processor:process_claims_csv:119 - Successfully processed claims CSV: 3 claims, 3 services found
+2025-08-01 21:03:06.692 | INFO     | api.main:process_csv_file:416 - Successfully processed Mixed CSV: minimal_data_sample.csv in 0.007s
+2025-08-01 21:03:06.692 | INFO     | api.main:cleanup_temp_file:202 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ikcy_w4l.csv
+2025-08-01 21:03:06.695 | ERROR    | api.main:global_exception_handler:768 - Unhandled exception: Unable to serialize unknown type: <class 'numpy.dtypes.ObjectDType'>
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/starlette/routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 328, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 182, in serialize_response
+    return field.serialize(
+           ^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/fastapi/_compat.py", line 152, in serialize
+    return self._type_adapter.dump_python(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pydantic/type_adapter.py", line 572, in dump_python
+    return self.serializer.to_python(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.PydanticSerializationError: Unable to serialize unknown type: <class 'numpy.dtypes.ObjectDType'>
+
+2025-08-01 21:03:31.331 | INFO     | api.main:lifespan:54 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 21:03:31.764 | INFO     | api.main:lifespan:40 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 21:03:31.764 | INFO     | api.main:lifespan:46 - API Version: 1.0.0
+2025-08-01 21:03:31.764 | INFO     | api.main:lifespan:47 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 21:03:31.764 | INFO     | api.main:lifespan:48 - Max file size: 10MB
+2025-08-01 21:03:31.764 | INFO     | api.main:lifespan:49 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 21:03:31.764 | INFO     | api.main:lifespan:51 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:03:54.013 | INFO     | api.main:lifespan:56 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 21:03:54.449 | INFO     | api.main:lifespan:40 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 21:03:54.449 | INFO     | api.main:lifespan:46 - API Version: 1.0.0
+2025-08-01 21:03:54.449 | INFO     | api.main:lifespan:47 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 21:03:54.449 | INFO     | api.main:lifespan:48 - Max file size: 10MB
+2025-08-01 21:03:54.449 | INFO     | api.main:lifespan:49 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 21:03:54.449 | INFO     | api.main:lifespan:51 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:03:58.902 | INFO     | api.main:lifespan:56 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 21:03:59.348 | INFO     | api.main:lifespan:40 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 21:03:59.348 | INFO     | api.main:lifespan:46 - API Version: 1.0.0
+2025-08-01 21:03:59.348 | INFO     | api.main:lifespan:47 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 21:03:59.348 | INFO     | api.main:lifespan:48 - Max file size: 10MB
+2025-08-01 21:03:59.348 | INFO     | api.main:lifespan:49 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 21:03:59.348 | INFO     | api.main:lifespan:51 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:04:02.990 | INFO     | api.main:lifespan:56 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 21:04:03.416 | INFO     | api.main:lifespan:40 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 21:04:03.416 | INFO     | api.main:lifespan:46 - API Version: 1.0.0
+2025-08-01 21:04:03.416 | INFO     | api.main:lifespan:47 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 21:04:03.416 | INFO     | api.main:lifespan:48 - Max file size: 10MB
+2025-08-01 21:04:03.416 | INFO     | api.main:lifespan:49 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 21:04:03.416 | INFO     | api.main:lifespan:51 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:04:06.752 | INFO     | api.main:lifespan:56 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 21:04:55.077 | INFO     | api.main:lifespan:40 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 21:04:55.077 | INFO     | api.main:lifespan:46 - API Version: 1.0.0
+2025-08-01 21:04:55.077 | INFO     | api.main:lifespan:47 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 21:04:55.077 | INFO     | api.main:lifespan:48 - Max file size: 10MB
+2025-08-01 21:04:55.077 | INFO     | api.main:lifespan:49 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 21:04:55.077 | INFO     | api.main:lifespan:51 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 21:05:01.633 | INFO     | api.main:process_csv_file:393 - Processing CSV file: minimal_data_sample.csv
+2025-08-01 21:05:01.633 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: minimal_data_sample.csv
+2025-08-01 21:05:01.634 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_egv32sww.csv
+2025-08-01 21:05:01.634 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_egv32sww.csv
+2025-08-01 21:05:01.642 | INFO     | pipelines.csv_processor:process_claims_csv:119 - Successfully processed claims CSV: 3 claims, 3 services found
+2025-08-01 21:05:01.642 | INFO     | api.main:process_csv_file:436 - Successfully processed Mixed CSV: minimal_data_sample.csv in 0.010s
+2025-08-01 21:05:01.643 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_egv32sww.csv
+2025-08-01 21:05:36.461 | INFO     | pipelines.xml_processor:process_eclaim_link:36 - Processing eClaimLink XML: /Users/isaackargar/codes/personal/nazmito/samples/eclaim_link_request.xml
+2025-08-01 21:05:36.463 | INFO     | pipelines.xml_processor:process_eclaim_link:84 - Successfully processed eClaimLink XML: 4 services found
+2025-08-01 21:05:50.324 | INFO     | api.main:process_csv_file:393 - Processing CSV file: large_file_sample.csv
+2025-08-01 21:05:50.324 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: large_file_sample.csv
+2025-08-01 21:05:50.325 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_n0rggil8.csv
+2025-08-01 21:05:50.325 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_n0rggil8.csv
+2025-08-01 21:05:50.329 | ERROR    | api.main:process_csv_file:449 - Failed to process CSV file: Error tokenizing data. C error: Expected 20 fields in line 21, saw 39
+
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 403, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 463, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 42, in process_claims_csv
+    df = pd.read_csv(csv_file_path, encoding=encoding)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "pandas/_libs/parsers.pyx", line 905, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 874, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "pandas/_libs/parsers.pyx", line 891, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "pandas/_libs/parsers.pyx", line 2061, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 20 fields in line 21, saw 39
+
+
+2025-08-01 21:05:50.329 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_n0rggil8.csv
+2025-08-01 21:05:54.938 | INFO     | api.main:process_csv_file:393 - Processing CSV file: uae_healthcare_sample.csv
+2025-08-01 21:05:54.938 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: uae_healthcare_sample.csv
+2025-08-01 21:05:54.938 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_yiy46ed_.csv
+2025-08-01 21:05:54.938 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_yiy46ed_.csv
+2025-08-01 21:05:54.941 | INFO     | pipelines.csv_processor:process_claims_csv:119 - Successfully processed claims CSV: 20 claims, 20 services found
+2025-08-01 21:05:54.942 | INFO     | api.main:process_csv_file:436 - Successfully processed Mixed CSV: uae_healthcare_sample.csv in 0.004s
+2025-08-01 21:05:54.942 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_yiy46ed_.csv
+2025-08-01 21:06:05.909 | INFO     | api.main:process_csv_file:393 - Processing CSV file: malformed_sample.csv
+2025-08-01 21:06:05.910 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: malformed_sample.csv
+2025-08-01 21:06:05.910 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_4za9fpbl.csv
+2025-08-01 21:06:05.910 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_4za9fpbl.csv
+2025-08-01 21:06:05.913 | INFO     | pipelines.csv_processor:process_claims_csv:119 - Successfully processed claims CSV: 0 claims, 0 services found
+2025-08-01 21:06:05.913 | INFO     | api.main:process_csv_file:436 - Successfully processed Mixed CSV: malformed_sample.csv in 0.004s
+2025-08-01 21:06:05.913 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_4za9fpbl.csv
+2025-08-01 21:06:13.889 | INFO     | api.main:process_csv_file:393 - Processing CSV file: README.md
+2025-08-01 21:06:45.710 | INFO     | api.main:process_csv_file:393 - Processing CSV file: cms_claims_sample.csv
+2025-08-01 21:06:45.710 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: cms_claims_sample.csv
+2025-08-01 21:06:45.711 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_mlx9_6yj.csv
+2025-08-01 21:06:45.711 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_mlx9_6yj.csv
+2025-08-01 21:06:45.711 | ERROR    | api.main:process_csv_file:449 - Failed to process CSV file: Error tokenizing data. C error: Expected 17 fields in line 19, saw 18
+
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 403, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 463, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 42, in process_claims_csv
+    df = pd.read_csv(csv_file_path, encoding=encoding)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "pandas/_libs/parsers.pyx", line 905, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 874, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "pandas/_libs/parsers.pyx", line 891, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "pandas/_libs/parsers.pyx", line 2061, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 17 fields in line 19, saw 18
+
+
+2025-08-01 21:06:45.711 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_mlx9_6yj.csv
+2025-08-01 21:06:45.726 | INFO     | api.main:process_csv_file:393 - Processing CSV file: large_file_sample.csv
+2025-08-01 21:06:45.726 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: large_file_sample.csv
+2025-08-01 21:06:45.728 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_6jrj1fu3.csv
+2025-08-01 21:06:45.728 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_6jrj1fu3.csv
+2025-08-01 21:06:45.729 | ERROR    | api.main:process_csv_file:449 - Failed to process CSV file: Error tokenizing data. C error: Expected 20 fields in line 21, saw 39
+
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 403, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 463, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 42, in process_claims_csv
+    df = pd.read_csv(csv_file_path, encoding=encoding)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "pandas/_libs/parsers.pyx", line 905, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 874, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "pandas/_libs/parsers.pyx", line 891, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "pandas/_libs/parsers.pyx", line 2061, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 20 fields in line 21, saw 39
+
+
+2025-08-01 21:06:45.729 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_6jrj1fu3.csv
+2025-08-01 21:06:45.744 | INFO     | api.main:process_csv_file:393 - Processing CSV file: malformed_sample.csv
+2025-08-01 21:06:45.744 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: malformed_sample.csv
+2025-08-01 21:06:45.744 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_2_2pnxqs.csv
+2025-08-01 21:06:45.744 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_2_2pnxqs.csv
+2025-08-01 21:06:45.745 | INFO     | pipelines.csv_processor:process_claims_csv:119 - Successfully processed claims CSV: 0 claims, 0 services found
+2025-08-01 21:06:45.745 | INFO     | api.main:process_csv_file:436 - Successfully processed Mixed CSV: malformed_sample.csv in 0.002s
+2025-08-01 21:06:45.746 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_2_2pnxqs.csv
+2025-08-01 21:06:45.770 | INFO     | api.main:process_csv_file:393 - Processing CSV file: minimal_data_sample.csv
+2025-08-01 21:06:45.770 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: minimal_data_sample.csv
+2025-08-01 21:06:45.771 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_aoyhj7x1.csv
+2025-08-01 21:06:45.771 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_aoyhj7x1.csv
+2025-08-01 21:06:45.772 | INFO     | pipelines.csv_processor:process_claims_csv:119 - Successfully processed claims CSV: 3 claims, 3 services found
+2025-08-01 21:06:45.772 | INFO     | api.main:process_csv_file:436 - Successfully processed Mixed CSV: minimal_data_sample.csv in 0.002s
+2025-08-01 21:06:45.772 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_aoyhj7x1.csv
+2025-08-01 21:06:45.786 | INFO     | api.main:process_csv_file:393 - Processing CSV file: mixed_data_types_sample.csv
+2025-08-01 21:06:45.786 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: mixed_data_types_sample.csv
+2025-08-01 21:06:45.786 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_a8j3si26.csv
+2025-08-01 21:06:45.786 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_a8j3si26.csv
+2025-08-01 21:06:45.788 | INFO     | pipelines.csv_processor:process_claims_csv:119 - Successfully processed claims CSV: 0 claims, 0 services found
+2025-08-01 21:06:45.788 | INFO     | api.main:process_csv_file:436 - Successfully processed Mixed CSV: mixed_data_types_sample.csv in 0.003s
+2025-08-01 21:06:45.788 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_a8j3si26.csv
+2025-08-01 21:06:45.805 | INFO     | api.main:process_csv_file:393 - Processing CSV file: synthea_clinical_data.csv
+2025-08-01 21:06:45.805 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: synthea_clinical_data.csv
+2025-08-01 21:06:45.806 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_m9yrfkhe.csv
+2025-08-01 21:06:45.806 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_m9yrfkhe.csv
+2025-08-01 21:06:45.806 | ERROR    | api.main:process_csv_file:449 - Failed to process CSV file: Error tokenizing data. C error: Expected 24 fields in line 4, saw 25
+
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 403, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 463, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 42, in process_claims_csv
+    df = pd.read_csv(csv_file_path, encoding=encoding)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "pandas/_libs/parsers.pyx", line 905, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 874, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "pandas/_libs/parsers.pyx", line 891, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "pandas/_libs/parsers.pyx", line 2061, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 24 fields in line 4, saw 25
+
+
+2025-08-01 21:06:45.806 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_m9yrfkhe.csv
+2025-08-01 21:06:45.824 | INFO     | api.main:process_csv_file:393 - Processing CSV file: uae_healthcare_sample.csv
+2025-08-01 21:06:45.824 | WARNING  | api.main:validate_csv_file:181 - Unexpected content type: application/octet-stream for file: uae_healthcare_sample.csv
+2025-08-01 21:06:45.825 | INFO     | api.main:save_temp_file:203 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_v6ro3995.csv
+2025-08-01 21:06:45.825 | INFO     | pipelines.csv_processor:process_claims_csv:38 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_v6ro3995.csv
+2025-08-01 21:06:45.827 | INFO     | pipelines.csv_processor:process_claims_csv:119 - Successfully processed claims CSV: 20 claims, 20 services found
+2025-08-01 21:06:45.828 | INFO     | api.main:process_csv_file:436 - Successfully processed Mixed CSV: uae_healthcare_sample.csv in 0.004s
+2025-08-01 21:06:45.828 | INFO     | api.main:cleanup_temp_file:222 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_v6ro3995.csv
+2025-08-01 21:07:04.897 | INFO     | api.main:lifespan:56 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-01 23:54:51.972 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-01 23:54:51.973 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-01 23:54:51.973 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-01 23:54:51.973 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-01 23:54:51.973 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-01 23:54:51.973 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-01 23:56:44.273 | INFO     | api.main:process_eclaim_xml:273 - Processing eClaimLink XML file: eclaim_link_request.xml
+2025-08-01 23:56:44.275 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_x1wh7noa.xml
+2025-08-01 23:56:44.276 | INFO     | pipelines.xml_processor:process_eclaim_link:49 - Processing eClaimLink XML: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_x1wh7noa.xml
+2025-08-01 23:56:44.277 | INFO     | pipelines.data_quality:validate_fhir_bundle:431 - Starting data quality validation for bundle: eClaimLink-68ea6de6-20250801
+2025-08-01 23:56:44.277 | INFO     | pipelines.data_quality:validate_fhir_bundle:476 - Data quality validation completed. Score: 0.680
+2025-08-01 23:56:44.277 | INFO     | pipelines.xml_processor:process_eclaim_link:101 - Data quality score: 0.680
+2025-08-01 23:56:44.277 | INFO     | pipelines.xml_processor:process_eclaim_link:103 - Successfully processed eClaimLink XML: 4 services found
+2025-08-01 23:56:44.277 | INFO     | api.main:process_eclaim_xml:296 - Successfully processed eClaimLink XML: eclaim_link_request.xml in 0.004s
+2025-08-01 23:56:44.278 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_x1wh7noa.xml
+2025-08-02 00:00:29.054 | INFO     | api.main:process_shafafiya_xml:332 - Processing Shafafiya XML file: shafafiya_prior_auth_request.xml
+2025-08-02 00:00:29.055 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_50lu9ebi.xml
+2025-08-02 00:00:29.056 | INFO     | pipelines.xml_processor:process_shafafiya:116 - Processing Shafafiya XML: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_50lu9ebi.xml
+2025-08-02 00:00:29.057 | INFO     | pipelines.data_quality:validate_fhir_bundle:431 - Starting data quality validation for bundle: Shafafiya-666a4787-20250802
+2025-08-02 00:00:29.057 | INFO     | pipelines.data_quality:validate_fhir_bundle:476 - Data quality validation completed. Score: 1.000
+2025-08-02 00:00:29.057 | INFO     | pipelines.xml_processor:process_shafafiya:171 - Data quality score: 1.000
+2025-08-02 00:00:29.057 | INFO     | pipelines.xml_processor:process_shafafiya:173 - Successfully processed Shafafiya XML: 2 activities found
+2025-08-02 00:00:29.057 | INFO     | api.main:process_shafafiya_xml:355 - Successfully processed Shafafiya XML: shafafiya_prior_auth_request.xml in 0.003s
+2025-08-02 00:00:29.057 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_50lu9ebi.xml
+2025-08-02 00:00:51.929 | INFO     | api.main:process_csv_file:392 - Processing CSV file: large_file_sample.csv
+2025-08-02 00:00:51.931 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_te_u9l0z.csv
+2025-08-02 00:00:51.931 | INFO     | pipelines.csv_processor:process_claims_csv:51 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_te_u9l0z.csv
+2025-08-02 00:00:51.936 | ERROR    | api.main:process_csv_file:448 - Failed to process CSV file: Error tokenizing data. C error: Expected 20 fields in line 21, saw 39
+
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 402, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 462, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 55, in process_claims_csv
+    df = pd.read_csv(csv_file_path, encoding=encoding)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "pandas/_libs/parsers.pyx", line 905, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 874, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "pandas/_libs/parsers.pyx", line 891, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "pandas/_libs/parsers.pyx", line 2061, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 20 fields in line 21, saw 39
+
+
+2025-08-02 00:00:51.936 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_te_u9l0z.csv
+2025-08-02 00:01:09.554 | INFO     | api.main:process_csv_file:392 - Processing CSV file: minimal_data_sample.csv
+2025-08-02 00:01:09.555 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_bbtzxd27.csv
+2025-08-02 00:01:09.556 | INFO     | pipelines.csv_processor:process_claims_csv:51 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_bbtzxd27.csv
+2025-08-02 00:01:09.565 | INFO     | pipelines.data_quality:validate_fhir_bundle:431 - Starting data quality validation for bundle: Claims-CSV-fc328159-20250802
+2025-08-02 00:01:09.567 | ERROR    | api.main:process_csv_file:448 - Failed to process CSV file: 'NoneType' object has no attribute 'startswith'
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 402, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 462, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 134, in process_claims_csv
+    validation_report = self.data_quality.validate_fhir_bundle(canonical_data)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 440, in validate_fhir_bundle
+    clinical_issues = self._validate_clinical_logic(fhir_bundle)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 541, in _validate_clinical_logic
+    diabetes_issues = self.clinical_validator.validate_diabetes_care(fhir_bundle)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 276, in validate_diabetes_care
+    has_diabetes = self._has_diabetes_diagnosis(fhir_bundle)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 336, in _has_diabetes_diagnosis
+    if diagnosis.startswith("E11") or diagnosis.startswith("E10"):
+       ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'startswith'
+
+2025-08-02 00:01:09.567 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_bbtzxd27.csv
+2025-08-02 00:01:18.938 | INFO     | api.main:process_csv_file:392 - Processing CSV file: uae_healthcare_sample.csv
+2025-08-02 00:01:18.941 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ez5x44cp.csv
+2025-08-02 00:01:18.941 | INFO     | pipelines.csv_processor:process_claims_csv:51 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ez5x44cp.csv
+2025-08-02 00:01:18.949 | INFO     | pipelines.data_quality:validate_fhir_bundle:431 - Starting data quality validation for bundle: Claims-CSV-b2d05f30-20250802
+2025-08-02 00:01:18.950 | ERROR    | api.main:process_csv_file:448 - Failed to process CSV file: 'NoneType' object has no attribute 'startswith'
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 402, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 462, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 134, in process_claims_csv
+    validation_report = self.data_quality.validate_fhir_bundle(canonical_data)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 440, in validate_fhir_bundle
+    clinical_issues = self._validate_clinical_logic(fhir_bundle)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 541, in _validate_clinical_logic
+    diabetes_issues = self.clinical_validator.validate_diabetes_care(fhir_bundle)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 276, in validate_diabetes_care
+    has_diabetes = self._has_diabetes_diagnosis(fhir_bundle)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 336, in _has_diabetes_diagnosis
+    if diagnosis.startswith("E11") or diagnosis.startswith("E10"):
+       ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'startswith'
+
+2025-08-02 00:01:18.950 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ez5x44cp.csv
+2025-08-02 00:01:34.183 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:01:34.780 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:01:34.780 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:01:34.780 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:01:34.780 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:01:34.780 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:01:34.780 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:01:44.640 | INFO     | api.main:process_csv_file:392 - Processing CSV file: large_file_sample.csv
+2025-08-02 00:01:44.642 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_tqppwtsb.csv
+2025-08-02 00:01:44.642 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_tqppwtsb.csv
+2025-08-02 00:01:44.645 | ERROR    | api.main:process_csv_file:448 - Failed to process CSV file: Error tokenizing data. C error: Expected 20 fields in line 21, saw 39
+
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 402, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 462, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 57, in process_claims_csv
+    df = pd.read_csv(csv_file_path, encoding=encoding)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 626, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1923, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/.venv/lib/python3.12/site-packages/pandas/io/parsers/c_parser_wrapper.py", line 234, in read
+    chunks = self._reader.read_low_memory(nrows)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/parsers.pyx", line 838, in pandas._libs.parsers.TextReader.read_low_memory
+  File "pandas/_libs/parsers.pyx", line 905, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 874, in pandas._libs.parsers.TextReader._tokenize_rows
+  File "pandas/_libs/parsers.pyx", line 891, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "pandas/_libs/parsers.pyx", line 2061, in pandas._libs.parsers.raise_parser_error
+pandas.errors.ParserError: Error tokenizing data. C error: Expected 20 fields in line 21, saw 39
+
+
+2025-08-02 00:01:44.645 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_tqppwtsb.csv
+2025-08-02 00:01:50.655 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:01:52.044 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:01:52.044 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:01:52.044 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:01:52.044 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:01:52.044 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:01:52.044 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:02:06.400 | INFO     | api.main:process_csv_file:392 - Processing CSV file: minimal_data_sample.csv
+2025-08-02 00:02:06.401 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ajyrlwfz.csv
+2025-08-02 00:02:06.402 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ajyrlwfz.csv
+2025-08-02 00:02:06.407 | INFO     | pipelines.data_quality:validate_fhir_bundle:431 - Starting data quality validation for bundle: Claims-CSV-45613681-20250802
+2025-08-02 00:02:06.409 | ERROR    | api.main:process_csv_file:448 - Failed to process CSV file: 'NoneType' object has no attribute 'startswith'
+Traceback (most recent call last):
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 402, in process_csv_file
+    result, csv_type = auto_detect_and_process_csv(temp_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/api/main.py", line 462, in auto_detect_and_process_csv
+    result = serialize_numpy_types(csv_processor.process_claims_csv(csv_path))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/csv_processor.py", line 138, in process_claims_csv
+    validation_report = self.data_quality.validate_fhir_bundle(canonical_data)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 440, in validate_fhir_bundle
+    clinical_issues = self._validate_clinical_logic(fhir_bundle)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 541, in _validate_clinical_logic
+    diabetes_issues = self.clinical_validator.validate_diabetes_care(fhir_bundle)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 276, in validate_diabetes_care
+    has_diabetes = self._has_diabetes_diagnosis(fhir_bundle)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/isaackargar/codes/personal/nazmito/pipelines/data_quality.py", line 336, in _has_diabetes_diagnosis
+    if diagnosis.startswith("E11") or diagnosis.startswith("E10"):
+       ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'startswith'
+
+2025-08-02 00:02:06.409 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_ajyrlwfz.csv
+2025-08-02 00:05:01.502 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:05:02.096 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:05:02.096 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:05:02.096 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:05:02.096 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:05:02.096 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:05:02.096 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:05:16.647 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:05:17.248 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:05:17.248 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:05:17.248 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:05:17.248 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:05:17.248 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:05:17.248 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:05:45.963 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:05:46.495 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:05:46.495 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:05:46.495 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:05:46.495 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:05:46.495 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:05:46.495 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:06:10.567 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:06:11.010 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:06:11.011 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:06:11.011 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:06:11.011 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:06:11.011 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:06:11.011 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:06:38.262 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:06:38.874 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:06:38.874 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:06:38.874 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:06:38.874 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:06:38.874 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:06:38.874 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:06:49.781 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:06:50.265 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:06:50.265 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:06:50.265 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:06:50.265 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:06:50.265 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:06:50.265 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:06:56.331 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:06:56.782 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:06:56.783 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:06:56.783 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:06:56.783 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:06:56.783 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:06:56.783 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:07:18.920 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:07:19.522 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:07:19.522 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:07:19.522 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:07:19.522 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:07:19.522 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:07:19.522 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:07:27.915 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:07:28.546 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:07:28.546 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:07:28.546 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:07:28.546 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:07:28.546 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:07:28.546 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:09:05.556 | INFO     | pipelines.xml_processor:process_eclaim_link:49 - Processing eClaimLink XML: /Users/isaackargar/codes/personal/nazmito/samples/eclaim_link_request.xml
+2025-08-02 00:09:05.558 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: eClaimLink-02231778-20250802
+2025-08-02 00:09:05.559 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.680
+2025-08-02 00:09:05.559 | INFO     | pipelines.xml_processor:process_eclaim_link:101 - Data quality score: 0.680
+2025-08-02 00:09:05.559 | INFO     | pipelines.xml_processor:process_eclaim_link:103 - Successfully processed eClaimLink XML: 4 services found
+2025-08-02 00:09:23.475 | INFO     | api.main:process_eclaim_xml:273 - Processing eClaimLink XML file: eclaim_link_request.xml
+2025-08-02 00:09:23.481 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_wt7vvvcm.xml
+2025-08-02 00:09:23.481 | INFO     | pipelines.xml_processor:process_eclaim_link:49 - Processing eClaimLink XML: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_wt7vvvcm.xml
+2025-08-02 00:09:23.482 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: eClaimLink-f36881a9-20250802
+2025-08-02 00:09:23.483 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.680
+2025-08-02 00:09:23.483 | INFO     | pipelines.xml_processor:process_eclaim_link:101 - Data quality score: 0.680
+2025-08-02 00:09:23.483 | INFO     | pipelines.xml_processor:process_eclaim_link:103 - Successfully processed eClaimLink XML: 4 services found
+2025-08-02 00:09:23.483 | INFO     | api.main:process_eclaim_xml:296 - Successfully processed eClaimLink XML: eclaim_link_request.xml in 0.008s
+2025-08-02 00:09:23.483 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_wt7vvvcm.xml
+2025-08-02 00:09:55.464 | INFO     | api.main:process_csv_file:392 - Processing CSV file: minimal_data_sample.csv
+2025-08-02 00:09:55.465 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_9sf24xwk.csv
+2025-08-02 00:09:55.465 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_9sf24xwk.csv
+2025-08-02 00:09:55.471 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Claims-CSV-bec304cd-20250802
+2025-08-02 00:09:55.471 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.693
+2025-08-02 00:09:55.471 | INFO     | pipelines.csv_processor:process_claims_csv:140 - Data quality score: 0.693
+2025-08-02 00:09:55.471 | INFO     | pipelines.csv_processor:process_claims_csv:144 - Successfully processed claims CSV: 3 claims, 3 services found
+2025-08-02 00:09:55.471 | INFO     | api.main:process_csv_file:435 - Successfully processed Mixed CSV: minimal_data_sample.csv in 0.007s
+2025-08-02 00:09:55.471 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_9sf24xwk.csv
+2025-08-02 00:11:28.023 | INFO     | api.main:process_eclaim_xml:273 - Processing eClaimLink XML file: eclaim_link_request.xml
+2025-08-02 00:11:28.025 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_0bpt7qji.xml
+2025-08-02 00:11:28.025 | INFO     | pipelines.xml_processor:process_eclaim_link:49 - Processing eClaimLink XML: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_0bpt7qji.xml
+2025-08-02 00:11:28.026 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: eClaimLink-1ab0e172-20250802
+2025-08-02 00:11:28.027 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.680
+2025-08-02 00:11:28.027 | INFO     | pipelines.xml_processor:process_eclaim_link:101 - Data quality score: 0.680
+2025-08-02 00:11:28.027 | INFO     | pipelines.xml_processor:process_eclaim_link:103 - Successfully processed eClaimLink XML: 4 services found
+2025-08-02 00:11:28.027 | INFO     | api.main:process_eclaim_xml:296 - Successfully processed eClaimLink XML: eclaim_link_request.xml in 0.003s
+2025-08-02 00:11:28.027 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_0bpt7qji.xml
+2025-08-02 00:11:38.663 | INFO     | api.main:process_eclaim_xml:273 - Processing eClaimLink XML file: eclaim_link_request.xml
+2025-08-02 00:11:38.665 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_1xudm8m6.xml
+2025-08-02 00:11:38.665 | INFO     | pipelines.xml_processor:process_eclaim_link:49 - Processing eClaimLink XML: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_1xudm8m6.xml
+2025-08-02 00:11:38.666 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: eClaimLink-a7f9a269-20250802
+2025-08-02 00:11:38.666 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.680
+2025-08-02 00:11:38.667 | INFO     | pipelines.xml_processor:process_eclaim_link:101 - Data quality score: 0.680
+2025-08-02 00:11:38.667 | INFO     | pipelines.xml_processor:process_eclaim_link:103 - Successfully processed eClaimLink XML: 4 services found
+2025-08-02 00:11:38.667 | INFO     | api.main:process_eclaim_xml:296 - Successfully processed eClaimLink XML: eclaim_link_request.xml in 0.004s
+2025-08-02 00:11:38.667 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_1xudm8m6.xml
+2025-08-02 00:15:06.610 | INFO     | api.main:process_csv_file:392 - Processing CSV file: uae_healthcare_sample.csv
+2025-08-02 00:15:06.610 | WARNING  | api.main:validate_csv_file:180 - Unexpected content type: application/octet-stream for file: uae_healthcare_sample.csv
+2025-08-02 00:15:06.610 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_gjmzijlt.csv
+2025-08-02 00:15:06.610 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_gjmzijlt.csv
+2025-08-02 00:15:06.614 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Claims-CSV-2c44ed37-20250802
+2025-08-02 00:15:06.614 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.568
+2025-08-02 00:15:06.614 | INFO     | pipelines.csv_processor:process_claims_csv:140 - Data quality score: 0.568
+2025-08-02 00:15:06.614 | INFO     | pipelines.csv_processor:process_claims_csv:144 - Successfully processed claims CSV: 20 claims, 20 services found
+2025-08-02 00:15:06.615 | INFO     | api.main:process_csv_file:435 - Successfully processed Mixed CSV: uae_healthcare_sample.csv in 0.005s
+2025-08-02 00:15:06.615 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_gjmzijlt.csv
+2025-08-02 00:18:19.542 | INFO     | pipelines.xml_processor:process_eclaim_link:49 - Processing eClaimLink XML: /Users/isaackargar/codes/personal/nazmito/samples/eclaim_link_request.xml
+2025-08-02 00:18:19.545 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: eClaimLink-e9547d73-20250802
+2025-08-02 00:18:19.546 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.680
+2025-08-02 00:18:19.546 | INFO     | pipelines.xml_processor:process_eclaim_link:101 - Data quality score: 0.680
+2025-08-02 00:18:19.546 | INFO     | pipelines.xml_processor:process_eclaim_link:103 - Successfully processed eClaimLink XML: 4 services found
+2025-08-02 00:18:33.348 | INFO     | pipelines.xml_processor:process_shafafiya:116 - Processing Shafafiya XML: /Users/isaackargar/codes/personal/nazmito/samples/shafafiya_prior_auth_request.xml
+2025-08-02 00:18:33.351 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Shafafiya-dd76fb01-20250802
+2025-08-02 00:18:33.351 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 1.000
+2025-08-02 00:18:33.352 | INFO     | pipelines.xml_processor:process_shafafiya:171 - Data quality score: 1.000
+2025-08-02 00:18:33.352 | INFO     | pipelines.xml_processor:process_shafafiya:173 - Successfully processed Shafafiya XML: 2 activities found
+2025-08-02 00:18:40.231 | INFO     | pipelines.xml_processor:process_shafafiya:116 - Processing Shafafiya XML: /Users/isaackargar/codes/personal/nazmito/samples/shafafiya_prior_auth_request.xml
+2025-08-02 00:18:40.233 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Shafafiya-4813164c-20250802
+2025-08-02 00:18:40.235 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 1.000
+2025-08-02 00:18:40.236 | INFO     | pipelines.xml_processor:process_shafafiya:171 - Data quality score: 1.000
+2025-08-02 00:18:40.236 | INFO     | pipelines.xml_processor:process_shafafiya:173 - Successfully processed Shafafiya XML: 2 activities found
+2025-08-02 00:19:00.462 | INFO     | pipelines.xml_processor:process_shafafiya:116 - Processing Shafafiya XML: /Users/isaackargar/codes/personal/nazmito/samples/shafafiya_prior_auth_request.xml
+2025-08-02 00:19:00.464 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Shafafiya-f00b00c4-20250802
+2025-08-02 00:19:00.464 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 1.000
+2025-08-02 00:19:00.464 | INFO     | pipelines.xml_processor:process_shafafiya:171 - Data quality score: 1.000
+2025-08-02 00:19:00.464 | INFO     | pipelines.xml_processor:process_shafafiya:173 - Successfully processed Shafafiya XML: 2 activities found
+2025-08-02 00:19:48.176 | INFO     | api.main:process_csv_file:392 - Processing CSV file: large_file_sample.csv
+2025-08-02 00:19:48.179 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_rat4gf16.csv
+2025-08-02 00:19:48.179 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_rat4gf16.csv
+2025-08-02 00:19:48.719 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Claims-CSV-005d239c-20250802
+2025-08-02 00:19:48.899 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.560
+2025-08-02 00:19:48.900 | INFO     | pipelines.csv_processor:process_claims_csv:140 - Data quality score: 0.560
+2025-08-02 00:19:48.900 | INFO     | pipelines.csv_processor:process_claims_csv:144 - Successfully processed claims CSV: 9002 claims, 9002 services found
+2025-08-02 00:19:49.270 | INFO     | api.main:process_csv_file:435 - Successfully processed Mixed CSV: large_file_sample.csv in 1.094s
+2025-08-02 00:19:49.270 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_rat4gf16.csv
+2025-08-02 00:21:48.331 | INFO     | api.main:process_csv_file:392 - Processing CSV file: large_file_sample.csv
+2025-08-02 00:21:48.333 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_kdq6u3i6.csv
+2025-08-02 00:21:48.334 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_kdq6u3i6.csv
+2025-08-02 00:21:48.858 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Claims-CSV-4aab9fb8-20250802
+2025-08-02 00:21:49.048 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.560
+2025-08-02 00:21:49.049 | INFO     | pipelines.csv_processor:process_claims_csv:140 - Data quality score: 0.560
+2025-08-02 00:21:49.049 | INFO     | pipelines.csv_processor:process_claims_csv:144 - Successfully processed claims CSV: 9002 claims, 9002 services found
+2025-08-02 00:21:49.421 | INFO     | api.main:process_csv_file:435 - Successfully processed Mixed CSV: large_file_sample.csv in 1.090s
+2025-08-02 00:21:49.422 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_kdq6u3i6.csv
+2025-08-02 00:21:55.035 | INFO     | api.main:process_csv_file:392 - Processing CSV file: large_file_sample.csv
+2025-08-02 00:21:55.037 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_i1o_ga9v.csv
+2025-08-02 00:21:55.038 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_i1o_ga9v.csv
+2025-08-02 00:21:55.564 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Claims-CSV-2435ef7b-20250802
+2025-08-02 00:21:55.749 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.560
+2025-08-02 00:21:55.750 | INFO     | pipelines.csv_processor:process_claims_csv:140 - Data quality score: 0.560
+2025-08-02 00:21:55.750 | INFO     | pipelines.csv_processor:process_claims_csv:144 - Successfully processed claims CSV: 9002 claims, 9002 services found
+2025-08-02 00:21:56.126 | INFO     | api.main:process_csv_file:435 - Successfully processed Mixed CSV: large_file_sample.csv in 1.092s
+2025-08-02 00:21:56.127 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_i1o_ga9v.csv
+2025-08-02 00:22:13.398 | INFO     | api.main:process_csv_file:392 - Processing CSV file: minimal_data_sample.csv
+2025-08-02 00:22:13.400 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_1r6titn1.csv
+2025-08-02 00:22:13.401 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_1r6titn1.csv
+2025-08-02 00:22:13.403 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Claims-CSV-e118e356-20250802
+2025-08-02 00:22:13.403 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.693
+2025-08-02 00:22:13.403 | INFO     | pipelines.csv_processor:process_claims_csv:140 - Data quality score: 0.693
+2025-08-02 00:22:13.403 | INFO     | pipelines.csv_processor:process_claims_csv:144 - Successfully processed claims CSV: 3 claims, 3 services found
+2025-08-02 00:22:13.404 | INFO     | api.main:process_csv_file:435 - Successfully processed Mixed CSV: minimal_data_sample.csv in 0.006s
+2025-08-02 00:22:13.404 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_1r6titn1.csv
+2025-08-02 00:23:25.036 | INFO     | api.main:process_csv_file:392 - Processing CSV file: minimal_data_sample.csv
+2025-08-02 00:23:25.038 | INFO     | api.main:save_temp_file:202 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_j0i2sfbe.csv
+2025-08-02 00:23:25.038 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_j0i2sfbe.csv
+2025-08-02 00:23:25.043 | INFO     | pipelines.data_quality:validate_fhir_bundle:441 - Starting data quality validation for bundle: Claims-CSV-28d62821-20250802
+2025-08-02 00:23:25.043 | INFO     | pipelines.data_quality:validate_fhir_bundle:486 - Data quality validation completed. Score: 0.693
+2025-08-02 00:23:25.043 | INFO     | pipelines.csv_processor:process_claims_csv:140 - Data quality score: 0.693
+2025-08-02 00:23:25.043 | INFO     | pipelines.csv_processor:process_claims_csv:144 - Successfully processed claims CSV: 3 claims, 3 services found
+2025-08-02 00:23:25.043 | INFO     | api.main:process_csv_file:435 - Successfully processed Mixed CSV: minimal_data_sample.csv in 0.007s
+2025-08-02 00:23:25.043 | INFO     | api.main:cleanup_temp_file:221 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_j0i2sfbe.csv
+2025-08-02 00:26:56.549 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:26:57.719 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:26:57.719 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:26:57.719 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:26:57.719 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:26:57.719 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:26:57.719 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:26:58.292 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:26:58.292 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:26:58.292 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:26:58.292 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:26:58.292 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:26:58.293 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:26:58.834 | INFO     | api.main:lifespan:39 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:26:58.834 | INFO     | api.main:lifespan:45 - API Version: 1.0.0
+2025-08-02 00:26:58.834 | INFO     | api.main:lifespan:46 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:26:58.834 | INFO     | api.main:lifespan:47 - Max file size: 10MB
+2025-08-02 00:26:58.834 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:26:58.835 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:27:01.772 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...

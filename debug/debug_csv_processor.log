@@ -1,0 +1,34 @@
+2025-08-01 16:44:28.656 | INFO     | __main__:process_csv:376 - Processing CSV file: samples/test_healthcare_claims.csv
+2025-08-01 16:44:28.659 | INFO     | __main__:detect_encoding:213 - Detected encoding: ascii (confidence: 1.00)
+2025-08-01 16:44:28.661 | INFO     | __main__:detect_delimiter:235 - Detected delimiter: ','
+2025-08-01 16:44:28.664 | INFO     | __main__:detect_header:251 - Header detected: True
+2025-08-01 16:44:28.673 | INFO     | __main__:process_csv:391 - Processing mode: full (estimated memory: 0.0 MB)
+2025-08-01 16:44:28.695 | INFO     | __main__:_process_full:475 - Successfully processed CSV: 1000 rows, quality score: 0.98
+2025-08-01 16:45:12.714 | INFO     | __main__:process_csv:376 - Processing CSV file: samples/test_healthcare_claims.csv
+2025-08-01 16:45:12.717 | INFO     | __main__:detect_encoding:213 - Detected encoding: ascii (confidence: 1.00)
+2025-08-01 16:45:12.719 | INFO     | __main__:detect_delimiter:235 - Detected delimiter: ','
+2025-08-01 16:45:12.722 | INFO     | __main__:detect_header:251 - Header detected: True
+2025-08-01 16:45:12.732 | INFO     | __main__:process_csv:391 - Processing mode: full (estimated memory: 0.0 MB)
+2025-08-01 16:45:12.751 | INFO     | __main__:_process_full:475 - Successfully processed CSV: 1000 rows, quality score: 0.98
+2025-08-01 16:45:18.853 | INFO     | __main__:process_csv:376 - Processing CSV file: samples/test_healthcare_claims.csv
+2025-08-01 16:45:18.855 | INFO     | __main__:detect_encoding:213 - Detected encoding: ascii (confidence: 1.00)
+2025-08-01 16:45:18.857 | INFO     | __main__:detect_delimiter:235 - Detected delimiter: ','
+2025-08-01 16:45:18.860 | INFO     | __main__:detect_header:251 - Header detected: True
+2025-08-01 16:45:18.868 | INFO     | __main__:process_csv:391 - Processing mode: full (estimated memory: 0.0 MB)
+2025-08-01 16:45:18.885 | INFO     | __main__:_process_full:475 - Successfully processed CSV: 1000 rows, quality score: 0.98
+2025-08-01 16:46:30.682 | INFO     | __main__:process_claims_csv:37 - Processing claims CSV: samples/sample_claims.csv
+2025-08-01 16:46:30.685 | INFO     | __main__:_read_csv_safely:330 - Successfully read CSV with utf-8 encoding
+2025-08-01 16:46:30.687 | INFO     | __main__:process_claims_csv:94 - Successfully processed claims CSV: 5 claims, 5 services found
+2025-08-01 16:46:30.688 | INFO     | __main__:process_clinical_csv:107 - Processing clinical CSV: samples/sample_clinical.csv
+2025-08-01 16:46:30.689 | INFO     | __main__:_read_csv_safely:330 - Successfully read CSV with utf-8 encoding
+2025-08-01 16:46:30.693 | INFO     | __main__:process_clinical_csv:169 - Successfully processed clinical CSV: lab type with 3 records
+2025-08-01 16:46:30.694 | INFO     | __main__:_read_csv_safely:330 - Successfully read CSV with utf-8 encoding
+2025-08-01 16:46:30.694 | INFO     | __main__:_read_csv_safely:330 - Successfully read CSV with utf-8 encoding
+2025-08-01 16:50:49.535 | INFO     | __main__:process_claims_csv:37 - Processing claims CSV: samples/sample_claims.csv
+2025-08-01 16:50:49.538 | INFO     | __main__:_read_csv_safely:330 - Successfully read CSV with utf-8 encoding
+2025-08-01 16:50:49.540 | INFO     | __main__:process_claims_csv:94 - Successfully processed claims CSV: 5 claims, 5 services found
+2025-08-01 16:50:49.541 | INFO     | __main__:process_clinical_csv:107 - Processing clinical CSV: samples/sample_clinical.csv
+2025-08-01 16:50:49.541 | INFO     | __main__:_read_csv_safely:330 - Successfully read CSV with utf-8 encoding
+2025-08-01 16:50:49.544 | INFO     | __main__:process_clinical_csv:169 - Successfully processed clinical CSV: lab type with 3 records
+2025-08-01 16:50:49.545 | INFO     | __main__:_read_csv_safely:330 - Successfully read CSV with utf-8 encoding
+2025-08-01 16:50:49.545 | INFO     | __main__:_read_csv_safely:330 - Successfully read CSV with utf-8 encoding
