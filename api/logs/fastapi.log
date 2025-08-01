@@ -794,3 +794,40 @@ AttributeError: 'NoneType' object has no attribute 'startswith'
 2025-08-02 00:26:58.834 | INFO     | api.main:lifespan:48 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
 2025-08-02 00:26:58.835 | INFO     | api.main:lifespan:50 - Nazmito Healthcare Data Processing API started successfully
 2025-08-02 00:27:01.772 | INFO     | api.main:lifespan:55 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:36:27.042 | INFO     | api.main:lifespan:43 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:36:27.042 | INFO     | api.main:lifespan:49 - API Version: 1.0.0
+2025-08-02 00:36:27.042 | INFO     | api.main:lifespan:50 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:36:27.042 | INFO     | api.main:lifespan:51 - Max file size: 10MB
+2025-08-02 00:36:27.042 | INFO     | api.main:lifespan:52 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:36:27.042 | INFO     | api.main:lifespan:56 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:36:36.406 | INFO     | api.main:process_csv_file:439 - Processing CSV file: minimal_data_sample.csv
+2025-08-02 00:36:36.409 | INFO     | api.main:save_temp_file:242 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_q86hyozz.csv
+2025-08-02 00:36:36.409 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_q86hyozz.csv
+2025-08-02 00:36:36.417 | INFO     | pipelines.data_quality:validate_fhir_bundle:457 - Starting data quality validation for bundle: Claims-CSV-32098c32-20250802
+2025-08-02 00:36:36.418 | INFO     | pipelines.data_quality:validate_fhir_bundle:507 - Data quality validation completed. Score: 0.693
+2025-08-02 00:36:36.418 | INFO     | pipelines.csv_processor:process_claims_csv:142 - Data quality score: 0.693
+2025-08-02 00:36:36.418 | INFO     | pipelines.csv_processor:process_claims_csv:146 - Successfully processed claims CSV: 3 claims, 3 services found
+2025-08-02 00:36:36.418 | INFO     | api.main:process_csv_file:485 - Successfully processed Mixed CSV: minimal_data_sample.csv in 0.011s
+2025-08-02 00:36:36.418 | INFO     | api.main:cleanup_temp_file:262 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_q86hyozz.csv
+2025-08-02 00:36:47.630 | INFO     | api.main:process_csv_file:439 - Processing CSV file: uae_healthcare_sample.csv
+2025-08-02 00:36:47.631 | INFO     | api.main:save_temp_file:242 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_hk25dst2.csv
+2025-08-02 00:36:47.631 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_hk25dst2.csv
+2025-08-02 00:36:47.638 | INFO     | pipelines.data_quality:validate_fhir_bundle:457 - Starting data quality validation for bundle: Claims-CSV-945be589-20250802
+2025-08-02 00:36:47.639 | INFO     | pipelines.data_quality:validate_fhir_bundle:507 - Data quality validation completed. Score: 0.568
+2025-08-02 00:36:47.639 | INFO     | pipelines.csv_processor:process_claims_csv:142 - Data quality score: 0.568
+2025-08-02 00:36:47.639 | INFO     | pipelines.csv_processor:process_claims_csv:146 - Successfully processed claims CSV: 20 claims, 20 services found
+2025-08-02 00:36:47.641 | INFO     | api.main:process_csv_file:485 - Successfully processed Mixed CSV: uae_healthcare_sample.csv in 0.011s
+2025-08-02 00:36:47.641 | INFO     | api.main:cleanup_temp_file:262 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_hk25dst2.csv
+2025-08-02 00:40:53.100 | INFO     | api.main:lifespan:43 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:40:53.100 | INFO     | api.main:lifespan:49 - API Version: 1.0.0
+2025-08-02 00:40:53.100 | INFO     | api.main:lifespan:50 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:40:53.100 | INFO     | api.main:lifespan:51 - Max file size: 10MB
+2025-08-02 00:40:53.100 | INFO     | api.main:lifespan:52 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:40:53.100 | INFO     | api.main:lifespan:56 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:41:34.568 | INFO     | api.main:lifespan:61 - Shutting down Nazmito Healthcare Data Processing API...
+2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:43 - Starting Nazmito Healthcare Data Processing API...
+2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:49 - API Version: 1.0.0
+2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:50 - Samples directory: /Users/isaackargar/codes/personal/nazmito/samples
+2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:51 - Max file size: 10MB
+2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:52 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
+2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:56 - Nazmito Healthcare Data Processing API started successfully

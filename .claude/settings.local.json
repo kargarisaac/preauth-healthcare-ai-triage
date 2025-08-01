@@ -8,7 +8,9 @@
       "Bash(curl:*)",
       "Bash(uv run:*)",
       "Bash(ls:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

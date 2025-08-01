@@ -453,23 +453,23 @@ async def process_csv_file(
 
         # Create CSV-specific metadata from Bundle structure
         raw_data = result.get('raw_data', {})
-        column_mappings = raw_data.get('column_mappings', [])
-        resource_detections = raw_data.get('resource_detections', [])
+        columns = raw_data.get('columns', [])
+        fhir_resources = result.get('fhir_resources', {})
 
         csv_metadata = {
             "csv_type": csv_type,
-            "total_records": result.get('total', 0),
-            "detected_columns": len(column_mappings),
-            "detected_resources": len(resource_detections),
-            "resource_types": [r['resource_type'] for r in resource_detections],
-            "data_quality_score": next(
-                (
-                    ext.get('valueDecimal', 0.0)
-                    for ext in result.get('extension', [])
-                    if 'data-quality-score' in ext.get('url', '')
-                ),
-                0.0,
+            "total_records": result.get('total_records', 0),
+            "detected_columns": len(columns),
+            "detected_resources": len(fhir_resources),
+            "resource_types": list(
+                set(
+                    [
+                        res.get('resourceType', 'Unknown')
+                        for res in fhir_resources.values()
+                    ]
+                )
             ),
+            "data_quality_score": result.get('data_quality_score', 0.0),
         }
 
         # Create metadata
