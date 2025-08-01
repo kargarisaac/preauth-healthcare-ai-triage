@@ -6,7 +6,7 @@ eClaimLink 2019/11 PriorAuthorizationRequest format, handling the specific
 structure and normalization requirements of this healthcare data format.
 """
 
-import logging
+from loguru import logger
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
@@ -33,7 +33,6 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
         self,
         schema_path: Optional[str] = None,
         enable_validation: bool = True,
-        logger: Optional[logging.Logger] = None,
         output_format: str = "legacy",
     ):
         """
@@ -45,9 +44,9 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
             logger: Custom logger instance
             output_format: Output format - "legacy" (default for backward compatibility) or "fhir_bundle" for enhanced clinical extraction
         """
-        super().__init__(schema_path, enable_validation, logger)
+        super().__init__(schema_path, enable_validation)
         self.output_format = output_format
-        self.logger.info(
+        logger.info(
             f"Initialized {self.FORMAT_NAME} ingestor for {self.SCHEMA_VERSION} (output: {output_format})"
         )
 
@@ -84,7 +83,7 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
             UnsupportedFormatError: If root element is not supported
             DataNormalizationError: If required data is missing or invalid
         """
-        self.logger.info(
+        logger.info(
             f"Normalizing eClaimLink data to FHIR Bundle from {xml_file_path or 'memory'}"
         )
 
@@ -123,7 +122,7 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
                     "services": services,
                 }
 
-                self.logger.info(
+                logger.info(
                     f"Successfully normalized eClaimLink data (legacy format): "
                     f"{len(services)} services, "
                     f"authorization_id={normalized.get('authorization_id')}"
@@ -206,7 +205,7 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
                 ),
             }
 
-            self.logger.info(
+            logger.info(
                 f"Successfully created FHIR Bundle with {len(bundle_entries)} resources: "
                 f"authorization_id={header.get('authorization_id')}, "
                 f"clinical_context_score={clinical_scores.get('clinical_context_score', 0):.2f}"
@@ -314,7 +313,7 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
                     field_name=f"ServiceRequest[{idx}]",
                 ) from e
 
-        self.logger.debug(f"Normalized {len(normalized_services)} service requests")
+        logger.debug(f"Normalized {len(normalized_services)} service requests")
         return normalized_services
 
     def _normalize_single_service_request(
@@ -493,7 +492,6 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
         header: Dict[str, Any],
         services: List[Dict[str, Any]],
         justification_text: str,
-        xml_file_path: Optional[str],
     ) -> Dict[str, Any]:
         """
         Create the primary Claim FHIR resource from eClaimLink data.
@@ -503,7 +501,6 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
             header: Normalized header data
             services: Normalized services data
             justification_text: Clinical justification text
-            xml_file_path: Optional path to XML file
 
         Returns:
             FHIR Claim resource
@@ -681,138 +678,140 @@ class EClaimLinkIngestor(ClinicalExtractionMixin, XMLIngestor):
 if __name__ == "__main__":
     """
     Standalone testing and debugging for eClaimLink ingestor.
-    
+
     This section enables step-by-step debugging of the eClaimLink processing pipeline
     with detailed outputs showing FHIR resource extraction and clinical intelligence scoring.
     """
     import json
     import os
-    from pathlib import Path
-    
+
     # Setup logging for detailed debug output
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    logger = logging.getLogger(__name__)
-    
+    logger.add("debug_output_eclaim.log")
+
     print("=" * 80)
     print("eClaimLink Ingestor - Debug Mode")
     print("=" * 80)
-    
+
     # Configuration
     schema_path = "schemas/CommonTypes_20191113.xsd"
     sample_file = "samples/eclaim_link_request.xml"
-    
+
     # Check if files exist
     if not os.path.exists(sample_file):
         print(f"❌ Sample file not found: {sample_file}")
         print("Please ensure the sample file exists before running debug mode.")
         exit(1)
-    
+
     if not os.path.exists(schema_path):
         print(f"⚠️  Schema file not found: {schema_path}")
         print("Continuing without schema validation...")
         schema_path = None
-    
+
     try:
         print("\n🔧 Step 1: Initialize eClaimLink Ingestor")
         print("-" * 50)
-        
+
         # Test both output formats
         for output_format in ["legacy", "fhir_bundle"]:
             print(f"\n📋 Testing output format: {output_format}")
-            
+
             ingestor = EClaimLinkIngestor(
                 schema_path=schema_path,
                 enable_validation=schema_path is not None,
-                output_format=output_format
+                output_format=output_format,
             )
-            
-            print(f"✅ Ingestor initialized successfully")
+
+            print("✅ Ingestor initialized successfully")
             print(f"   Format: {ingestor.FORMAT_NAME}")
             print(f"   Schema Version: {ingestor.SCHEMA_VERSION}")
             print(f"   Output Format: {ingestor.output_format}")
-            
+
             print(f"\n🔧 Step 2: Process XML File ({output_format})")
             print("-" * 50)
-            
+
             result = ingestor.ingest_file(sample_file)
-            
-            print(f"✅ File processed successfully")
-            
+
+            print("✅ File processed successfully")
+
             if output_format == "legacy":
                 print(f"   Authorization ID: {result.get('authorization_id')}")
                 print(f"   Services Count: {len(result.get('services', []))}")
-                print(f"   Justification Length: {len(result.get('justification_text', ''))}")
-                
+                print(
+                    f"   Justification Length: {len(result.get('justification_text', ''))}"
+                )
+
                 # Show services detail
-                services = result.get('services', [])
+                services = result.get("services", [])
                 for i, service in enumerate(services, 1):
                     print(f"   Service {i}:")
                     print(f"     - Activity Code: {service.get('activity_code')}")
                     print(f"     - Diagnosis Code: {service.get('diagnosis_code')}")
-                    print(f"     - Amount: {service.get('requested_amount_value')} {service.get('requested_amount_currency')}")
-            
+                    print(
+                        f"     - Amount: {service.get('requested_amount_value')} {service.get('requested_amount_currency')}"
+                    )
+
             else:  # fhir_bundle format
                 print(f"   Bundle ID: {result.get('id')}")
                 print(f"   Resource Type: {result.get('resourceType')}")
                 print(f"   Total Resources: {result.get('total')}")
                 print(f"   Timestamp: {result.get('timestamp')}")
-                
+
                 # Show resource breakdown
-                entries = result.get('entry', [])
+                entries = result.get("entry", [])
                 resource_counts = {}
                 for entry in entries:
-                    resource_type = entry.get('resource', {}).get('resourceType')
-                    resource_counts[resource_type] = resource_counts.get(resource_type, 0) + 1
-                
-                print(f"\n   📊 FHIR Resource Breakdown:")
+                    resource_type = entry.get("resource", {}).get("resourceType")
+                    resource_counts[resource_type] = (
+                        resource_counts.get(resource_type, 0) + 1
+                    )
+
+                print("\n   📊 FHIR Resource Breakdown:")
                 for resource_type, count in resource_counts.items():
                     print(f"     - {resource_type}: {count}")
-                
+
                 # Show clinical intelligence scores
-                extensions = result.get('extension', [])
+                extensions = result.get("extension", [])
                 for ext in extensions:
-                    if 'clinical-intelligence' in ext.get('url', ''):
-                        for sub_ext in ext.get('extension', []):
-                            if sub_ext.get('url') == 'clinical-context-score':
-                                score = sub_ext.get('valueDecimal', 0)
+                    if "clinical-intelligence" in ext.get("url", ""):
+                        for sub_ext in ext.get("extension", []):
+                            if sub_ext.get("url") == "clinical-context-score":
+                                score = sub_ext.get("valueDecimal", 0)
                                 print(f"   🧠 Clinical Context Score: {score:.2f}")
-                            elif sub_ext.get('url') == 'data-quality-score':
-                                score = sub_ext.get('valueDecimal', 0)
+                            elif sub_ext.get("url") == "data-quality-score":
+                                score = sub_ext.get("valueDecimal", 0)
                                 print(f"   📈 Data Quality Score: {score:.2f}")
-            
+
             print(f"\n🔧 Step 3: Business Rule Validation ({output_format})")
             print("-" * 50)
-            
+
             warnings = ingestor.validate_business_rules(result)
             if warnings:
-                print(f"⚠️  Business rule warnings found:")
+                print("⚠️  Business rule warnings found:")
                 for warning in warnings:
                     print(f"   - {warning}")
             else:
-                print(f"✅ All business rules passed")
-            
+                print("✅ All business rules passed")
+
             print(f"\n💾 Step 4: Save Debug Output ({output_format})")
             print("-" * 50)
-            
+
             debug_output_file = f"debug_output_eclaim_{output_format}.json"
-            with open(debug_output_file, 'w', encoding='utf-8') as f:
+            with open(debug_output_file, "w", encoding="utf-8") as f:
                 json.dump(result, f, indent=2, ensure_ascii=False, default=str)
-            
+
             print(f"✅ Debug output saved to: {debug_output_file}")
             print(f"   File size: {os.path.getsize(debug_output_file)} bytes")
-            
+
             print("\n" + "=" * 80)
-    
+
     except Exception as e:
-        print(f"\n❌ Error during processing:")
+        print("\n❌ Error during processing:")
         print(f"   {type(e).__name__}: {str(e)}")
         import traceback
-        print(f"\n📋 Full traceback:")
+
+        print("\n📋 Full traceback:")
         traceback.print_exc()
         exit(1)
-    
+
     print("\n🎉 eClaimLink ingestor debug session completed successfully!")
     print("=" * 80)
