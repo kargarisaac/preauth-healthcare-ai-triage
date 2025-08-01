@@ -1354,10 +1354,10 @@ function generateDetailsContent(data, formatType, metadata) {
     // Handle CSV format
     if (formatType.includes('CSV')) {
         const rawData = data.raw_data || {};
-        const columnMappings = rawData.column_mappings || [];
-        const resourceDetections = rawData.resource_detections || [];
-        const originalData = rawData.original_data || [];
-        const headers = originalData.length > 0 ? Object.keys(originalData[0]) : [];
+        const columns = rawData.columns || [];
+        const csvData = rawData.csv_data || [];
+        const dtypes = rawData.dtypes || {};
+        const headers = columns;
 
         return `
             <div class="csv-details">
@@ -1369,13 +1369,17 @@ function generateDetailsContent(data, formatType, metadata) {
                             <span>Data Type</span>
                             <span>FHIR Mapping</span>
                         </div>
-                        ${columnMappings.map(mapping => `
-                            <div class="schema-row">
-                                <span class="column-name">${mapping.original_column}</span>
-                                <span class="data-type type-string">string</span>
-                                <span class="fhir-mapping">${mapping.fhir_field || 'Unmapped'}</span>
-                            </div>
-                        `).join('')}
+                        ${columns.map(column => {
+                            const dataType = dtypes[column] || 'unknown';
+                            const fhirMapping = determineFHIRMapping(column);
+                            return `
+                                <div class="schema-row">
+                                    <span class="column-name">${column}</span>
+                                    <span class="data-type type-${dataType.replace(/\d+/, '')}">${dataType}</span>
+                                    <span class="fhir-mapping">${fhirMapping}</span>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
 
@@ -1387,7 +1391,7 @@ function generateDetailsContent(data, formatType, metadata) {
                                 `<span>${header}</span>`
                             ).join('')}
                         </div>
-                        ${originalData.slice(0, 3).map(row => `
+                        ${csvData.slice(0, 3).map(row => `
                             <div class="preview-row">
                                 ${headers.slice(0, 6).map(header =>
                                     `<span>${row[header] || '-'}</span>`
@@ -1395,7 +1399,7 @@ function generateDetailsContent(data, formatType, metadata) {
                             </div>
                         `).join('')}
                     </div>
-                    ${originalData.length > 3 ? `<p class="preview-note">Showing 3 of ${originalData.length.toLocaleString()} records</p>` : ''}
+                    ${csvData.length > 3 ? `<p class="preview-note">Showing 3 of ${csvData.length.toLocaleString()} records</p>` : ''}
                 </div>
             </div>
         `;
@@ -1413,6 +1417,47 @@ function findFHIRMapping(columnName, mapping) {
         }
     }
     return null;
+}
+
+function determineFHIRMapping(columnName) {
+    const mapping = {
+        'patient_id': 'Claim.patient.reference',
+        'claim_id': 'Claim.id',
+        'service_code': 'ServiceRequest.code',
+        'procedure_code': 'ServiceRequest.code',
+        'amount': 'Claim.total.value',
+        'amount_aed': 'Claim.total.value',
+        'diagnosis_code': 'Condition.code',
+        'icd10_code': 'Condition.code',
+        'provider_id': 'Claim.provider.reference',
+        'service_date': 'ServiceRequest.occurrenceDateTime',
+        'authorization_id': 'Claim.identifier',
+        'member_id': 'Patient.identifier',
+        'emirate_authority': 'Claim.extension'
+    };
+
+    // Try exact match first
+    if (mapping[columnName.toLowerCase()]) {
+        return mapping[columnName.toLowerCase()];
+    }
+
+    // Try partial matching for common patterns
+    const lowerCol = columnName.toLowerCase();
+    if (lowerCol.includes('patient') || lowerCol.includes('member')) {
+        return 'Patient.identifier';
+    } else if (lowerCol.includes('claim') || lowerCol.includes('clm')) {
+        return 'Claim.identifier';
+    } else if (lowerCol.includes('amount') || lowerCol.includes('cost')) {
+        return 'Claim.total.value';
+    } else if (lowerCol.includes('code') || lowerCol.includes('cpt')) {
+        return 'ServiceRequest.code';
+    } else if (lowerCol.includes('diagnosis') || lowerCol.includes('icd')) {
+        return 'Condition.code';
+    } else if (lowerCol.includes('date')) {
+        return 'ServiceRequest.occurrenceDateTime';
+    }
+
+    return 'Unmapped';
 }
 
 function generateRawDataContent(data, formatType) {

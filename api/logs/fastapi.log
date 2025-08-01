@@ -831,3 +831,13 @@ AttributeError: 'NoneType' object has no attribute 'startswith'
 2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:51 - Max file size: 10MB
 2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:52 - Supported formats: XML (eClaimLink, Shafafiya), CSV (Claims, Clinical)
 2025-08-02 00:41:35.313 | INFO     | api.main:lifespan:56 - Nazmito Healthcare Data Processing API started successfully
+2025-08-02 00:41:50.092 | INFO     | api.main:process_csv_file:439 - Processing CSV file: minimal_data_sample.csv
+2025-08-02 00:41:50.092 | WARNING  | api.main:validate_csv_file:217 - Unexpected content type: application/octet-stream for file: minimal_data_sample.csv
+2025-08-02 00:41:50.092 | INFO     | api.main:save_temp_file:242 - Saved uploaded file to temporary location: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_2fm2ghwf.csv
+2025-08-02 00:41:50.093 | INFO     | pipelines.csv_processor:process_claims_csv:53 - Processing claims CSV: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_2fm2ghwf.csv
+2025-08-02 00:41:50.096 | INFO     | pipelines.data_quality:validate_fhir_bundle:457 - Starting data quality validation for bundle: Claims-CSV-3fad3c12-20250802
+2025-08-02 00:41:50.097 | INFO     | pipelines.data_quality:validate_fhir_bundle:507 - Data quality validation completed. Score: 0.693
+2025-08-02 00:41:50.097 | INFO     | pipelines.csv_processor:process_claims_csv:142 - Data quality score: 0.693
+2025-08-02 00:41:50.097 | INFO     | pipelines.csv_processor:process_claims_csv:146 - Successfully processed claims CSV: 3 claims, 3 services found
+2025-08-02 00:41:50.097 | INFO     | api.main:process_csv_file:485 - Successfully processed Mixed CSV: minimal_data_sample.csv in 0.005s
+2025-08-02 00:41:50.097 | INFO     | api.main:cleanup_temp_file:262 - Cleaned up temporary file: /var/folders/h8/fcqzz_1x4kqd4c82g5s_8zkr0000gn/T/nazmito_2fm2ghwf.csv
