@@ -507,17 +507,18 @@ function hideResultsModal() {
 
 function populateResultsModal(result, formatType) {
     const data = result.data;
+    const metadata = result.metadata;
 
     // Summary Tab (renamed from Clinical Summary for CSV compatibility)
     const summaryContent = document.getElementById('summaryContent');
     if (summaryContent) {
-        summaryContent.innerHTML = generateSummaryContent(data, formatType);
+        summaryContent.innerHTML = generateSummaryContent(data, formatType, metadata);
     }
 
     // Details Tab (renamed from Financial Details for CSV compatibility)
     const detailsContent = document.getElementById('detailsContent');
     if (detailsContent) {
-        detailsContent.innerHTML = generateDetailsContent(data, formatType);
+        detailsContent.innerHTML = generateDetailsContent(data, formatType, metadata);
     }
 
     // Raw Data Tab
@@ -1289,11 +1290,14 @@ function updateFormatButtons(fileType) {
 }
 
 // Updated result generation functions
-function generateSummaryContent(data, formatType) {
+function generateSummaryContent(data, formatType, metadata) {
     // Handle CSV format
     if (formatType.includes('CSV')) {
-        const analysis = data.csv_analysis || {};
-        const quality = analysis.qualityScore || 0;
+        const quality = ((metadata?.data_quality_score || 0) * 100);
+        const totalRecords = metadata?.total_records || 0;
+        const detectedColumns = metadata?.detected_columns || 0;
+        const processingTime = metadata?.processing_time_seconds || 0;
+        const resourceTypes = metadata?.resource_types || [];
 
         return `
             <div class="csv-overview">
@@ -1311,10 +1315,10 @@ function generateSummaryContent(data, formatType) {
                 <div class="csv-metrics">
                     <div class="metric-row">
                         <div class="metric-item">
-                            <strong>📋 Total Records:</strong> ${(analysis.totalRows || 0).toLocaleString()}
+                            <strong>📋 Total Records:</strong> ${totalRecords.toLocaleString()}
                         </div>
                         <div class="metric-item">
-                            <strong>📄 Columns:</strong> ${analysis.totalColumns || 0}
+                            <strong>📄 Columns:</strong> ${detectedColumns}
                         </div>
                     </div>
                     <div class="metric-row">
@@ -1322,7 +1326,7 @@ function generateSummaryContent(data, formatType) {
                             <strong>🔍 Format:</strong> ${formatType}
                         </div>
                         <div class="metric-item">
-                            <strong>⏱️ Processing Time:</strong> ${data.processing_time || 'N/A'}
+                            <strong>⏱️ Processing Time:</strong> ${processingTime.toFixed(3)}s
                         </div>
                     </div>
                 </div>
@@ -1330,10 +1334,10 @@ function generateSummaryContent(data, formatType) {
                 <div class="fhir-mapping-summary">
                     <h5>🔗 FHIR Resource Mapping</h5>
                     <div class="mapping-grid">
-                        ${Object.entries(data.fhir_mapping || {}).map(([resource, mappings]) => `
+                        ${resourceTypes.map(resourceType => `
                             <div class="mapping-card">
-                                <strong>${resource}</strong>
-                                <span class="mapping-count">${mappings.length} fields</span>
+                                <strong>${resourceType}</strong>
+                                <span class="mapping-count">detected</span>
                             </div>
                         `).join('')}
                     </div>
@@ -1346,11 +1350,14 @@ function generateSummaryContent(data, formatType) {
     return generateClinicalSummary(data, formatType);
 }
 
-function generateDetailsContent(data, formatType) {
+function generateDetailsContent(data, formatType, metadata) {
     // Handle CSV format
     if (formatType.includes('CSV')) {
-        const analysis = data.csv_analysis || {};
-        const mapping = data.fhir_mapping || {};
+        const rawData = data.raw_data || {};
+        const columnMappings = rawData.column_mappings || [];
+        const resourceDetections = rawData.resource_detections || [];
+        const originalData = rawData.original_data || [];
+        const headers = originalData.length > 0 ? Object.keys(originalData[0]) : [];
 
         return `
             <div class="csv-details">
@@ -1362,17 +1369,13 @@ function generateDetailsContent(data, formatType) {
                             <span>Data Type</span>
                             <span>FHIR Mapping</span>
                         </div>
-                        ${(analysis.headers || []).map(header => {
-                            const dataType = analysis.dataTypes?.[header] || 'unknown';
-                            const fhirResource = findFHIRMapping(header, mapping);
-                            return `
-                                <div class="schema-row">
-                                    <span class="column-name">${header}</span>
-                                    <span class="data-type type-${dataType}">${dataType}</span>
-                                    <span class="fhir-mapping">${fhirResource || 'Unmapped'}</span>
-                                </div>
-                            `;
-                        }).join('')}
+                        ${columnMappings.map(mapping => `
+                            <div class="schema-row">
+                                <span class="column-name">${mapping.original_column}</span>
+                                <span class="data-type type-string">string</span>
+                                <span class="fhir-mapping">${mapping.fhir_field || 'Unmapped'}</span>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
 
@@ -1380,19 +1383,19 @@ function generateDetailsContent(data, formatType) {
                     <h5>🔍 Data Preview</h5>
                     <div class="preview-table">
                         <div class="preview-header">
-                            ${(analysis.headers || []).slice(0, 6).map(header =>
+                            ${headers.slice(0, 6).map(header =>
                                 `<span>${header}</span>`
                             ).join('')}
                         </div>
-                        ${(analysis.sampleData || []).slice(0, 3).map(row => `
+                        ${originalData.slice(0, 3).map(row => `
                             <div class="preview-row">
-                                ${row.slice(0, 6).map(cell =>
-                                    `<span>${cell || '-'}</span>`
+                                ${headers.slice(0, 6).map(header =>
+                                    `<span>${row[header] || '-'}</span>`
                                 ).join('')}
                             </div>
                         `).join('')}
                     </div>
-                    ${(analysis.totalRows || 0) > 3 ? `<p class="preview-note">Showing 3 of ${analysis.totalRows.toLocaleString()} records</p>` : ''}
+                    ${originalData.length > 3 ? `<p class="preview-note">Showing 3 of ${originalData.length.toLocaleString()} records</p>` : ''}
                 </div>
             </div>
         `;
