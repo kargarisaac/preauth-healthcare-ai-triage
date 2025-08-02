@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Target, Zap, Brain } from 'lucide-react';
 import Button from '@components/ui/Button';
 
 const HeroSection: React.FC = () => {
@@ -18,19 +18,19 @@ const HeroSection: React.FC = () => {
           {/* Hero Content */}
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-800 text-sm font-medium mb-8 animate-fade-in-up">
-              <span className="badge-text">Clinical Intelligence Platform</span>
+              <span className="badge-text">AI for UAE Health Insurers</span>
               <div className="ml-2 w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
             </div>
 
             <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 animate-fade-in-up delay-200">
-              Turn Pre-Authorization into{' '}
+              Help UAE Insurers Turn Pre-Authorization into{' '}
               <span className="bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-transparent">
                 Prevention
               </span>
             </h1>
 
-            <p className="text-2xl font-semibold text-gray-700 mb-4 animate-fade-in-up delay-300">
-              Clinical Intelligence for UAE Payers
+            <p className="text-2xl font-bold text-gray-800 mb-4 animate-fade-in-up delay-300">
+              Automate 90% of in-scope requests, cut decision time to minutes, and reduce chronic-care spend
             </p>
 
             <p className="text-lg text-gray-600 mb-8 max-w-xl animate-fade-in-up delay-400">
@@ -41,13 +41,15 @@ const HeroSection: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up delay-500">
               <Link to="/dashboard">
                 <Button variant="primary" size="lg" className="group">
-                  <span>Try Dashboard</span>
+                  <span>See It in Action</span>
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button variant="secondary" size="lg">
-                Book a Demo
-              </Button>
+              <Link to="/dashboard">
+                <Button variant="secondary" size="lg">
+                  Live Dashboard Preview
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -57,8 +59,8 @@ const HeroSection: React.FC = () => {
               {/* Card 1 */}
               <div className="absolute top-0 left-0 bg-white rounded-2xl p-6 shadow-large border border-gray-200 transform rotate-3 hover:rotate-0 transition-transform duration-500 animate-bounce-gentle">
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl mr-4">
-                    🏥
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                    <Target className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Smart Processing</div>
@@ -70,8 +72,8 @@ const HeroSection: React.FC = () => {
               {/* Card 2 */}
               <div className="absolute top-20 right-0 bg-white rounded-2xl p-6 shadow-large border border-gray-200 transform -rotate-2 hover:rotate-0 transition-transform duration-500 animate-bounce-gentle delay-500">
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl mr-4">
-                    ⚡
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
+                    <Zap className="w-6 h-6 text-green-600" />
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Lightning Fast</div>
@@ -83,8 +85,8 @@ const HeroSection: React.FC = () => {
               {/* Card 3 */}
               <div className="absolute top-40 left-8 bg-white rounded-2xl p-6 shadow-large border border-gray-200 transform rotate-1 hover:rotate-0 transition-transform duration-500 animate-bounce-gentle delay-1000">
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl mr-4">
-                    💡
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+                    <Brain className="w-6 h-6 text-purple-600" />
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">AI Intelligence</div>

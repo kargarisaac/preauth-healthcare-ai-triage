@@ -8,11 +8,34 @@ LLM validation while maintaining statistical representativeness and healthcare c
 import json
 import random
 from typing import Dict, Any, List, Optional
-from dataclasses import dataclass
 from enum import Enum
 import pandas as pd
 import numpy as np
 from loguru import logger
+
+# Import BAML types instead of defining custom data classes
+try:
+    from baml_client.types import DataSample, DataContext
+
+    BAML_TYPES_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"BAML types not available: {e}")
+    BAML_TYPES_AVAILABLE = False
+    # Fallback definitions if BAML not available
+    from dataclasses import dataclass
+
+    @dataclass
+    class DataSample:
+        resource_type: str
+        raw_data: str
+        context: Optional['DataContext'] = None
+
+    @dataclass
+    class DataContext:
+        source_system: Optional[str] = None
+        emirate: Optional[str] = None
+        provider_type: Optional[str] = None
+        patient_category: Optional[str] = None
 
 
 class SamplingStrategy(Enum):
@@ -25,29 +48,48 @@ class SamplingStrategy(Enum):
     HEALTHCARE_AWARE = "healthcare_aware"  # Healthcare-specific sampling
 
 
-@dataclass
+# Custom metadata class for sampling (not replaced by BAML as it's internal)
 class SampleMetadata:
     """Metadata about the sampling process and results."""
 
-    original_size: int
-    sample_size: int
-    sampling_strategy: SamplingStrategy
-    sample_ratio: float
-    null_percentage: float
-    column_coverage: float
-    data_types_distribution: Dict[str, int]
-    healthcare_indicators: Dict[str, Any]
-    statistical_summary: Dict[str, Any]
+    def __init__(
+        self,
+        original_size: int,
+        sample_size: int,
+        sampling_strategy: SamplingStrategy,
+        sample_ratio: float,
+        null_percentage: float,
+        column_coverage: float,
+        data_types_distribution: Dict[str, int],
+        healthcare_indicators: Dict[str, Any],
+        statistical_summary: Dict[str, Any],
+    ):
+        self.original_size = original_size
+        self.sample_size = sample_size
+        self.sampling_strategy = sampling_strategy
+        self.sample_ratio = sample_ratio
+        self.null_percentage = null_percentage
+        self.column_coverage = column_coverage
+        self.data_types_distribution = data_types_distribution
+        self.healthcare_indicators = healthcare_indicators
+        self.statistical_summary = statistical_summary
 
 
-@dataclass
-class DataSample:
+# Internal data container for sampling results (not LLM input/output)
+class SamplingResult:
     """Container for sampled data with metadata."""
 
-    sample_data: List[Dict[str, Any]]
-    metadata: SampleMetadata
-    context_summary: str
-    quality_indicators: Dict[str, Any]
+    def __init__(
+        self,
+        sample_data: List[Dict[str, Any]],
+        metadata: SampleMetadata,
+        context_summary: str,
+        quality_indicators: Dict[str, Any],
+    ):
+        self.sample_data = sample_data
+        self.metadata = metadata
+        self.context_summary = context_summary
+        self.quality_indicators = quality_indicators
 
 
 class HealthcareContextBuilder:
@@ -183,7 +225,7 @@ class SmartDataSampler:
         df: pd.DataFrame,
         strategy: SamplingStrategy = SamplingStrategy.ADAPTIVE,
         target_size: Optional[int] = None,
-    ) -> DataSample:
+    ) -> SamplingResult:
         """
         Create intelligent sample from DataFrame.
 
@@ -193,7 +235,7 @@ class SmartDataSampler:
             target_size: Specific target sample size (overrides adaptive sizing)
 
         Returns:
-            DataSample with sampled data and comprehensive metadata
+            SamplingResult with sampled data and comprehensive metadata
         """
         logger.info(
             f"Creating sample from DataFrame with {len(df)} rows, {len(df.columns)} columns"
@@ -220,7 +262,7 @@ class SmartDataSampler:
         # Convert to list of dictionaries
         sample_data = sampled_df.to_dict('records')
 
-        sample = DataSample(
+        sample = SamplingResult(
             sample_data=sample_data,
             metadata=metadata,
             context_summary=context_summary,
@@ -233,6 +275,56 @@ class SmartDataSampler:
         )
 
         return sample
+
+    def create_baml_data_sample(
+        self,
+        df: pd.DataFrame,
+        resource_type: str = "Claims",
+        context: Optional[DataContext] = None,
+        strategy: SamplingStrategy = SamplingStrategy.ADAPTIVE,
+        target_size: Optional[int] = None,
+    ) -> DataSample:
+        """
+        Create BAML-compatible DataSample from DataFrame for LLM validation.
+
+        Args:
+            df: Input DataFrame to sample
+            resource_type: Type of healthcare resource
+            context: Additional context for validation
+            strategy: Sampling strategy to use
+            target_size: Specific target sample size
+
+        Returns:
+            BAML DataSample ready for LLM validation functions
+        """
+        # First create internal sampling result
+        sampling_result = self.create_sample(df, strategy, target_size)
+
+        # Convert to JSON string for BAML
+        raw_data = json.dumps(
+            sampling_result.sample_data, default=str, ensure_ascii=False
+        )
+
+        # Create default context if none provided
+        if context is None:
+            context = DataContext(
+                source_system="CSV",
+                emirate="Unknown",
+                provider_type="Unknown",
+                patient_category="Unknown",
+            )
+
+        # Create BAML DataSample
+        baml_sample = DataSample(
+            resource_type=resource_type, raw_data=raw_data, context=context
+        )
+
+        logger.info(
+            f"Created BAML DataSample: {len(sampling_result.sample_data)} records, "
+            f"resource_type='{resource_type}', strategy='{strategy.value}'"
+        )
+
+        return baml_sample
 
     def _calculate_optimal_sample_size(
         self, df: pd.DataFrame, target_size: Optional[int] = None
@@ -620,20 +712,20 @@ if __name__ == "__main__":
         for strategy in strategies:
             print(f"\n   Testing {strategy.value} strategy...")
 
-            sample = sampler.create_sample(df, strategy=strategy)
-            results[strategy.value] = sample
+            result = sampler.create_sample(df, strategy=strategy)
+            results[strategy.value] = result
 
-            print(f"   ✅ Sample created: {len(sample.sample_data)} records")
-            print(f"      Sample ratio: {sample.metadata.sample_ratio:.1%}")
+            print(f"   ✅ Sample created: {len(result.sample_data)} records")
+            print(f"      Sample ratio: {result.metadata.sample_ratio:.1%}")
             print("      Quality scores:")
             print(
-                f"        - Representativeness: {sample.quality_indicators['representativeness_score']:.3f}"
+                f"        - Representativeness: {result.quality_indicators['representativeness_score']:.3f}"
             )
             print(
-                f"        - Completeness: {sample.quality_indicators['completeness_score']:.3f}"
+                f"        - Completeness: {result.quality_indicators['completeness_score']:.3f}"
             )
             print(
-                f"        - Healthcare relevance: {sample.quality_indicators['healthcare_relevance_score']:.3f}"
+                f"        - Healthcare relevance: {result.quality_indicators['healthcare_relevance_score']:.3f}"
             )
 
         print("\n🔧 Step 3: Healthcare Context Analysis")
@@ -657,9 +749,9 @@ if __name__ == "__main__":
         print("\n🔧 Step 4: Context Summary Example")
         print("-" * 50)
 
-        adaptive_sample = results['adaptive']
+        adaptive_result = results['adaptive']
         print("   Context summary:")
-        print(f"   {adaptive_sample.context_summary}")
+        print(f"   {adaptive_result.context_summary}")
 
         # Save results for inspection
         output_data = {
@@ -671,18 +763,18 @@ if __name__ == "__main__":
             'sampling_results': {},
         }
 
-        for strategy_name, sample in results.items():
+        for strategy_name, result in results.items():
             output_data['sampling_results'][strategy_name] = {
-                'sample_size': len(sample.sample_data),
+                'sample_size': len(result.sample_data),
                 'metadata': {
-                    'sample_ratio': sample.metadata.sample_ratio,
-                    'null_percentage': sample.metadata.null_percentage,
-                    'healthcare_indicators': sample.metadata.healthcare_indicators,
-                    'sampling_strategy': sample.metadata.sampling_strategy.value,
+                    'sample_ratio': result.metadata.sample_ratio,
+                    'null_percentage': result.metadata.null_percentage,
+                    'healthcare_indicators': result.metadata.healthcare_indicators,
+                    'sampling_strategy': result.metadata.sampling_strategy.value,
                 },
-                'quality_indicators': sample.quality_indicators,
-                'context_summary': sample.context_summary,
-                'sample_preview': sample.sample_data[:3],  # First 3 records for preview
+                'quality_indicators': result.quality_indicators,
+                'context_summary': result.context_summary,
+                'sample_preview': result.sample_data[:3],  # First 3 records for preview
             }
 
         with open("debug_data_sampler_results.json", "w", encoding="utf-8") as f:

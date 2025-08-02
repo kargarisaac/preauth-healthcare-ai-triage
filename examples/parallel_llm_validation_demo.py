@@ -15,8 +15,9 @@ from datetime import datetime, timezone
 from loguru import logger
 
 from pipelines.llm_data_sampler import SmartDataSampler, SamplingStrategy
-from pipelines.llm_validator import ParallelLLMValidator, ValidationTask
+from pipelines.llm_validator import ParallelLLMValidator
 from pipelines.data_quality import DataQuality
+from baml_client.types import ValidationType
 
 
 async def demo_parallel_llm_validation():
@@ -153,13 +154,13 @@ async def demo_parallel_llm_validation():
 
     # Test different validation task combinations
     task_combinations = [
-        [ValidationTask.HEALTHCARE_DATA_QUALITY],
-        [ValidationTask.MEDICAL_CODE_VALIDATION],
-        [ValidationTask.CLINICAL_CONSISTENCY],
+        [ValidationType.DATA_QUALITY],
+        [ValidationType.CODE_VALIDATION],
+        [ValidationType.CLINICAL],
         [
-            ValidationTask.HEALTHCARE_DATA_QUALITY,
-            ValidationTask.MEDICAL_CODE_VALIDATION,
-            ValidationTask.CLINICAL_CONSISTENCY,
+            ValidationType.DATA_QUALITY,
+            ValidationType.CODE_VALIDATION,
+            ValidationType.CLINICAL,
         ],
     ]
 
@@ -349,12 +350,13 @@ def demo_usage_patterns():
 
 2. Parallel LLM Validation:
    ```python
-   from pipelines.llm_validator import ParallelLLMValidator, ValidationTask
+   from pipelines.llm_validator import ParallelLLMValidator
+   from baml_client.types import ValidationType
 
    validator = ParallelLLMValidator(max_concurrent_requests=5)
    result = await validator.validate_healthcare_data(
        sample,
-       validation_tasks=[ValidationTask.HEALTHCARE_DATA_QUALITY]
+       validation_tasks=[ValidationType.DATA_QUALITY]
    )
    ```
 

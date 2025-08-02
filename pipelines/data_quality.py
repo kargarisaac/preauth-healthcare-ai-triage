@@ -18,8 +18,9 @@ from loguru import logger
 
 # Import LLM validation components
 try:
-    from pipelines.llm_validator import ParallelLLMValidator, ValidationTask
+    from pipelines.llm_validator import ParallelLLMValidator
     from pipelines.llm_data_sampler import SmartDataSampler, SamplingStrategy
+    from baml_client.types import ValidationType
 
     LLM_VALIDATION_AVAILABLE = True
 except ImportError as e:
@@ -927,9 +928,9 @@ class DataQuality:
             batch_result = await self.llm_validator.validate_healthcare_data(
                 data_sample,
                 validation_tasks=[
-                    ValidationTask.HEALTHCARE_DATA_QUALITY,
-                    ValidationTask.MEDICAL_CODE_VALIDATION,
-                    ValidationTask.CLINICAL_CONSISTENCY,
+                    ValidationType.DATA_QUALITY,
+                    ValidationType.CODE_VALIDATION,
+                    ValidationType.CLINICAL,
                 ],
             )
 

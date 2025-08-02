@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Target, Zap, DollarSign, TrendingUp } from 'lucide-react';
 import Button from '@components/ui/Button';
 import logoImage from '@assets/logo.png';
 
@@ -26,7 +27,10 @@ const LandingPage: React.FC = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <img src={logoImage} alt="Nazmito" className="h-8 w-8" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Nazmito</span>
+              <div className="ml-2">
+                <span className="text-xl font-bold text-gray-900">Nazmito</span>
+                <div className="text-xs text-gray-500 hidden lg:block">AI-powered prior-authorization for UAE insurers</div>
+              </div>
             </div>
 
             {/* Desktop Navigation */}
@@ -64,6 +68,29 @@ const LandingPage: React.FC = () => {
       {/* Main Content */}
       <main>
         <HeroSection />
+
+        {/* Trust Bar */}
+        <section className="py-8 bg-gray-50 border-y border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8 text-center">
+              <div className="flex items-center text-sm font-medium text-gray-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Built for Shafafiya & eClaimLink
+              </div>
+              <div className="hidden md:block w-1 h-1 bg-gray-400 rounded-full"></div>
+              <div className="flex items-center text-sm font-medium text-gray-600">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                PDPL-Ready
+              </div>
+              <div className="hidden md:block w-1 h-1 bg-gray-400 rounded-full"></div>
+              <div className="flex items-center text-sm font-medium text-gray-600">
+                <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                Enterprise Security
+              </div>
+            </div>
+          </div>
+        </section>
+
         <ProblemSection />
         <TransformationSection />
         <HowItWorksSection />
@@ -80,8 +107,8 @@ const LandingPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="bg-white rounded-2xl p-8 shadow-soft border border-gray-200 hover:shadow-medium transition-shadow text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6">
-                  🎯
+                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Target className="w-8 h-8 text-blue-600" />
                 </div>
                 <div className="text-4xl font-bold text-primary-600 mb-2">90%+</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Automate Requests</h3>
@@ -92,8 +119,8 @@ const LandingPage: React.FC = () => {
               </div>
 
               <div className="bg-white rounded-2xl p-8 shadow-soft border border-gray-200 hover:shadow-medium transition-shadow text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6">
-                  ⚡
+                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Zap className="w-8 h-8 text-green-600" />
                 </div>
                 <div className="text-4xl font-bold text-primary-600 mb-2">Minutes</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Cut Decision Time</h3>
@@ -104,8 +131,8 @@ const LandingPage: React.FC = () => {
               </div>
 
               <div className="bg-white rounded-2xl p-8 shadow-soft border border-gray-200 hover:shadow-medium transition-shadow text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6">
-                  💰
+                <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <DollarSign className="w-8 h-8 text-orange-600" />
                 </div>
                 <div className="text-4xl font-bold text-primary-600 mb-2">MLR↓</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Reduce Chronic Care Spend</h3>
@@ -116,8 +143,8 @@ const LandingPage: React.FC = () => {
               </div>
 
               <div className="bg-white rounded-2xl p-8 shadow-soft border border-gray-200 hover:shadow-medium transition-shadow text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6">
-                  📈
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="w-8 h-8 text-purple-600" />
                 </div>
                 <div className="text-4xl font-bold text-primary-600 mb-2">ROI</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-4">Get Proof, Not Promises</h3>
