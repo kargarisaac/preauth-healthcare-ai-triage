@@ -7,10 +7,12 @@ interface ProcessingContextValue {
   processingResults: ApiResponse | null;
   isProcessing: boolean;
   uploadProgress: number;
+  enableLLMValidation: boolean;
   setCurrentFile: (file: File | null) => void;
   setProcessingResults: (results: ApiResponse | null) => void;
   setIsProcessing: (processing: boolean) => void;
   setUploadProgress: (progress: number) => void;
+  setEnableLLMValidation: (enabled: boolean) => void;
   processFile: (format: string) => Promise<void>;
   processSampleFile: (format: string) => Promise<void>;
   clearResults: () => void;
@@ -27,6 +29,7 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
   const [processingResults, setProcessingResults] = useState<ApiResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [enableLLMValidation, setEnableLLMValidation] = useState(false);
   const { showToast } = useToast();
 
   const processFile = async (format: string) => {
@@ -64,6 +67,11 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 200);
+
+      // Add LLM validation parameter if enabled
+      if (enableLLMValidation) {
+        formData.append('enable_llm_validation', 'true');
+      }
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -152,10 +160,12 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
       processingResults,
       isProcessing,
       uploadProgress,
+      enableLLMValidation,
       setCurrentFile,
       setProcessingResults,
       setIsProcessing,
       setUploadProgress,
+      setEnableLLMValidation,
       processFile,
       processSampleFile,
       clearResults,

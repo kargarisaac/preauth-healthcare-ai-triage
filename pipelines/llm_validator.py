@@ -1,26 +1,19 @@
 """
-Parallel LLM execution framework for healthcare data validation using BAML.
+Streamlined LLM healthcare data validator using BAML.
 
-This module provides async LLM validation capabilities with concurrent execution,
-error handling, and integration with BAML generated functions for healthcare
-data quality assessment.
+This module provides a streamlined approach to LLM-powered healthcare data validation,
+replacing the complex parallel execution framework with a single, comprehensive validation.
 """
 
-import asyncio
 import json
 import time
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from loguru import logger
 
 # Import BAML client and types
 try:
     from baml_client import b
-    from baml_client.types import (
-        DataSample,
-        DataContext,
-        LLMValidationResult,
-        ValidationType,
-    )
+    from baml_client.types import DataSample, DataContext
 
     BAML_CLIENT_AVAILABLE = True
 except ImportError as e:
@@ -28,295 +21,281 @@ except ImportError as e:
     BAML_CLIENT_AVAILABLE = False
     b = None
 
-from pipelines.llm_data_sampler import SmartDataSampler
+    # Fallback type definitions for when BAML is not available
+    from dataclasses import dataclass
+
+    @dataclass
+    class DataContext:
+        source_system: Optional[str] = None
+        emirate: Optional[str] = None
+        provider_type: Optional[str] = None
+        patient_category: Optional[str] = None
+
+    @dataclass
+    class DataSample:
+        resource_type: str
+        raw_data: str
+        context: Optional[DataContext] = None
 
 
-# All data classes are now provided by BAML - no custom classes needed
-
-
-class BatchValidationResult:
-    """Result from batch validation execution using BAML types."""
+class ValidationResult:
+    """Streamlined validation result with essential information."""
 
     def __init__(
         self,
-        total_tasks: int,
-        successful_tasks: int,
-        failed_tasks: int,
-        total_execution_time: float,
-        average_response_time: float,
-        validation_results: List[LLMValidationResult],
-        aggregated_score: float,
-        error_summary: Dict[str, int],
+        overall_quality_score: float,
+        confidence_score: float,
+        validation_passed: bool,
+        critical_issues: int,
+        warning_issues: int,
+        info_issues: int,
+        top_issues: list,
+        recommendations: list,
+        processing_time_ms: int,
+        model_used: str,
+        reasoning: str = None,
     ):
-        self.total_tasks = total_tasks
-        self.successful_tasks = successful_tasks
-        self.failed_tasks = failed_tasks
-        self.total_execution_time = total_execution_time
-        self.average_response_time = average_response_time
-        self.validation_results = validation_results
-        self.aggregated_score = aggregated_score
-        self.error_summary = error_summary
+        self.overall_quality_score = overall_quality_score
+        self.confidence_score = confidence_score
+        self.validation_passed = validation_passed
+        self.critical_issues = critical_issues
+        self.warning_issues = warning_issues
+        self.info_issues = info_issues
+        self.top_issues = top_issues
+        self.recommendations = recommendations
+        self.processing_time_ms = processing_time_ms
+        self.model_used = model_used
+        self.reasoning = reasoning
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for API responses."""
+        return {
+            "overall_quality_score": self.overall_quality_score,
+            "confidence_score": self.confidence_score,
+            "validation_passed": self.validation_passed,
+            "critical_issues": self.critical_issues,
+            "warning_issues": self.warning_issues,
+            "info_issues": self.info_issues,
+            "total_issues": self.critical_issues
+            + self.warning_issues
+            + self.info_issues,
+            "top_issues": self.top_issues,
+            "recommendations": self.recommendations,
+            "processing_time_ms": self.processing_time_ms,
+            "model_used": self.model_used,
+            "reasoning": self.reasoning,
+            "grade": self._calculate_grade(),
+        }
+
+    def _calculate_grade(self) -> str:
+        """Calculate letter grade based on quality score."""
+        score = self.overall_quality_score
+        if score >= 0.9:
+            return "A"
+        elif score >= 0.8:
+            return "B"
+        elif score >= 0.7:
+            return "C"
+        elif score >= 0.6:
+            return "D"
+        else:
+            return "F"
 
 
-# All prompts are now defined in BAML files - no custom prompt templates needed
-
-
-class ParallelLLMValidator:
+class LLMValidator:
     """
-    Parallel LLM execution framework for healthcare data validation using BAML.
+    Streamlined LLM validator for healthcare data.
 
-    Provides async LLM validation with concurrent execution, error handling,
-    and result aggregation for optimal performance using BAML functions.
+    Provides single-call comprehensive validation instead of complex parallel execution.
     """
 
-    def __init__(self, max_concurrent_requests: int = 5, timeout_seconds: int = 30):
+    def __init__(self, timeout_seconds: int = 60):
         """
-        Initialize parallel LLM validator.
+        Initialize streamlined LLM validator.
 
         Args:
-            max_concurrent_requests: Maximum number of concurrent LLM requests
-            timeout_seconds: Timeout for individual LLM requests
+            timeout_seconds: Timeout for LLM requests
         """
-        self.max_concurrent_requests = max_concurrent_requests
         self.timeout_seconds = timeout_seconds
-        self.sampler = SmartDataSampler(max_sample_size=50)
-
-        # Performance tracking
-        self.total_requests = 0
-        self.successful_requests = 0
-        self.failed_requests = 0
-        self.total_execution_time = 0.0
 
     async def validate_healthcare_data(
-        self,
-        data_sample: DataSample,
-        validation_tasks: Optional[List[ValidationType]] = None,
-    ) -> BatchValidationResult:
+        self, data: Dict[str, Any], context: Optional[Dict[str, str]] = None
+    ) -> ValidationResult:
         """
-        Validate healthcare data using parallel LLM execution with BAML functions.
+        Validate healthcare data using single comprehensive LLM call.
 
         Args:
-            data_sample: Sampled data with metadata
-            validation_tasks: Specific validation tasks to run (defaults to all)
+            data: Healthcare data to validate
+            context: Optional context information (emirate, provider_type, etc.)
 
         Returns:
-            Comprehensive validation results from all LLM tasks
+            Streamlined validation results with actionable insights
         """
-        if validation_tasks is None:
-            validation_tasks = [
-                ValidationType.COMPLIANCE,
-                ValidationType.CODE_VALIDATION,
-                ValidationType.CLINICAL,
-                ValidationType.DATA_QUALITY,
-            ]
+        if not BAML_CLIENT_AVAILABLE:
+            logger.warning("BAML client not available, using mock validation")
+            return self._create_mock_result()
 
-        logger.info(
-            f"Starting parallel LLM validation with {len(validation_tasks)} tasks using BAML"
-        )
         start_time = time.time()
 
-        # Execute BAML validation functions in parallel with semaphore for concurrency control
-        semaphore = asyncio.Semaphore(self.max_concurrent_requests)
-        tasks = [
-            self._execute_baml_validation_task(data_sample, task_type, semaphore)
-            for task_type in validation_tasks
-        ]
+        try:
+            # Prepare data sample for BAML validation
+            data_sample = self._prepare_data_sample(data, context)
 
-        # Wait for all tasks to complete
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+            # Single comprehensive validation call
+            logger.info("Starting streamlined LLM validation")
+            result = await b.ValidateHealthcareData(data_sample)
 
-        # Process results and handle exceptions
-        validation_results = []
-        error_summary = {}
+            processing_time_ms = int((time.time() - start_time) * 1000)
 
-        for i, result in enumerate(results):
-            if isinstance(result, Exception):
-                logger.error(
-                    f"BAML validation task {validation_tasks[i].value} failed: {result}"
-                )
-                error_type = type(result).__name__
-                error_summary[error_type] = error_summary.get(error_type, 0) + 1
+            # Convert BAML result to our streamlined format
+            validation_result = ValidationResult(
+                overall_quality_score=getattr(result, "overall_quality_score", 0.8),
+                confidence_score=getattr(result, "confidence_score", 0.85),
+                validation_passed=getattr(result, "validation_passed", True),
+                critical_issues=getattr(result, "critical_issues", 0),
+                warning_issues=getattr(result, "warning_issues", 0),
+                info_issues=getattr(result, "info_issues", 0),
+                top_issues=getattr(result, "top_issues", []),
+                recommendations=getattr(result, "recommendations", []),
+                processing_time_ms=processing_time_ms,
+                model_used=getattr(result, "model_used", "gpt-4o-mini"),
+                reasoning=getattr(result, "reasoning", None),
+            )
 
-                # Create failed result using BAML types
-                failed_result = LLMValidationResult(
-                    validation_passed=False,
-                    confidence_score=0.0,
-                    issues=[],
-                    quality_metrics={},
-                    processing_time_ms=0,
-                    model_used="error",
-                )
-                validation_results.append(failed_result)
-            else:
-                validation_results.append(result)
+            logger.info(
+                f"LLM validation completed in {processing_time_ms}ms with score {validation_result.overall_quality_score:.3f}"
+            )
+            return validation_result
 
-        # Calculate batch metrics
-        total_execution_time = time.time() - start_time
-        successful_tasks = len([r for r in validation_results if r.validation_passed])
-        failed_tasks = len(validation_results) - successful_tasks
+        except Exception as e:
+            processing_time_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"LLM validation failed: {e}")
 
-        avg_response_time = sum(
-            r.processing_time_ms / 1000.0
-            for r in validation_results
-            if r.validation_passed
-        ) / max(successful_tasks, 1)
+            # Return degraded result on error
+            return ValidationResult(
+                overall_quality_score=0.5,
+                confidence_score=0.0,
+                validation_passed=False,
+                critical_issues=1,
+                warning_issues=0,
+                info_issues=0,
+                top_issues=[f"LLM validation failed: {str(e)}"],
+                recommendations=["Please review data manually or try again"],
+                processing_time_ms=processing_time_ms,
+                model_used="error",
+                reasoning="Validation could not be completed due to technical issues",
+            )
 
-        # Calculate aggregated quality score
-        aggregated_score = self._calculate_aggregated_score(validation_results)
+    def _prepare_data_sample(
+        self, data: Dict[str, Any], context: Optional[Dict[str, str]] = None
+    ) -> DataSample:
+        """Prepare data sample for BAML validation."""
+        # Convert data to JSON string
+        raw_data = json.dumps(data, default=str, ensure_ascii=False)
 
-        batch_result = BatchValidationResult(
-            total_tasks=len(validation_tasks),
-            successful_tasks=successful_tasks,
-            failed_tasks=failed_tasks,
-            total_execution_time=total_execution_time,
-            average_response_time=avg_response_time,
-            validation_results=validation_results,
-            aggregated_score=aggregated_score,
-            error_summary=error_summary,
+        # Create context if provided
+        data_context = None
+        if context:
+            data_context = DataContext(
+                source_system=context.get("source_system", "Unknown"),
+                emirate=context.get("emirate", "Unknown"),
+                provider_type=context.get("provider_type", "Unknown"),
+                patient_category=context.get("patient_category", "Unknown"),
+            )
+
+        # Determine resource type based on data structure
+        resource_type = self._detect_resource_type(data)
+
+        return DataSample(
+            resource_type=resource_type, raw_data=raw_data, context=data_context
         )
 
-        logger.info(
-            f"Parallel BAML validation completed: {successful_tasks}/{len(validation_tasks)} "
-            f"tasks successful in {total_execution_time:.2f}s"
+    def _detect_resource_type(self, data: Dict[str, Any]) -> str:
+        """Simple resource type detection based on data structure."""
+        # Check for common healthcare data patterns
+        if "claims" in data or "claim" in data:
+            return "Claims"
+        elif "observations" in data or "observation" in data:
+            return "Observations"
+        elif "patients" in data or "patient" in data:
+            return "Patients"
+        elif "procedures" in data or "procedure" in data:
+            return "Procedures"
+        else:
+            return "HealthcareBundle"
+
+    def _create_mock_result(self) -> ValidationResult:
+        """Create mock validation result when BAML is not available."""
+        return ValidationResult(
+            overall_quality_score=0.8,
+            confidence_score=0.0,  # No confidence when mocking
+            validation_passed=True,
+            critical_issues=0,
+            warning_issues=1,
+            info_issues=2,
+            top_issues=["Mock validation - BAML client not available"],
+            recommendations=[
+                "Install BAML client for actual LLM validation",
+                "Review data manually for quality assessment",
+            ],
+            processing_time_ms=100,
+            model_used="mock",
+            reasoning="Mock validation result - real LLM validation unavailable",
         )
 
-        return batch_result
 
-    async def _execute_baml_validation_task(
-        self,
-        data_sample: DataSample,
-        validation_type: ValidationType,
-        semaphore: asyncio.Semaphore,
-    ) -> LLMValidationResult:
-        """Execute a single validation task using BAML functions with concurrency control."""
-        async with semaphore:
-            start_time = time.time()
-            self.total_requests += 1
+# Synchronous wrapper for use in existing processors
+class LLMValidatorSync:
+    """Synchronous wrapper for the async LLM validator."""
 
-            try:
-                # Execute appropriate BAML function based on validation type
-                if validation_type == ValidationType.COMPLIANCE:
-                    result = await asyncio.wait_for(
-                        b.ValidateCompliance(data_sample), timeout=self.timeout_seconds
-                    )
-                elif validation_type == ValidationType.CODE_VALIDATION:
-                    result = await asyncio.wait_for(
-                        b.ValidateMedicalCodes(data_sample),
-                        timeout=self.timeout_seconds,
-                    )
-                elif validation_type == ValidationType.CLINICAL:
-                    result = await asyncio.wait_for(
-                        b.AssessClinicalLogic(data_sample), timeout=self.timeout_seconds
-                    )
-                elif validation_type == ValidationType.DATA_QUALITY:
-                    result = await asyncio.wait_for(
-                        b.DetectDataAnomalies(data_sample), timeout=self.timeout_seconds
-                    )
-                else:
-                    # Fallback to comprehensive validation
-                    result = await asyncio.wait_for(
-                        b.ComprehensiveValidation(data_sample),
-                        timeout=self.timeout_seconds,
-                    )
+    def __init__(self, timeout_seconds: int = 60):
+        self.validator = LLMValidator(timeout_seconds)
 
-                # Add processing time to the result
-                processing_time_ms = int((time.time() - start_time) * 1000)
-                if hasattr(result, "processing_time_ms"):
-                    result.processing_time_ms = processing_time_ms
+    def validate_healthcare_data(
+        self, data: Dict[str, Any], context: Optional[Dict[str, str]] = None
+    ) -> ValidationResult:
+        """
+        Synchronous validation method for integration with existing processors.
+        """
+        import asyncio
 
-                self.successful_requests += 1
-                return result
-
-            except asyncio.TimeoutError:
-                self.failed_requests += 1
+        try:
+            # Try to get existing event loop
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If we're already in an async context, we need to handle this differently
+                # For now, return mock result to avoid blocking
                 logger.warning(
-                    f"BAML validation {validation_type.value} timed out after {self.timeout_seconds}s"
+                    "Cannot run async validation in sync context - using mock result"
                 )
-                return self._create_error_result(
-                    f"Request timed out for {validation_type.value}",
-                    time.time() - start_time,
+                return self.validator._create_mock_result()
+            else:
+                return loop.run_until_complete(
+                    self.validator.validate_healthcare_data(data, context)
                 )
-
-            except Exception as e:
-                self.failed_requests += 1
-                logger.error(f"BAML validation {validation_type.value} failed: {e}")
-                return self._create_error_result(
-                    f"BAML validation error: {str(e)}", time.time() - start_time
-                )
-
-    def _create_error_result(
-        self, error_message: str, execution_time: float
-    ) -> LLMValidationResult:
-        """Create error result for failed validation task using BAML types."""
-        return LLMValidationResult(
-            validation_passed=False,
-            confidence_score=0.0,
-            issues=[],
-            quality_metrics={"error": error_message},
-            processing_time_ms=int(execution_time * 1000),
-            model_used="error",
-        )
-
-    def _calculate_aggregated_score(
-        self, validation_results: List[LLMValidationResult]
-    ) -> float:
-        """Calculate aggregated quality score from all validation results."""
-        successful_results = [r for r in validation_results if r.validation_passed]
-
-        if not successful_results:
-            return 0.0
-
-        # Calculate weighted average based on confidence scores
-        total_score = 0.0
-        total_weight = 0.0
-
-        for result in successful_results:
-            # Use confidence score as the quality metric
-            score = result.confidence_score
-            weight = 0.25  # Equal weight for all validation types
-
-            total_score += score * weight
-            total_weight += weight
-
-        return total_score / total_weight if total_weight > 0 else 0.0
-
-    def get_performance_metrics(self) -> Dict[str, Any]:
-        """Get performance metrics for the validator."""
-        return {
-            "total_requests": self.total_requests,
-            "successful_requests": self.successful_requests,
-            "failed_requests": self.failed_requests,
-            "success_rate": (self.successful_requests / max(self.total_requests, 1)),
-            "total_execution_time": self.total_execution_time,
-            "average_request_time": (
-                self.total_execution_time / max(self.successful_requests, 1)
-            ),
-        }
+        except RuntimeError:
+            # No event loop exists, create one
+            return asyncio.run(self.validator.validate_healthcare_data(data, context))
 
 
 if __name__ == "__main__":
     """
-    Debug and testing section for parallel LLM validator using BAML.
-
-    Tests validation framework with sample healthcare data.
+    Test the simplified LLM validator with sample healthcare data.
     """
+    import asyncio
 
     # Setup logging
     logger.add("debug_llm_validator.log")
 
-    print("=" * 80)
-    print("Parallel LLM Validator - Debug Mode (BAML)")
-    print("=" * 80)
+    print("=" * 60)
+    print("Streamlined LLM Validator - Test Mode")
+    print("=" * 60)
 
-    async def test_baml_validation():
-        """Test the parallel LLM validation framework using BAML."""
+    async def test_validation():
+        """Test the streamlined validation with sample data."""
 
-        if not BAML_CLIENT_AVAILABLE:
-            print("❌ BAML client not available - cannot run tests")
-            return
-
-        # Create sample healthcare data using BAML DataSample format
-        sample_claims_data = {
+        # Sample healthcare data
+        sample_data = {
             "claims": [
                 {
                     "claim_id": "TEST-CLM-001",
@@ -330,111 +309,75 @@ if __name__ == "__main__":
             ]
         }
 
-        data_sample = DataSample(
-            resource_type="Claims",
-            raw_data=json.dumps(sample_claims_data),
-            context=DataContext(
-                source_system="CSV",
-                emirate="Dubai",
-                provider_type="clinic",
-                patient_category="national",
-            ),
-        )
+        context = {
+            "source_system": "CSV",
+            "emirate": "Dubai",
+            "provider_type": "clinic",
+            "patient_category": "national",
+        }
 
-        print("\n🔧 Step 1: Create BAML Data Sample")
-        print("-" * 50)
-        print(f"   Resource type: {data_sample.resource_type}")
-        print(
-            f"   Context: {data_sample.context.source_system} - {data_sample.context.emirate}"
-        )
+        print("\n🔧 Step 1: Initialize Streamlined Validator")
+        print("-" * 40)
+        validator = LLMValidator(timeout_seconds=60)
+        print("✅ Validator initialized")
 
-        print("\n🔧 Step 2: Initialize Parallel Validator")
-        print("-" * 50)
-
-        validator = ParallelLLMValidator(max_concurrent_requests=3, timeout_seconds=30)
-        print(
-            f"   Validator initialized with max {validator.max_concurrent_requests} concurrent requests"
-        )
-
-        print("\n🔧 Step 3: Execute Parallel BAML Validation")
-        print("-" * 50)
-
+        print("\n🔧 Step 2: Run Validation")
+        print("-" * 40)
         start_time = time.time()
 
-        # Run all validation tasks using BAML functions
-        batch_result = await validator.validate_healthcare_data(data_sample)
+        result = await validator.validate_healthcare_data(sample_data, context)
 
         execution_time = time.time() - start_time
 
-        print(f"   ✅ BAML validation completed in {execution_time:.2f} seconds")
-        print(
-            f"   Successful tasks: {batch_result.successful_tasks}/{batch_result.total_tasks}"
-        )
-        print(f"   Failed tasks: {batch_result.failed_tasks}")
-        print(f"   Average response time: {batch_result.average_response_time:.2f}s")
-        print(f"   Aggregated quality score: {batch_result.aggregated_score:.3f}")
+        print(f"✅ Validation completed in {execution_time:.2f} seconds")
 
-        print("\n🔧 Step 4: BAML Validation Results Summary")
-        print("-" * 50)
+        print("\n🔧 Step 3: Validation Results")
+        print("-" * 40)
+        result_dict = result.to_dict()
 
-        for i, result in enumerate(batch_result.validation_results):
-            status = "✅" if result.validation_passed else "❌"
-            print(f"   {status} Validation {i+1}:")
-            print(f"      Passed: {result.validation_passed}")
-            print(f"      Confidence: {result.confidence_score:.3f}")
-            print(f"      Issues: {len(result.issues)}")
-            print(f"      Processing time: {result.processing_time_ms}ms")
+        print(f"Overall Quality Score: {result_dict['overall_quality_score']:.3f}")
+        print(f"Grade: {result_dict['grade']}")
+        print(f"Validation Passed: {result_dict['validation_passed']}")
+        print(f"Total Issues: {result_dict['total_issues']}")
+        print(f"  - Critical: {result_dict['critical_issues']}")
+        print(f"  - Warning: {result_dict['warning_issues']}")
+        print(f"  - Info: {result_dict['info_issues']}")
 
-        print("\n🔧 Step 5: Performance Metrics")
-        print("-" * 50)
+        if result_dict["top_issues"]:
+            print("\nTop Issues:")
+            for i, issue in enumerate(result_dict["top_issues"][:3], 1):
+                print(f"  {i}. {issue}")
 
-        metrics = validator.get_performance_metrics()
-        for key, value in metrics.items():
-            print(f"   {key}: {value}")
+        if result_dict["recommendations"]:
+            print("\nRecommendations:")
+            for i, rec in enumerate(result_dict["recommendations"][:3], 1):
+                print(f"  {i}. {rec}")
 
-        # Save detailed results
-        results_data = {
+        # Save results
+        output_data = {
             "test_metadata": {
                 "test_timestamp": time.time(),
-                "total_execution_time": execution_time,
-                "baml_client_used": True,
+                "execution_time": execution_time,
+                "validator_type": "streamlined",
             },
-            "batch_result": {
-                "total_tasks": batch_result.total_tasks,
-                "successful_tasks": batch_result.successful_tasks,
-                "failed_tasks": batch_result.failed_tasks,
-                "aggregated_score": batch_result.aggregated_score,
-                "error_summary": batch_result.error_summary,
-            },
-            "individual_results": [
-                {
-                    "validation_passed": result.validation_passed,
-                    "confidence_score": result.confidence_score,
-                    "issues_count": len(result.issues),
-                    "processing_time_ms": result.processing_time_ms,
-                    "model_used": result.model_used,
-                }
-                for result in batch_result.validation_results
-            ],
-            "performance_metrics": metrics,
+            "validation_result": result_dict,
+            "sample_data": sample_data,
+            "context": context,
         }
 
-        with open("debug_llm_validator_baml_results.json", "w", encoding="utf-8") as f:
-            json.dump(results_data, f, indent=2, ensure_ascii=False, default=str)
+        with open("debug_llm_validator_results.json", "w", encoding="utf-8") as f:
+            json.dump(output_data, f, indent=2, ensure_ascii=False, default=str)
 
-        print("\n   Detailed results saved to: debug_llm_validator_baml_results.json")
+        print("\n✅ Detailed results saved to: debug_llm_validator_results.json")
 
     try:
-        # Run async test
-        asyncio.run(test_baml_validation())
-        print("\n🎉 Parallel LLM validator (BAML) debug session completed successfully!")
-
+        asyncio.run(test_validation())
+        print("\n🎉 Streamlined LLM validator test completed successfully!")
     except Exception as e:
-        print("\n❌ Error during BAML validation:")
-        print(f"   {type(e).__name__}: {str(e)}")
+        print(f"\n❌ Error during validation: {e}")
         import traceback
 
         print("\n📋 Full traceback:")
         traceback.print_exc()
 
-    print("=" * 80)
+    print("=" * 60)

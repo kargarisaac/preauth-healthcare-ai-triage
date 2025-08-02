@@ -18,6 +18,7 @@ from enum import Enum
 from pydantic import BaseModel
 
 
+
 CheckT = typing_extensions.TypeVar('CheckT')
 CheckName = typing_extensions.TypeVar('CheckName', bound=str)
 
@@ -81,7 +82,7 @@ class ValidationType(str, Enum):
 
 
 # #########################################################################
-# Generated classes (52)
+# Generated classes (53)
 # #########################################################################
 
 
@@ -638,6 +639,20 @@ class ValidationIssue(BaseModel):
     suggestions: typing.Optional[typing.List[str]] = None
     regulation_reference: typing.Optional[str] = None
     emirate_specific: typing.Optional[bool] = None
+
+
+class ValidationResult(BaseModel):
+    overall_quality_score: float
+    confidence_score: float
+    validation_passed: bool
+    critical_issues: int
+    warning_issues: int
+    info_issues: int
+    top_issues: typing.List[str]
+    recommendations: typing.List[str]
+    processing_time_ms: int
+    model_used: str
+    reasoning: typing.Optional[str] = None
 
 
 # #########################################################################

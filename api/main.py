@@ -42,6 +42,7 @@ sys.path.append(
 
 from pipelines.csv_processor import CSVProcessor  # noqa: E402
 from pipelines.xml_processor import XMLProcessor  # noqa: E402
+from pipelines.llm_validator import LLMValidatorSync  # noqa: E402
 from api.models import (  # noqa: E402
     ProcessingResponse,
     CSVProcessResponse,
@@ -133,6 +134,7 @@ def serialize_numpy_types(obj):
 # Initialize processors
 xml_processor = XMLProcessor()
 csv_processor = CSVProcessor()
+llm_validator = LLMValidatorSync()
 
 
 # WebSocket connection manager
@@ -386,6 +388,7 @@ async def health_check():
 @app.post("/api/process/eclaim", response_model=ProcessingResponse)
 async def process_eclaim_xml(
     file: UploadFile = File(..., description="eClaimLink XML file"),
+    enable_llm_validation: bool = False,
 ):
     """
     Process eClaimLink XML file and return canonical JSON format.
@@ -412,12 +415,38 @@ async def process_eclaim_xml(
         # Calculate processing time
         processing_time = time.time() - start_time
 
+        # Perform streamlined LLM validation if requested
+        xml_metadata = {}
+        if enable_llm_validation:
+            logger.info("Performing streamlined LLM validation on eClaimLink data")
+            try:
+                validation_context = {
+                    "source_system": "eClaimLink",
+                    "emirate": "Dubai",  # eClaimLink is Dubai-specific
+                    "provider_type": "Unknown",
+                    "patient_category": "Unknown",
+                }
+
+                llm_validation_result = llm_validator.validate_healthcare_data(
+                    result, validation_context
+                )
+
+                xml_metadata["llm_validation"] = llm_validation_result.to_dict()
+                logger.info(
+                    f"LLM validation completed with score: {llm_validation_result.overall_quality_score:.3f}"
+                )
+
+            except Exception as e:
+                logger.error(f"LLM validation failed: {e}")
+                xml_metadata["llm_validation_error"] = str(e)
+
         # Create metadata
         metadata = create_processing_metadata(
             filename=file.filename,
             file_size=file_size,
             processing_time=processing_time,
             format_type="eClaimLink",
+            additional_metadata=xml_metadata,
         )
 
         logger.info(
@@ -445,6 +474,7 @@ async def process_eclaim_xml(
 @app.post("/api/process/shafafiya", response_model=ProcessingResponse)
 async def process_shafafiya_xml(
     file: UploadFile = File(..., description="Shafafiya XML file"),
+    enable_llm_validation: bool = False,
 ):
     """
     Process Shafafiya XML file and return canonical JSON format.
@@ -471,12 +501,38 @@ async def process_shafafiya_xml(
         # Calculate processing time
         processing_time = time.time() - start_time
 
+        # Perform streamlined LLM validation if requested
+        xml_metadata = {}
+        if enable_llm_validation:
+            logger.info("Performing streamlined LLM validation on Shafafiya data")
+            try:
+                validation_context = {
+                    "source_system": "Shafafiya",
+                    "emirate": "Abu Dhabi",  # Shafafiya is Abu Dhabi-specific
+                    "provider_type": "Unknown",
+                    "patient_category": "Unknown",
+                }
+
+                llm_validation_result = llm_validator.validate_healthcare_data(
+                    result, validation_context
+                )
+
+                xml_metadata["llm_validation"] = llm_validation_result.to_dict()
+                logger.info(
+                    f"LLM validation completed with score: {llm_validation_result.overall_quality_score:.3f}"
+                )
+
+            except Exception as e:
+                logger.error(f"LLM validation failed: {e}")
+                xml_metadata["llm_validation_error"] = str(e)
+
         # Create metadata
         metadata = create_processing_metadata(
             filename=file.filename,
             file_size=file_size,
             processing_time=processing_time,
             format_type="Shafafiya",
+            additional_metadata=xml_metadata,
         )
 
         logger.info(
@@ -504,13 +560,17 @@ async def process_shafafiya_xml(
 @app.post("/api/process/csv", response_model=CSVProcessResponse)
 async def process_csv_file(
     file: UploadFile = File(..., description="CSV file (claims or clinical data)"),
+    enable_llm_validation: bool = False,
 ):
     """
-    Process CSV file and return canonical JSON format.
+    Process CSV file and return canonical JSON format with optional LLM validation.
 
     Accepts CSV file upload and processes it through CSVProcessor to extract
     healthcare data in standardized format. Automatically detects whether
     the CSV contains claims or clinical data.
+
+    If enable_llm_validation is True, performs additional AI-powered validation
+    for data quality, compliance, and clinical logic assessment.
     """
     temp_path = None
     start_time = time.time()
@@ -551,6 +611,34 @@ async def process_csv_file(
             ),
             "data_quality_score": result.get("data_quality_score", 0.0),
         }
+
+        # Perform streamlined LLM validation if requested
+        llm_validation_result = None
+        if enable_llm_validation:
+            logger.info("Performing streamlined LLM validation")
+            try:
+                # Prepare context for validation
+                validation_context = {
+                    "source_system": "CSV",
+                    "emirate": "Unknown",  # Could be detected from data
+                    "provider_type": "Unknown",
+                    "patient_category": "Unknown",
+                }
+
+                # Run streamlined LLM validation
+                llm_validation_result = llm_validator.validate_healthcare_data(
+                    result, validation_context
+                )
+
+                # Add LLM validation to metadata
+                csv_metadata["llm_validation"] = llm_validation_result.to_dict()
+                logger.info(
+                    f"LLM validation completed with score: {llm_validation_result.overall_quality_score:.3f}"
+                )
+
+            except Exception as e:
+                logger.error(f"LLM validation failed: {e}")
+                csv_metadata["llm_validation_error"] = str(e)
 
         # Create metadata
         metadata = create_processing_metadata(

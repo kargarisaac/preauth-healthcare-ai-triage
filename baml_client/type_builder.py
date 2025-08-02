@@ -75,6 +75,7 @@ class TypeBuilder(type_builder.TypeBuilder):
                     "ServiceActivity",
                     "UIFriendlyReport",
                     "ValidationIssue",
+                    "ValidationResult",
                 ]
             ),
             enums=set(
@@ -109,7 +110,7 @@ class TypeBuilder(type_builder.TypeBuilder):
         return ValidationTypeViewer(self)
 
     # #########################################################################
-    # Generated classes 52
+    # Generated classes 53
     # #########################################################################
 
     @property
@@ -319,6 +320,10 @@ class TypeBuilder(type_builder.TypeBuilder):
     @property
     def ValidationIssue(self) -> "ValidationIssueViewer":
         return ValidationIssueViewer(self)
+
+    @property
+    def ValidationResult(self) -> "ValidationResultViewer":
+        return ValidationResultViewer(self)
 
 
 # #########################################################################
@@ -585,7 +590,7 @@ class ValidationTypeValues:
 
 
 # #########################################################################
-# Generated classes 52
+# Generated classes 53
 # #########################################################################
 
 
@@ -4632,3 +4637,103 @@ class ValidationIssueProperties:
         return type_builder.ClassPropertyViewer(
             self.__bldr.property("emirate_specific")
         )
+
+
+class ValidationResultAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb  # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("ValidationResult")
+        self._properties: typing.Set[str] = set(
+            [
+                "overall_quality_score",
+                "confidence_score",
+                "validation_passed",
+                "critical_issues",
+                "warning_issues",
+                "info_issues",
+                "top_issues",
+                "recommendations",
+                "processing_time_ms",
+                "model_used",
+                "reasoning",
+            ]
+        )
+        self._props = ValidationResultProperties(self._bldr, self._properties)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "ValidationResultProperties":
+        return self._props
+
+
+class ValidationResultViewer(ValidationResultAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    def list_properties(
+        self,
+    ) -> typing.List[typing.Tuple[str, type_builder.ClassPropertyViewer]]:
+        return [
+            (name, type_builder.ClassPropertyViewer(self._bldr.property(name)))
+            for name in self._properties
+        ]
+
+
+class ValidationResultProperties:
+    def __init__(self, bldr: baml_py.ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties  # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    @property
+    def overall_quality_score(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(
+            self.__bldr.property("overall_quality_score")
+        )
+
+    @property
+    def confidence_score(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(
+            self.__bldr.property("confidence_score")
+        )
+
+    @property
+    def validation_passed(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(
+            self.__bldr.property("validation_passed")
+        )
+
+    @property
+    def critical_issues(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("critical_issues"))
+
+    @property
+    def warning_issues(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("warning_issues"))
+
+    @property
+    def info_issues(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("info_issues"))
+
+    @property
+    def top_issues(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("top_issues"))
+
+    @property
+    def recommendations(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("recommendations"))
+
+    @property
+    def processing_time_ms(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(
+            self.__bldr.property("processing_time_ms")
+        )
+
+    @property
+    def model_used(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("model_used"))
+
+    @property
+    def reasoning(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("reasoning"))

@@ -26,7 +26,7 @@ class StreamState(BaseModel, typing.Generic[StreamStateValueT]):
 
 
 # #########################################################################
-# Generated classes (52)
+# Generated classes (53)
 # #########################################################################
 
 
@@ -583,6 +583,20 @@ class ValidationIssue(BaseModel):
     suggestions: typing.Optional[typing.List[str]] = None
     regulation_reference: typing.Optional[str] = None
     emirate_specific: typing.Optional[bool] = None
+
+
+class ValidationResult(BaseModel):
+    overall_quality_score: typing.Optional[float] = None
+    confidence_score: typing.Optional[float] = None
+    validation_passed: typing.Optional[bool] = None
+    critical_issues: typing.Optional[int] = None
+    warning_issues: typing.Optional[int] = None
+    info_issues: typing.Optional[int] = None
+    top_issues: typing.List[str]
+    recommendations: typing.List[str]
+    processing_time_ms: typing.Optional[int] = None
+    model_used: typing.Optional[str] = None
+    reasoning: typing.Optional[str] = None
 
 
 # #########################################################################

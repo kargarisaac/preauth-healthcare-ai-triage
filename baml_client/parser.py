@@ -22,89 +22,29 @@ class LlmResponseParser:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def AssessClinicalLogic(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> types.LLMValidationResult:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="AssessClinicalLogic",
-            llm_response=llm_response,
-            mode="request",
-        )
-        return typing.cast(types.LLMValidationResult, result)
-
-    def ComprehensiveValidation(
+    def GenerateQualityReport(
         self,
         llm_response: str,
         baml_options: BamlCallOptions = {},
     ) -> types.UIFriendlyReport:
         result = self.__options.merge_options(baml_options).parse_response(
-            function_name="ComprehensiveValidation",
+            function_name="GenerateQualityReport",
             llm_response=llm_response,
             mode="request",
         )
         return typing.cast(types.UIFriendlyReport, result)
 
-    def DetectDataAnomalies(
+    def ValidateHealthcareData(
         self,
         llm_response: str,
         baml_options: BamlCallOptions = {},
-    ) -> types.LLMValidationResult:
+    ) -> types.ValidationResult:
         result = self.__options.merge_options(baml_options).parse_response(
-            function_name="DetectDataAnomalies",
+            function_name="ValidateHealthcareData",
             llm_response=llm_response,
             mode="request",
         )
-        return typing.cast(types.LLMValidationResult, result)
-
-    def GenerateQualityMetrics(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> types.QualityScore:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="GenerateQualityMetrics",
-            llm_response=llm_response,
-            mode="request",
-        )
-        return typing.cast(types.QualityScore, result)
-
-    def GenerateRecommendations(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> typing.List["types.ActionableItem"]:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="GenerateRecommendations",
-            llm_response=llm_response,
-            mode="request",
-        )
-        return typing.cast(typing.List["types.ActionableItem"], result)
-
-    def ValidateCompliance(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> types.LLMValidationResult:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="ValidateCompliance",
-            llm_response=llm_response,
-            mode="request",
-        )
-        return typing.cast(types.LLMValidationResult, result)
-
-    def ValidateMedicalCodes(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> types.LLMValidationResult:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="ValidateMedicalCodes",
-            llm_response=llm_response,
-            mode="request",
-        )
-        return typing.cast(types.LLMValidationResult, result)
+        return typing.cast(types.ValidationResult, result)
 
 
 class LlmStreamParser:
@@ -113,84 +53,26 @@ class LlmStreamParser:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def AssessClinicalLogic(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> stream_types.LLMValidationResult:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="AssessClinicalLogic",
-            llm_response=llm_response,
-            mode="stream",
-        )
-        return typing.cast(stream_types.LLMValidationResult, result)
-
-    def ComprehensiveValidation(
+    def GenerateQualityReport(
         self,
         llm_response: str,
         baml_options: BamlCallOptions = {},
     ) -> stream_types.UIFriendlyReport:
         result = self.__options.merge_options(baml_options).parse_response(
-            function_name="ComprehensiveValidation",
+            function_name="GenerateQualityReport",
             llm_response=llm_response,
             mode="stream",
         )
         return typing.cast(stream_types.UIFriendlyReport, result)
 
-    def DetectDataAnomalies(
+    def ValidateHealthcareData(
         self,
         llm_response: str,
         baml_options: BamlCallOptions = {},
-    ) -> stream_types.LLMValidationResult:
+    ) -> stream_types.ValidationResult:
         result = self.__options.merge_options(baml_options).parse_response(
-            function_name="DetectDataAnomalies",
+            function_name="ValidateHealthcareData",
             llm_response=llm_response,
             mode="stream",
         )
-        return typing.cast(stream_types.LLMValidationResult, result)
-
-    def GenerateQualityMetrics(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> stream_types.QualityScore:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="GenerateQualityMetrics",
-            llm_response=llm_response,
-            mode="stream",
-        )
-        return typing.cast(stream_types.QualityScore, result)
-
-    def GenerateRecommendations(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> typing.List["stream_types.ActionableItem"]:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="GenerateRecommendations",
-            llm_response=llm_response,
-            mode="stream",
-        )
-        return typing.cast(typing.List["stream_types.ActionableItem"], result)
-
-    def ValidateCompliance(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> stream_types.LLMValidationResult:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="ValidateCompliance", llm_response=llm_response, mode="stream"
-        )
-        return typing.cast(stream_types.LLMValidationResult, result)
-
-    def ValidateMedicalCodes(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> stream_types.LLMValidationResult:
-        result = self.__options.merge_options(baml_options).parse_response(
-            function_name="ValidateMedicalCodes",
-            llm_response=llm_response,
-            mode="stream",
-        )
-        return typing.cast(stream_types.LLMValidationResult, result)
+        return typing.cast(stream_types.ValidationResult, result)

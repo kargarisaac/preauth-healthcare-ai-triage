@@ -119,6 +119,8 @@ type_map = {
     "stream_types.UIFriendlyReport": stream_types.UIFriendlyReport,
     "types.ValidationIssue": types.ValidationIssue,
     "stream_types.ValidationIssue": stream_types.ValidationIssue,
+    "types.ValidationResult": types.ValidationResult,
+    "stream_types.ValidationResult": stream_types.ValidationResult,
     "types.CodingSystem": types.CodingSystem,
     "types.UAEHealthcareEntity": types.UAEHealthcareEntity,
     "types.ValidationSeverity": types.ValidationSeverity,
