@@ -177,17 +177,17 @@ export const ProcessingCharts: React.FC<ProcessingChartsProps> = ({
             {activeVolumeChart === 'line' ? (
               <LineChart data={volumeData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   stroke="#666"
                   fontSize={12}
                 />
-                <YAxis 
+                <YAxis
                   yAxisId="volume"
                   stroke="#666"
                   fontSize={12}
                 />
-                <YAxis 
+                <YAxis
                   yAxisId="percentage"
                   orientation="right"
                   stroke="#666"
@@ -347,7 +347,7 @@ export const ProcessingCharts: React.FC<ProcessingChartsProps> = ({
                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
@@ -372,7 +372,7 @@ export const ProcessingCharts: React.FC<ProcessingChartsProps> = ({
           <div className="mt-4 grid grid-cols-2 gap-2">
             {formatData.map((format, index) => (
               <div key={format.name} className="flex items-center space-x-2">
-                <div 
+                <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
                 />

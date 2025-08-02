@@ -61,7 +61,7 @@ export const useMobileOptimization = () => {
       const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
       const isTablet = /ipad|android(?=.*tablet)|tablet/i.test(userAgent);
       const isDesktop = !isMobile && !isTablet;
-      
+
       setCapabilities({
         isMobile: isMobile && !isTablet,
         isTablet,
@@ -76,13 +76,13 @@ export const useMobileOptimization = () => {
           height: window.innerHeight
         }
       });
-      
+
       // Set orientation
       setOrientation(window.innerWidth > window.innerHeight ? 'landscape' : 'portrait');
     };
 
     updateCapabilities();
-    
+
     // Listen for resize and orientation changes
     window.addEventListener('resize', updateCapabilities);
     window.addEventListener('orientationchange', updateCapabilities);
@@ -104,7 +104,7 @@ export const useMobileOptimization = () => {
     config: Partial<SwipeConfig> = {}
   ) => {
     const swipeConfig = { ...DEFAULT_SWIPE_CONFIG, ...config };
-    
+
     const handleTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0];
       touchStartRef.current = {
@@ -116,15 +116,15 @@ export const useMobileOptimization = () => {
 
     const handleTouchEnd = (e: TouchEvent) => {
       if (!touchStartRef.current) return;
-      
+
       const touch = e.changedTouches[0];
       const endTime = Date.now();
       const duration = endTime - touchStartRef.current.time;
-      
+
       const deltaX = touch.clientX - touchStartRef.current.x;
       const deltaY = touch.clientY - touchStartRef.current.y;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      
+
       // Determine gesture type
       if (distance < 10 && duration < 200) {
         // Tap
@@ -151,13 +151,13 @@ export const useMobileOptimization = () => {
       } else if (distance >= swipeConfig.minDistance && duration <= swipeConfig.maxDuration) {
         // Swipe
         let direction: 'left' | 'right' | 'up' | 'down';
-        
+
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
           direction = deltaX > 0 ? 'right' : 'left';
         } else {
           direction = deltaY > 0 ? 'down' : 'up';
         }
-        
+
         onGesture({
           type: 'swipe',
           direction,
@@ -169,13 +169,13 @@ export const useMobileOptimization = () => {
           distance
         });
       }
-      
+
       touchStartRef.current = null;
     };
 
     element.addEventListener('touchstart', handleTouchStart, { passive: true });
     element.addEventListener('touchend', handleTouchEnd, { passive: true });
-    
+
     return () => {
       element.removeEventListener('touchstart', handleTouchStart);
       element.removeEventListener('touchend', handleTouchEnd);
@@ -199,7 +199,7 @@ export const useMobileOptimization = () => {
   // Prevent zoom on double tap
   const preventDoubleClickZoom = useCallback((element: HTMLElement) => {
     let lastTouchEnd = 0;
-    
+
     const handleTouchEnd = (e: TouchEvent) => {
       const now = Date.now();
       if (now - lastTouchEnd <= 300) {
@@ -207,9 +207,9 @@ export const useMobileOptimization = () => {
       }
       lastTouchEnd = now;
     };
-    
+
     element.addEventListener('touchend', handleTouchEnd, { passive: false });
-    
+
     return () => {
       element.removeEventListener('touchend', handleTouchEnd);
     };
@@ -218,18 +218,18 @@ export const useMobileOptimization = () => {
   // Optimize for mobile performance
   const optimizeForMobile = useCallback(() => {
     if (!capabilities.isMobile) return;
-    
+
     // Reduce animations on mobile
     document.documentElement.style.setProperty('--animation-duration', '0.2s');
-    
+
     // Add touch-friendly cursor
     document.body.style.cursor = 'default';
-    
+
     // Prevent text selection on touch
     document.body.style.webkitTouchCallout = 'none';
     document.body.style.webkitUserSelect = 'none';
     document.body.style.userSelect = 'none';
-    
+
     // Improve scrolling performance
     document.body.style.webkitOverflowScrolling = 'touch';
     document.body.style.overflowScrolling = 'touch';
@@ -243,21 +243,21 @@ export const useMobileOptimization = () => {
   // Get appropriate viewport classes
   const getViewportClasses = useCallback(() => {
     const classes = [];
-    
+
     if (capabilities.isMobile) classes.push('mobile');
     if (capabilities.isTablet) classes.push('tablet');
     if (capabilities.isDesktop) classes.push('desktop');
     if (capabilities.supportsTouch) classes.push('touch');
     if (orientation === 'landscape') classes.push('landscape');
     if (orientation === 'portrait') classes.push('portrait');
-    
+
     return classes.join(' ');
   }, [capabilities, orientation]);
 
   // Get responsive breakpoint
   const getBreakpoint = useCallback(() => {
     const width = capabilities.screenSize.width;
-    
+
     if (width < 640) return 'sm';
     if (width < 768) return 'md';
     if (width < 1024) return 'lg';
@@ -291,7 +291,7 @@ export const useMobileOptimization = () => {
   // Get safe area insets for mobile devices
   const getSafeAreaInsets = useCallback(() => {
     const style = getComputedStyle(document.documentElement);
-    
+
     return {
       top: parseInt(style.getPropertyValue('--sat') || '0'),
       right: parseInt(style.getPropertyValue('--sar') || '0'),
@@ -304,20 +304,20 @@ export const useMobileOptimization = () => {
     // Capabilities
     capabilities,
     orientation,
-    
+
     // Utility functions
     setupTouchGestures,
     triggerHapticFeedback,
     preventDoubleClickZoom,
     optimizeForMobile,
-    
+
     // Helper functions
     getViewportClasses,
     getBreakpoint,
     isInViewport,
     scrollToElement,
     getSafeAreaInsets,
-    
+
     // Convenience flags
     isMobile: capabilities.isMobile,
     isTablet: capabilities.isTablet,

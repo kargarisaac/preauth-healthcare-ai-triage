@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  Layout, 
-  BarChart3, 
-  Settings, 
-  Users, 
-  FileText, 
-  Bell, 
+import {
+  Layout,
+  BarChart3,
+  Settings,
+  Users,
+  FileText,
+  Bell,
   Menu,
   X,
   ChevronRight
@@ -42,12 +42,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onToggle}
         />
       )}
-      
+
       {/* Sidebar */}
       <div className={`
         fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out
@@ -70,7 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <X className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <nav className="p-4">
           <div className="space-y-2">
             {navigationItems.map((item) => (
@@ -84,8 +84,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`
                   w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors duration-200
-                  ${activeSection === item.id 
-                    ? 'bg-blue-50 text-blue-600 border border-blue-200' 
+                  ${activeSection === item.id
+                    ? 'bg-blue-50 text-blue-600 border border-blue-200'
                     : 'text-gray-700 hover:bg-gray-50'
                   }
                 `}
@@ -101,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             ))}
           </div>
         </nav>
-        
+
         {/* Quick Stats */}
         <div className="p-4 border-t border-gray-200 mt-auto">
           <div className="space-y-3">
@@ -132,7 +132,7 @@ const TopBar: React.FC<{
   activeSection: string;
 }> = ({ onMenuToggle, activeSection }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  
+
   const getSectionTitle = () => {
     switch (activeSection) {
       case 'analytics': return 'Analytics Dashboard';
@@ -160,7 +160,7 @@ const TopBar: React.FC<{
             <p className="text-sm text-gray-600">UAE Healthcare Pre-Authorization Platform</p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <div className="relative">
             <Button
@@ -174,7 +174,7 @@ const TopBar: React.FC<{
                 3
               </span>
             </Button>
-            
+
             {notificationsOpen && (
               <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                 <div className="p-4 border-b border-gray-200">
@@ -205,7 +205,7 @@ const TopBar: React.FC<{
               </div>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
               <span className="text-sm font-medium text-white">AM</span>
@@ -289,7 +289,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           activeSection={activeSection}
           onSectionChange={setActiveSection}
         />
-        
+
         {/* Main Content */}
         <div className="flex-1 lg:ml-0">
           {/* Top Bar */}
@@ -297,7 +297,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             onMenuToggle={toggleSidebar}
             activeSection={activeSection}
           />
-          
+
           {/* Page Content */}
           <div className="p-6">
             {activeSection === 'analytics' ? (

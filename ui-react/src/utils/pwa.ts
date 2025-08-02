@@ -13,7 +13,7 @@ export const initPWA = () => {
     deferredPrompt = e as any;
     showInstallButton();
   });
-  
+
   // Listen for app installed
   window.addEventListener('appinstalled', () => {
     console.log('PWA was installed');
@@ -32,11 +32,11 @@ export const installPWA = async (): Promise<boolean> => {
   if (!deferredPrompt) {
     return false;
   }
-  
+
   try {
     await deferredPrompt.prompt();
     const choiceResult = await deferredPrompt.userChoice;
-    
+
     if (choiceResult.outcome === 'accepted') {
       console.log('User accepted the install prompt');
       return true;
@@ -54,7 +54,7 @@ export const installPWA = async (): Promise<boolean> => {
 
 // Check if running as PWA
 export const isPWA = (): boolean => {
-  return window.matchMedia('(display-mode: standalone)').matches || 
+  return window.matchMedia('(display-mode: standalone)').matches ||
          (window.navigator as any).standalone === true;
 };
 
@@ -109,10 +109,10 @@ export const getNetworkStatus = () => {
 export const onNetworkChange = (callback: (online: boolean) => void) => {
   const handleOnline = () => callback(true);
   const handleOffline = () => callback(false);
-  
+
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
-  
+
   // Return cleanup function
   return () => {
     window.removeEventListener('online', handleOnline);

@@ -1,4 +1,4 @@
-import { 
+import {
   AnalyticsDashboardData,
   AnalyticsMetrics,
   ProcessingTrend,
@@ -13,10 +13,10 @@ import {
 } from '../types/analytics';
 
 // Utility functions for generating realistic data
-const randomBetween = (min: number, max: number): number => 
+const randomBetween = (min: number, max: number): number =>
   Math.random() * (max - min) + min;
 
-const randomInt = (min: number, max: number): number => 
+const randomInt = (min: number, max: number): number =>
   Math.floor(randomBetween(min, max));
 
 const getRandomDate = (daysAgo: number): string => {
@@ -42,7 +42,7 @@ const UAE_PROVIDERS = [
 // UAE Emirates
 const UAE_EMIRATES = [
   'Dubai',
-  'Abu Dhabi', 
+  'Abu Dhabi',
   'Sharjah',
   'Ajman',
   'Fujairah',
@@ -68,25 +68,25 @@ export const generateMockAnalyticsMetrics = (): AnalyticsMetrics => ({
   dailyVolume: randomInt(800, 1500),
   monthlyVolume: randomInt(18000, 35000),
   volumeGrowthRate: randomBetween(0.05, 0.25), // 5-25% growth
-  
+
   // Automation & Efficiency Metrics
   automationRate: randomBetween(0.82, 0.96), // 82-96%
   manualTouchPoints: randomInt(15, 45),
   avgProcessingTime: randomInt(180, 900), // 3-15 minutes in seconds
   slaCompliance: randomBetween(0.89, 0.98), // 89-98%
-  
+
   // Quality & Performance Metrics
   dataQualityScore: randomBetween(0.88, 0.97), // 88-97%
   errorRate: randomBetween(0.01, 0.06), // 1-6%
   successRate: randomBetween(0.91, 0.98), // 91-98%
   reprocessingRate: randomBetween(0.005, 0.025), // 0.5-2.5%
-  
+
   // Financial Metrics
   costSavings: randomInt(35000, 75000), // Monthly savings in AED
   roiPercentage: randomBetween(180, 320), // 180-320% ROI
   avgCostPerTransaction: randomBetween(8, 18), // 8-18 AED per transaction
   totalSavingsYTD: randomInt(400000, 850000), // YTD savings in AED
-  
+
   // Provider & Member Metrics
   providerSatisfactionScore: randomBetween(4.1, 4.8), // Out of 5
   memberSatisfactionScore: randomBetween(4.3, 4.9), // Out of 5
@@ -98,7 +98,7 @@ export const generateMockProcessingTrends = (days: number = 30): ProcessingTrend
   return Array.from({ length: days }, (_, i) => {
     const baseVolume = randomInt(600, 1200);
     const seasonalFactor = 1 + 0.3 * Math.sin((i / 7) * Math.PI); // Weekly pattern
-    
+
     return {
       date: getRandomDate(days - i - 1),
       volume: Math.round(baseVolume * seasonalFactor),
@@ -114,15 +114,15 @@ export const generateMockFormatDistribution = (): FormatDistribution[] => {
   const formats: FormatDistribution['format'][] = [
     'eClaimLink', 'Shafafiya', 'CSV', 'Claims CSV', 'Clinical CSV'
   ];
-  
+
   const totalRequests = randomInt(8000, 15000);
   let remaining = totalRequests;
-  
+
   return formats.map((format, index) => {
     const isLast = index === formats.length - 1;
     const count = isLast ? remaining : randomInt(Math.floor(remaining * 0.1), Math.floor(remaining * 0.4));
     remaining -= count;
-    
+
     return {
       format,
       count,
@@ -149,18 +149,18 @@ export const generateMockProviderPerformance = (): ProviderPerformance[] => {
 export const generateMockCostSavingsBreakdown = (): CostSavingsBreakdown[] => {
   const totalSavings = randomInt(45000, 85000);
   let remaining = totalSavings;
-  
+
   return COST_CATEGORIES.map((category, index) => {
     const isLast = index === COST_CATEGORIES.length - 1;
     const amount = isLast ? remaining : randomInt(
-      Math.floor(totalSavings * 0.05), 
+      Math.floor(totalSavings * 0.05),
       Math.floor(totalSavings * 0.25)
     );
     remaining -= amount;
-    
+
     const trends: ('up' | 'down' | 'stable')[] = ['up', 'down', 'stable'];
     const trend = trends[Math.floor(Math.random() * trends.length)];
-    
+
     return {
       category,
       amount: Math.max(0, amount),
@@ -173,14 +173,14 @@ export const generateMockCostSavingsBreakdown = (): CostSavingsBreakdown[] => {
 
 export const generateMockQualityMetrics = (): QualityMetrics[] => {
   const qualityMeasures = [
-    { 
+    {
       measure: 'Data Completeness',
       unit: '%',
       description: 'Percentage of complete data records'
     },
     {
       measure: 'Processing Accuracy',
-      unit: '%', 
+      unit: '%',
       description: 'Accuracy of automated processing'
     },
     {
@@ -203,10 +203,10 @@ export const generateMockQualityMetrics = (): QualityMetrics[] => {
   return qualityMeasures.map(({ measure, unit, description }) => {
     const target = randomBetween(85, 95);
     const current = randomBetween(target * 0.7, target * 1.1);
-    
+
     const trends: ('improving' | 'stable' | 'declining')[] = ['improving', 'stable', 'declining'];
     const trend = trends[Math.floor(Math.random() * trends.length)];
-    
+
     return {
       metric: measure,
       current,
@@ -222,20 +222,20 @@ export const generateMockHeatmapData = (): TimeBasedHeatmap[] => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const data: TimeBasedHeatmap[] = [];
-  
+
   days.forEach(day => {
     hours.forEach(hour => {
       // Business hours (8-18) have higher volume
       const isBusinessHours = hour >= 8 && hour <= 18;
       const isWeekend = day === 'Saturday' || day === 'Sunday';
-      
+
       let baseVolume = isBusinessHours ? randomInt(80, 150) : randomInt(10, 40);
       if (isWeekend) baseVolume *= 0.3;
-      
+
       const volume = Math.round(baseVolume);
       const maxVolume = 150;
       const intensity = Math.min(volume / maxVolume, 1);
-      
+
       data.push({
         hour,
         day,
@@ -244,7 +244,7 @@ export const generateMockHeatmapData = (): TimeBasedHeatmap[] => {
       });
     });
   });
-  
+
   return data;
 };
 
@@ -254,7 +254,7 @@ export const generateMockGeographicData = (): GeographicData[] => {
     const topProviders = UAE_PROVIDERS
       .sort(() => Math.random() - 0.5)
       .slice(0, randomInt(2, 4));
-    
+
     return {
       emirate,
       requests,
@@ -298,7 +298,7 @@ export const generateMockAlertThresholds = (): AlertThreshold[] => {
   ];
 
   return alertConfigs.map(config => {
-    const currentValue = config.metric === 'avgProcessingTime' ? 
+    const currentValue = config.metric === 'avgProcessingTime' ?
       randomBetween(10, 35) :
       config.metric === 'errorRate' ?
       randomBetween(1, 12) :
@@ -307,7 +307,7 @@ export const generateMockAlertThresholds = (): AlertThreshold[] => {
       randomBetween(80, 98);
 
     let status: 'normal' | 'warning' | 'critical' = 'normal';
-    
+
     if (config.metric === 'avgProcessingTime' || config.metric === 'errorRate') {
       // Higher values are bad
       if (currentValue >= config.criticalThreshold) status = 'critical';
@@ -337,14 +337,14 @@ export const generateMockSystemHealth = (): SystemHealth => {
   const memoryUsage = randomBetween(35, 80);
   const diskUsage = randomBetween(45, 75);
   const errorRate = randomBetween(0.1, 3.5);
-  
+
   let status: SystemHealth['status'] = 'healthy';
   if (cpuUsage > 90 || memoryUsage > 90 || diskUsage > 90 || errorRate > 5) {
     status = 'critical';
   } else if (cpuUsage > 75 || memoryUsage > 80 || diskUsage > 80 || errorRate > 2) {
     status = 'warning';
   }
-  
+
   return {
     cpuUsage,
     memoryUsage,
@@ -375,20 +375,20 @@ export const aggregateDataByPeriod = (
   period: 'daily' | 'weekly' | 'monthly'
 ): ProcessingTrend[] => {
   if (period === 'daily') return trends;
-  
+
   const groupSize = period === 'weekly' ? 7 : 30;
   const aggregated: ProcessingTrend[] = [];
-  
+
   for (let i = 0; i < trends.length; i += groupSize) {
     const group = trends.slice(i, i + groupSize);
     if (group.length === 0) continue;
-    
+
     const avgVolume = group.reduce((sum, t) => sum + t.volume, 0) / group.length;
     const avgProcessingTime = group.reduce((sum, t) => sum + t.processingTime, 0) / group.length;
     const avgSuccessRate = group.reduce((sum, t) => sum + t.successRate, 0) / group.length;
     const totalErrors = group.reduce((sum, t) => sum + t.errorCount, 0);
     const avgAutomationRate = group.reduce((sum, t) => sum + t.automationRate, 0) / group.length;
-    
+
     aggregated.push({
       date: group[0].date,
       volume: Math.round(avgVolume),
@@ -398,17 +398,17 @@ export const aggregateDataByPeriod = (
       automationRate: avgAutomationRate
     });
   }
-  
+
   return aggregated;
 };
 
 export const calculateTrendDirection = (data: number[]): 'up' | 'down' | 'stable' => {
   if (data.length < 2) return 'stable';
-  
+
   const first = data[0];
   const last = data[data.length - 1];
   const changePercent = ((last - first) / first) * 100;
-  
+
   if (Math.abs(changePercent) < 2) return 'stable';
   return changePercent > 0 ? 'up' : 'down';
 };

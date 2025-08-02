@@ -11,13 +11,13 @@ export interface RequestHistoryItem {
   memberName: string;
   dateOfBirth: string;
   emiratesId: string;
-  
+
   // Provider Information
   providerId: string;
   providerName: string;
   providerType: string;
   facility: string;
-  
+
   // Request Details
   type: RequestType;
   status: RequestStatus;
@@ -25,28 +25,28 @@ export interface RequestHistoryItem {
   submissionDate: string;
   processedDate?: string;
   expiryDate?: string;
-  
+
   // Clinical Information
   diagnosis: string;
   diagnosisCodes: string[];
   procedure: string;
   procedureCodes: string[];
   serviceDescription: string;
-  
+
   // Financial Information
   requestedAmount: number;
   approvedAmount?: number;
   currency: string;
-  
+
   // Processing Information
   format: 'eClaimLink' | 'Shafafiya' | 'CSV' | 'Manual';
   processingTime?: number; // in seconds
   assignedTo?: string;
   reviewedBy?: string;
-  
+
   // Documents and Attachments
   documents: RequestDocument[];
-  
+
   // Metadata
   createdAt: string;
   updatedAt: string;

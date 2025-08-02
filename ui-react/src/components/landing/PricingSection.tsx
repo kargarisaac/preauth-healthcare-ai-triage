@@ -12,7 +12,7 @@ const PricingSection: React.FC = () => {
             Simple, Transparent Pricing
           </h2>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-4xl mx-auto">
           {/* SaaS Model */}
           <div className="bg-white rounded-2xl p-8 shadow-soft border border-gray-200">
@@ -36,7 +36,7 @@ const PricingSection: React.FC = () => {
               </li>
             </ul>
           </div>
-          
+
           {/* Our Approach */}
           <div className="bg-white rounded-2xl p-8 shadow-soft border border-gray-200">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">Our Approach</h3>
@@ -46,7 +46,7 @@ const PricingSection: React.FC = () => {
                 We believe in proving value before scaling investment.
               </p>
             </div>
-            
+
             <div className="mt-8 p-6 bg-primary-50 rounded-xl border border-primary-200">
               <div className="flex items-center">
                 <div className="text-2xl mr-4">💡</div>

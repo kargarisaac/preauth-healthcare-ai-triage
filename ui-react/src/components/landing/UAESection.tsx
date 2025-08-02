@@ -20,7 +20,7 @@ const UAESection: React.FC = () => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-4xl text-gray-400 mb-4">🗺️</div>
                 </div>
-                
+
                 {/* Location Pins */}
                 <div className="absolute top-1/3 left-1/4 transform -translate-x-1/2 -translate-y-1/2">
                   <div className="bg-blue-500 rounded-full p-3 shadow-lg hover:scale-110 transition-transform cursor-pointer">
@@ -30,7 +30,7 @@ const UAESection: React.FC = () => {
                     Shafafiya
                   </div>
                 </div>
-                
+
                 <div className="absolute top-1/2 right-1/3 transform translate-x-1/2 -translate-y-1/2">
                   <div className="bg-primary-500 rounded-full p-3 shadow-lg hover:scale-110 transition-transform cursor-pointer">
                     <div className="text-white text-xl">🏢</div>
@@ -42,7 +42,7 @@ const UAESection: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           {/* UAE Content */}
           <div className="order-1 lg:order-2">
             <h2 className="text-4xl font-bold text-gray-900 mb-6">
@@ -55,7 +55,7 @@ const UAESection: React.FC = () => {
                 models adapt to UAE demographics and bilingual (Arabic & English) clinical context.
               </p>
             </div>
-            
+
             {/* Compliance Badges */}
             <div className="flex flex-wrap gap-3">
               {complianceBadges.map((badge, index) => (

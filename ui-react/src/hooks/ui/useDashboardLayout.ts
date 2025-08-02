@@ -11,7 +11,7 @@ interface UseDashboardLayoutReturn {
   // Configuration
   config: DashboardConfig;
   updateConfig: (updates: Partial<DashboardConfig>) => void;
-  
+
   // Widgets
   widgets: DashboardWidget[];
   visibleWidgets: DashboardWidget[];
@@ -20,17 +20,17 @@ interface UseDashboardLayoutReturn {
   removeWidget: (id: string) => void;
   toggleWidgetVisibility: (id: string) => void;
   reorderWidgets: (fromIndex: number, toIndex: number) => void;
-  
+
   // Date Range
   dateRange: DateRangePreset;
   setDateRange: (range: DateRangePreset) => void;
   dateRangePresets: DateRangePreset[];
-  
+
   // Layout Management
   resetLayout: () => void;
   exportLayout: () => string;
   importLayout: (layoutJson: string) => boolean;
-  
+
   // Responsive
   isMobile: boolean;
   isTablet: boolean;
@@ -243,7 +243,7 @@ export const useDashboardLayout = (
       id: `widget-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       lastUpdated: new Date().toISOString()
     };
-    
+
     setWidgets(prev => {
       const newWidgets = [...prev, newWidget];
       localStorage.setItem(`${storageKey}-widgets`, JSON.stringify(newWidgets));
@@ -310,14 +310,14 @@ export const useDashboardLayout = (
   const importLayout = useCallback((layoutJson: string) => {
     try {
       const imported = JSON.parse(layoutJson);
-      
+
       if (imported.config && imported.widgets) {
         setConfig({ ...DEFAULT_CONFIG, ...imported.config });
         setWidgets(imported.widgets);
-        
+
         localStorage.setItem(`${storageKey}-config`, JSON.stringify(imported.config));
         localStorage.setItem(`${storageKey}-widgets`, JSON.stringify(imported.widgets));
-        
+
         return true;
       }
       return false;
@@ -341,7 +341,7 @@ export const useDashboardLayout = (
 
     updateScreenSize();
     window.addEventListener('resize', updateScreenSize);
-    
+
     return () => window.removeEventListener('resize', updateScreenSize);
   }, []);
 

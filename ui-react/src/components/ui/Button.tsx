@@ -15,14 +15,14 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses = 'btn focus-ring';
-  
+
   const variantClasses = {
     primary: 'btn-primary',
     secondary: 'btn-secondary',
     tertiary: 'btn-tertiary',
     danger: 'btn-danger',
   };
-  
+
   const sizeClasses = {
     sm: 'btn-sm',
     md: 'btn-md',

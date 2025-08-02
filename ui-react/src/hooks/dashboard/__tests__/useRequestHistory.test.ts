@@ -312,7 +312,7 @@ describe('useRequestHistory Hook', () => {
   describe('error handling', () => {
     it('handles network errors gracefully', async () => {
       enableNetworkError()
-      
+
       const { result } = renderHook(() => useRequestHistory())
 
       vi.advanceTimersByTime(300)

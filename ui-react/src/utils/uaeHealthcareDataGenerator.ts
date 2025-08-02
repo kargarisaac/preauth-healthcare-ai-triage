@@ -185,7 +185,7 @@ const generatePolicyNumber = (provider: string): string => {
     'AXA Gulf': 'AXA',
     'MetLife Alico': 'MET'
   };
-  
+
   const abbr = abbreviations[provider] || 'INS';
   const number = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
   return `${abbr}-${number}`;
@@ -196,7 +196,7 @@ const generateDateOfBirth = (minAge: number = 18, maxAge: number = 80): string =
   const birthYear = today.getFullYear() - (minAge + Math.floor(Math.random() * (maxAge - minAge)));
   const birthMonth = Math.floor(Math.random() * 12);
   const birthDay = Math.floor(Math.random() * 28) + 1; // Avoid month-end issues
-  
+
   return new Date(birthYear, birthMonth, birthDay).toISOString().split('T')[0];
 };
 
@@ -212,7 +212,7 @@ const generateCosts = () => {
   const planPaid = totalCosts - memberPaid;
   const deductible = Math.floor(Math.random() * 3000) + 500; // 500-3500 AED
   const deductibleMet = Math.min(deductible, memberPaid);
-  
+
   return {
     totalCosts,
     memberPaid,
@@ -228,13 +228,13 @@ export const generateMember = (isEmirati: boolean = Math.random() < 0.15): Membe
   const dateOfBirth = generateDateOfBirth();
   const emirate = getRandomElement(UAE_EMIRATES);
   const city = getRandomElement(UAE_CITIES[emirate]);
-  
+
   let firstName: string;
   let lastName: string;
   let nationality: string;
-  
+
   if (isEmirati) {
-    firstName = gender === 'male' 
+    firstName = gender === 'male'
       ? getRandomElement(ARABIC_FIRST_NAMES_MALE)
       : getRandomElement(ARABIC_FIRST_NAMES_FEMALE);
     lastName = getRandomElement(ARABIC_FAMILY_NAMES);
@@ -242,33 +242,33 @@ export const generateMember = (isEmirati: boolean = Math.random() < 0.15): Membe
   } else {
     const nationalityChoice = getRandomElement(NATIONALITIES.filter(n => n !== 'UAE'));
     nationality = nationalityChoice;
-    
+
     if (['Indian', 'Pakistani', 'Bangladeshi'].includes(nationality)) {
-      firstName = gender === 'male' 
+      firstName = gender === 'male'
         ? getRandomElement([...ARABIC_FIRST_NAMES_MALE, ...EXPATRIATE_FIRST_NAMES_MALE])
         : getRandomElement([...ARABIC_FIRST_NAMES_FEMALE, ...EXPATRIATE_FIRST_NAMES_FEMALE]);
     } else {
-      firstName = gender === 'male' 
+      firstName = gender === 'male'
         ? getRandomElement(EXPATRIATE_FIRST_NAMES_MALE)
         : getRandomElement(EXPATRIATE_FIRST_NAMES_FEMALE);
     }
-    
+
     lastName = Math.random() < 0.3 && ['Pakistani', 'Egyptian', 'Syrian'].includes(nationality)
       ? getRandomElement(ARABIC_FAMILY_NAMES)
       : getRandomElement(EXPATRIATE_FAMILY_NAMES);
   }
-  
+
   const fullName = `${firstName} ${lastName}`;
   const email = `${firstName.toLowerCase()}.${lastName.toLowerCase().replace(/\s+/g, '')}@email.com`;
   const provider = getRandomElement(INSURANCE_PROVIDERS);
   const planType = getRandomElement(PLAN_TYPES);
   const policyNumber = generatePolicyNumber(provider);
-  
+
   // Generate chronic conditions (higher probability for older people)
   const age = Math.floor((new Date().getTime() - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25));
   const conditionCount = age > 50 ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 2);
   const selectedConditions = getRandomElements(CHRONIC_CONDITIONS, conditionCount);
-  
+
   const chronicConditions: ChronicCondition[] = selectedConditions.map((conditionTemplate, index) => ({
     id: `condition-${index + 1}`,
     condition: conditionTemplate.condition,
@@ -280,7 +280,7 @@ export const generateMember = (isEmirati: boolean = Math.random() < 0.15): Membe
     medications: getRandomElements(conditionTemplate.medications, Math.floor(Math.random() * 3) + 1),
     lastReview: generateRecentDate(180) // Within last 6 months
   }));
-  
+
   // Generate allergies
   const allergyCount = Math.floor(Math.random() * 3); // 0-2 allergies
   const selectedAllergies = getRandomElements(ALLERGIES, allergyCount);
@@ -289,7 +289,7 @@ export const generateMember = (isEmirati: boolean = Math.random() < 0.15): Membe
     severity: getRandomElement(['mild', 'moderate', 'severe'] as const),
     reaction: getRandomElement(allergyTemplate.reactions)
   }));
-  
+
   // Generate cost utilization
   const yearToDate = generateCosts();
   const monthlyTrends = Array.from({ length: 12 }, (_, i) => ({
@@ -298,7 +298,7 @@ export const generateMember = (isEmirati: boolean = Math.random() < 0.15): Membe
     visits: Math.floor(Math.random() * 5),
     prescriptions: Math.floor(Math.random() * 10)
   }));
-  
+
   const topCategories = [
     { category: 'Medications', amount: yearToDate.totalCosts * 0.4, percentage: 40 },
     { category: 'Outpatient Visits', amount: yearToDate.totalCosts * 0.3, percentage: 30 },
@@ -306,7 +306,7 @@ export const generateMember = (isEmirati: boolean = Math.random() < 0.15): Membe
     { category: 'Imaging', amount: yearToDate.totalCosts * 0.1, percentage: 10 },
     { category: 'Emergency Care', amount: yearToDate.totalCosts * 0.05, percentage: 5 }
   ];
-  
+
   // Calculate risk score based on age, conditions, and costs
   let riskScore = 20; // Base score
   riskScore += Math.min((age - 30) * 0.5, 30); // Age factor
@@ -314,10 +314,10 @@ export const generateMember = (isEmirati: boolean = Math.random() < 0.15): Membe
   riskScore += chronicConditions.filter(c => c.severity === 'severe').length * 10; // Severe conditions
   riskScore += Math.min(yearToDate.totalCosts / 1000, 25); // Cost factor
   riskScore = Math.min(Math.max(riskScore, 10), 95); // Clamp between 10-95
-  
+
   const memberId = `MBR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const createdAt = generateRecentDate(365 * 2);
-  
+
   return {
     id: memberId,
     emiratesId: generateEmiratesId(),
@@ -383,29 +383,29 @@ export const generateMember = (isEmirati: boolean = Math.random() < 0.15): Membe
 export const generateMembers = (count: number, emiratiPercentage: number = 0.15): Member[] => {
   const members: Member[] = [];
   const emiratiCount = Math.floor(count * emiratiPercentage);
-  
+
   // Generate Emirati members
   for (let i = 0; i < emiratiCount; i++) {
     members.push(generateMember(true));
   }
-  
+
   // Generate expatriate members
   for (let i = emiratiCount; i < count; i++) {
     members.push(generateMember(false));
   }
-  
+
   return members;
 };
 
 export const generateCareGapsForMember = (member: Member): CareGap[] => {
   const gaps: CareGap[] = [];
   const today = new Date();
-  
+
   // Check each chronic condition for care gaps
   member.medicalHistory.chronicConditions.forEach((condition, index) => {
     const lastReview = new Date(condition.lastReview);
     const daysSinceReview = Math.floor((today.getTime() - lastReview.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     // Diabetes care gaps
     if (condition.condition.toLowerCase().includes('diabetes')) {
       if (daysSinceReview > 90) {
@@ -425,7 +425,7 @@ export const generateCareGapsForMember = (member: Member): CareGap[] => {
           updatedAt: today.toISOString()
         });
       }
-      
+
       if (daysSinceReview > 365) {
         gaps.push({
           id: `gap-eye-${index}`,
@@ -445,7 +445,7 @@ export const generateCareGapsForMember = (member: Member): CareGap[] => {
         });
       }
     }
-    
+
     // Hypertension care gaps
     if (condition.condition.toLowerCase().includes('hypertension')) {
       if (daysSinceReview > 180) {
@@ -467,10 +467,10 @@ export const generateCareGapsForMember = (member: Member): CareGap[] => {
       }
     }
   });
-  
+
   // Age-based preventive care
   const age = Math.floor((today.getTime() - new Date(member.demographics.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-  
+
   if (age >= 50 && Math.random() < 0.7) {
     gaps.push({
       id: `gap-colonoscopy-${member.id}`,
@@ -488,7 +488,7 @@ export const generateCareGapsForMember = (member: Member): CareGap[] => {
       updatedAt: today.toISOString()
     });
   }
-  
+
   // Medication adherence gaps
   if (member.medicalHistory.chronicConditions.length > 0 && Math.random() < 0.3) {
     const condition = getRandomElement(member.medicalHistory.chronicConditions);
@@ -508,38 +508,38 @@ export const generateCareGapsForMember = (member: Member): CareGap[] => {
       updatedAt: today.toISOString()
     });
   }
-  
+
   return gaps;
 };
 
 export const searchMembers = (
-  members: Member[], 
-  query: string, 
+  members: Member[],
+  query: string,
   fuzzyThreshold: number = 50
 ): Member[] => {
   if (!query.trim()) return members;
-  
+
   const fuzzyScore = (term: string, target: string): number => {
     if (!term || !target) return 0;
-    
+
     term = term.toLowerCase();
     target = target.toLowerCase();
-    
+
     if (target.includes(term)) return 100;
-    
+
     let score = 0;
     let termIndex = 0;
-    
+
     for (let i = 0; i < target.length && termIndex < term.length; i++) {
       if (target[i] === term[termIndex]) {
         score++;
         termIndex++;
       }
     }
-    
+
     return (score / term.length) * 100;
   };
-  
+
   return members.filter(member => {
     const searchFields = [
       member.demographics.fullName,
@@ -554,8 +554,8 @@ export const searchMembers = (
       member.contact.address.emirate,
       member.demographics.nationality
     ];
-    
-    return searchFields.some(field => 
+
+    return searchFields.some(field =>
       field && fuzzyScore(query, field) >= fuzzyThreshold
     );
   });

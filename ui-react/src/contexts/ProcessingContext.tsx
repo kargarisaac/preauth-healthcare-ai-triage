@@ -104,8 +104,8 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
     setIsProcessing(true);
 
     try {
-      const endpoint = format === 'eclaim' 
-        ? '/api/process/sample/eclaim' 
+      const endpoint = format === 'eclaim'
+        ? '/api/process/sample/eclaim'
         : '/api/process/sample/shafafiya';
 
       const response = await fetch(endpoint, {

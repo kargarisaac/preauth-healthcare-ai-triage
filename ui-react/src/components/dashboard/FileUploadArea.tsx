@@ -23,7 +23,7 @@ const FileUploadArea: React.FC = () => {
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       handleFileSelect(files[0]);
@@ -49,11 +49,11 @@ const FileUploadArea: React.FC = () => {
 
   const handleProcess = useCallback(async () => {
     if (!currentFile) return;
-    
+
     // Auto-detect format based on file extension
     const extension = currentFile.name.split('.').pop()?.toLowerCase();
     const format = extension === 'csv' ? 'csv' : 'eclaim';
-    
+
     await processFile(format);
   }, [currentFile, processFile]);
 
@@ -76,8 +76,8 @@ const FileUploadArea: React.FC = () => {
       <div
         className={clsx(
           'border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer',
-          dragOver 
-            ? 'border-blue-400 bg-blue-50' 
+          dragOver
+            ? 'border-blue-400 bg-blue-50'
             : currentFile
             ? 'border-green-300 bg-green-50'
             : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
@@ -165,7 +165,7 @@ const FileUploadArea: React.FC = () => {
             <span className="text-gray-900">{uploadProgress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />

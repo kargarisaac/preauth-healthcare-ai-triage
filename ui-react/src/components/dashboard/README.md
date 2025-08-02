@@ -37,7 +37,7 @@ KPI metrics display with trend indicators and summary cards.
 ```tsx
 import { MetricsGrid } from './components/dashboard/MetricsGrid';
 
-<MetricsGrid 
+<MetricsGrid
   metrics={analyticsMetrics}
   isLoading={false}
   showTrends={true}

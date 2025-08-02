@@ -1,12 +1,12 @@
 import React from 'react';
-import { 
-  Activity, 
-  Clock, 
-  CheckCircle, 
-  AlertTriangle, 
-  DollarSign, 
-  TrendingUp, 
-  Users, 
+import {
+  Activity,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  DollarSign,
+  TrendingUp,
+  Users,
   Zap,
   Target,
   Award
@@ -122,7 +122,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m`;
     }
@@ -249,7 +249,7 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
           </div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metricsData.map((metric, index) => (
           <MetricCard

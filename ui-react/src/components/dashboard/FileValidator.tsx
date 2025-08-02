@@ -15,7 +15,7 @@ const FileValidator: React.FC<FileValidatorProps> = ({
   className = '',
 }) => {
   const { validateFile, getFileTypeInfo } = useFileValidation();
-  
+
   React.useEffect(() => {
     const result = validateFile(file);
     onValidationComplete?.({ ...result, file });
@@ -101,7 +101,7 @@ const FileValidator: React.FC<FileValidatorProps> = ({
             {validationResult.isValid ? 'File Validation Passed' : 'File Validation Failed'}
           </h5>
         </div>
-        
+
         <p className={`text-sm ${
           validationResult.isValid ? 'text-success-700' : 'text-error-700'
         }`}>

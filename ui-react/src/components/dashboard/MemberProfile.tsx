@@ -114,11 +114,11 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    
+
     return age;
   };
 
@@ -191,7 +191,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                   </div>
                 </div>
               </Card>
-              
+
               <Card className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -205,7 +205,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                   </div>
                 </div>
               </Card>
-              
+
               <Card className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -219,7 +219,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                   </div>
                 </div>
               </Card>
-              
+
               <Card className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -247,14 +247,14 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                         {insights.riskLevel.toUpperCase()}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Remaining Deductible</span>
                       <span className="text-sm font-medium text-gray-900">
                         {formatCurrency(insights.remainingDeductible)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Remaining Out-of-Pocket</span>
                       <span className="text-sm font-medium text-gray-900">
@@ -262,7 +262,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Active Conditions</span>
@@ -270,14 +270,14 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                         {insights.activeConditions.length}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Severity Score</span>
                       <span className="text-sm font-medium text-gray-900">
                         {insights.severityScore}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Last Activity</span>
                       <span className="text-sm font-medium text-gray-900">
@@ -301,14 +301,14 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                         {formatCurrency(costTrends.currentMonthCosts)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Previous Month</span>
                       <span className="text-sm font-medium text-gray-900">
                         {formatCurrency(costTrends.previousMonthCosts)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Monthly Change</span>
                       <div className="flex items-center space-x-1">
@@ -329,7 +329,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Average Monthly</span>
@@ -337,14 +337,14 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                         {formatCurrency(costTrends.averageMonthlyCosts)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Highest Month</span>
                       <span className="text-sm font-medium text-gray-900">
                         {formatCurrency(costTrends.highestMonth.totalCosts)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Lowest Month</span>
                       <span className="text-sm font-medium text-gray-900">
@@ -362,74 +362,74 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
         return (
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Demographics Information</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Full Name</label>
                   <p className="mt-1 text-sm text-gray-900">{member.demographics.fullName}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
                   <p className="mt-1 text-sm text-gray-900">
                     {formatDate(member.demographics.dateOfBirth)} ({age} years old)
                   </p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Gender</label>
                   <p className="mt-1 text-sm text-gray-900 capitalize">{member.demographics.gender}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Nationality</label>
                   <p className="mt-1 text-sm text-gray-900">{member.demographics.nationality}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Emirates ID</label>
                   <p className="mt-1 text-sm text-gray-900 font-mono">{member.emiratesId}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Preferred Language</label>
                   <p className="mt-1 text-sm text-gray-900">{member.demographics.preferredLanguage}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Marital Status</label>
                   <p className="mt-1 text-sm text-gray-900 capitalize">{member.demographics.maritalStatus}</p>
                 </div>
               </div>
             </div>
-            
+
             {/* Contact Information */}
             <div className="mt-8">
               <h4 className="text-md font-semibold text-gray-900 mb-4">Contact Information</h4>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Primary Phone</label>
                     <p className="mt-1 text-sm text-gray-900">{member.contact.phone}</p>
                   </div>
-                  
+
                   {member.contact.alternativePhone && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Alternative Phone</label>
                       <p className="mt-1 text-sm text-gray-900">{member.contact.alternativePhone}</p>
                     </div>
                   )}
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <p className="mt-1 text-sm text-gray-900">{member.contact.email}</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Address</label>
@@ -439,7 +439,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                       {member.contact.address.country} {member.contact.address.postalCode}
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Emergency Contact</label>
                     <p className="mt-1 text-sm text-gray-900">
@@ -458,31 +458,31 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
         return (
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Insurance Information</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Provider</label>
                   <p className="mt-1 text-sm text-gray-900">{member.insurance.provider}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Policy Number</label>
                   <p className="mt-1 text-sm text-gray-900 font-mono">{member.insurance.policyNumber}</p>
                 </div>
-                
+
                 {member.insurance.groupNumber && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Group Number</label>
                     <p className="mt-1 text-sm text-gray-900 font-mono">{member.insurance.groupNumber}</p>
                   </div>
                 )}
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Plan Type</label>
                   <p className="mt-1 text-sm text-gray-900">{member.insurance.planType}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
                   <div className="flex items-center space-x-2 mt-1">
@@ -495,33 +495,33 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Effective Date</label>
                   <p className="mt-1 text-sm text-gray-900">{formatDate(member.insurance.effectiveDate)}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Expiration Date</label>
                   <p className="mt-1 text-sm text-gray-900">{formatDate(member.insurance.expirationDate)}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Benefit Year</label>
                   <p className="mt-1 text-sm text-gray-900">{member.insurance.benefitYear}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Deductible</label>
                   <p className="mt-1 text-sm text-gray-900">{formatCurrency(member.insurance.deductible)}</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Co-payment</label>
                   <p className="mt-1 text-sm text-gray-900">{member.insurance.coPayment}%</p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Out-of-Pocket Maximum</label>
                   <p className="mt-1 text-sm text-gray-900">{formatCurrency(member.insurance.outOfPocketMax)}</p>
@@ -584,7 +584,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                           </span>
                         </div>
                       </div>
-                      
+
                       {condition.medications.length > 0 && (
                         <div className="mt-3">
                           <h5 className="text-sm font-medium text-gray-700 mb-2">Current Medications:</h5>
@@ -814,7 +814,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                           )}
                         </div>
                       </div>
-                      
+
                       {auth.decisionReason && (
                         <div className="mt-3">
                           <p className="text-sm text-gray-700">
@@ -822,7 +822,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                           </p>
                         </div>
                       )}
-                      
+
                       {auth.reviewNotes && (
                         <div className="mt-2">
                           <p className="text-sm text-gray-600">{auth.reviewNotes}</p>
@@ -859,7 +859,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
               </p>
             </div>
           </div>
-          
+
           {/* Header Actions */}
           <div className="flex items-center space-x-3">
             <Button
@@ -871,7 +871,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -880,7 +880,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -888,7 +888,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -896,7 +896,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
               <Share className="h-4 w-4 mr-2" />
               Share
             </Button>
-            
+
             {onClose && (
               <Button
                 variant="ghost"
@@ -908,7 +908,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
             )}
           </div>
         </div>
-        
+
         {/* Last Updated */}
         {lastUpdated && (
           <p className="text-xs text-gray-500 mt-2">

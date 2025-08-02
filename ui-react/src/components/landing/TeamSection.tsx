@@ -10,7 +10,7 @@ const TeamSection: React.FC = () => {
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Team & Advisors</h2>
         </div>
-        
+
         <div className="space-y-12">
           {/* Founder Card */}
           <div className="bg-white rounded-2xl p-8 lg:p-12 shadow-soft border border-gray-200">
@@ -31,7 +31,7 @@ const TeamSection: React.FC = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="lg:col-span-3">
                 <div className="space-y-4 text-gray-700">
                   <p>
@@ -49,7 +49,7 @@ const TeamSection: React.FC = () => {
                     He brings a deep understanding of applied AI, healthtech, and cloud-scale deployment.
                   </p>
                 </div>
-                
+
                 {/* Expertise Tags */}
                 <div className="mt-6 flex flex-wrap gap-2">
                   {[
@@ -72,7 +72,7 @@ const TeamSection: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Advisors Section */}
           <div className="bg-white rounded-2xl p-8 shadow-soft border border-gray-200">
             <div className="text-center">
@@ -80,7 +80,7 @@ const TeamSection: React.FC = () => {
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                 Senior leaders from DHA/ADHICS, Daman, and major TPAs. (Full bios available on request.)
               </p>
-              
+
               <div className="mt-8 flex justify-center space-x-4">
                 <div className="bg-gray-100 rounded-full p-4">
                   <div className="text-2xl">🏥</div>
@@ -92,7 +92,7 @@ const TeamSection: React.FC = () => {
                   <div className="text-2xl">🏢</div>
                 </div>
               </div>
-              
+
               <div className="mt-4 text-sm text-gray-500">
                 DHA/ADHICS • Daman • Major TPAs
               </div>

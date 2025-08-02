@@ -76,7 +76,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     let relative = '';
     if (diffDays === 1) {
       relative = 'Yesterday';
@@ -91,7 +91,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
     } else {
       relative = `${Math.ceil(diffDays / 365)} years ago`;
     }
-    
+
     return {
       date: date.toLocaleDateString('en-AE', {
         year: 'numeric',
@@ -157,7 +157,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
     // Get status color
     let statusColor = 'text-gray-600';
     let statusBgColor = 'bg-gray-100';
-    
+
     switch (status.toLowerCase()) {
       case 'approved':
       case 'completed':
@@ -194,7 +194,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(activity => 
+      filtered = filtered.filter(activity =>
         activity.title.toLowerCase().includes(query) ||
         activity.description.toLowerCase().includes(query) ||
         activity.provider?.toLowerCase().includes(query) ||
@@ -206,7 +206,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
     if (filters.dateRange !== 'all') {
       const now = new Date();
       let startDate: Date;
-      
+
       switch (filters.dateRange) {
         case 'last30':
           startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -230,8 +230,8 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
         default:
           return filtered;
       }
-      
-      filtered = filtered.filter(activity => 
+
+      filtered = filtered.filter(activity =>
         new Date(activity.timestamp) >= startDate
       );
     }
@@ -243,13 +243,13 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
 
     // Apply status filter
     if (filters.status !== 'all') {
-      filtered = filtered.filter(activity => 
+      filtered = filtered.filter(activity =>
         activity.status.toLowerCase() === filters.status.toLowerCase()
       );
     }
 
     // Sort by timestamp (most recent first)
-    return filtered.sort((a, b) => 
+    return filtered.sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
   }, [activities, filters, searchQuery]);
@@ -257,7 +257,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
   // Group activities by date
   const groupedActivities = useMemo(() => {
     const groups: { [key: string]: MemberActivity[] } = {};
-    
+
     filteredActivities.forEach(activity => {
       const dateKey = new Date(activity.timestamp).toDateString();
       if (!groups[dateKey]) {
@@ -265,8 +265,8 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
       }
       groups[dateKey].push(activity);
     });
-    
-    return Object.entries(groups).sort(([a], [b]) => 
+
+    return Object.entries(groups).sort(([a], [b]) =>
       new Date(b).getTime() - new Date(a).getTime()
     );
   }, [filteredActivities]);
@@ -310,14 +310,14 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
       Amount: activity.amount ? formatCurrency(activity.amount) : '',
       Outcome: activity.outcome || ''
     }));
-    
+
     // Create CSV content
     const headers = Object.keys(data[0] || {});
     const csvContent = [
       headers.join(','),
       ...data.map(row => headers.map(header => `"${row[header as keyof typeof row]}"`).join(','))
     ].join('\n');
-    
+
     // Download file
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -340,7 +340,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
             {filteredActivities.length} activities • {memberName}
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <Button
             variant="outline"
@@ -351,7 +351,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          
+
           {showFilters && (
             <Button
               variant={showFiltersPanel ? "default" : "outline"}
@@ -521,21 +521,21 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
                   const Icon = display.icon;
                   const datetime = formatDateTime(activity.timestamp);
                   const isExpanded = expandedItems.has(activity.id);
-                  
+
                   return (
                     <div key={activity.id} className="relative">
                       {/* Timeline line */}
                       {index < dayActivities.length - 1 && (
                         <div className="absolute left-6 top-12 w-0.5 h-full bg-gray-200" />
                       )}
-                      
+
                       <Card className="p-4">
                         <div className="flex items-start space-x-4">
                           {/* Icon */}
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center ${display.bgColor}`}>
                             <Icon className={`h-6 w-6 ${display.color}`} />
                           </div>
-                          
+
                           {/* Content */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between mb-2">
@@ -547,7 +547,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
                                   {activity.description}
                                 </p>
                               </div>
-                              
+
                               <div className="flex items-center space-x-2 ml-4">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${display.statusBgColor} ${display.statusColor}`}>
                                   {activity.status}
@@ -564,33 +564,33 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
                                 </button>
                               </div>
                             </div>
-                            
+
                             {/* Summary Info */}
                             <div className="flex items-center text-sm text-gray-500 space-x-4">
                               <span className="flex items-center">
                                 <Clock className="h-4 w-4 mr-1" />
                                 {datetime.time}
                               </span>
-                              
+
                               {activity.provider && (
                                 <span className="flex items-center">
                                   <Stethoscope className="h-4 w-4 mr-1" />
                                   {activity.provider}
                                 </span>
                               )}
-                              
+
                               {activity.amount && (
                                 <span className="flex items-center">
                                   <DollarSign className="h-4 w-4 mr-1" />
                                   {formatCurrency(activity.amount)}
                                 </span>
                               )}
-                              
+
                               <span className="text-xs">
                                 {datetime.relative}
                               </span>
                             </div>
-                            
+
                             {/* Expanded Details */}
                             {isExpanded && (
                               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -628,7 +628,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
                                       )}
                                     </div>
                                   </div>
-                                  
+
                                   {activity.outcome && (
                                     <div>
                                       <h4 className="text-sm font-medium text-gray-900 mb-2">Outcome</h4>
@@ -638,7 +638,7 @@ export const MemberHistory: React.FC<MemberHistoryProps> = ({
                                     </div>
                                   )}
                                 </div>
-                                
+
                                 {/* Metadata */}
                                 {activity.metadata && Object.keys(activity.metadata).length > 0 && (
                                   <div className="mt-4 pt-4 border-t border-gray-200">

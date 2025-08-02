@@ -18,7 +18,7 @@ export function RequestHistoryDemo() {
             Mock data has been generated for testing purposes.
           </p>
         </div>
-        
+
         <RequestHistory />
       </div>
     </div>

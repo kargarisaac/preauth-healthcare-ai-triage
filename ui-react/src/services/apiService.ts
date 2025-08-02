@@ -43,7 +43,7 @@ const memoryCache = new Map<string, { data: any; timestamp: number; duration: nu
 // Main API service class
 class ApiService {
   private abortControllers = new Map<string, AbortController>();
-  
+
   // Generic request method
   async request<T>(
     endpoint: string,
@@ -55,9 +55,9 @@ class ApiService {
       retryDelay = 1000,
       ...fetchOptions
     } = options;
-    
+
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    
+
     // Prepare request
     const requestOptions: RequestInit = {
       ...fetchOptions,
@@ -66,56 +66,56 @@ class ApiService {
         ...fetchOptions.headers,
       },
     };
-    
+
     let lastError: Error;
-    
+
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const response = await fetch(url, requestOptions);
-        
+
         if (!response.ok) {
           throw new ApiError(
             `HTTP error! status: ${response.status}`,
             response.status
           );
         }
-        
+
         const data = await response.json();
         const result: ApiResponse<T> = {
           data,
           success: true,
           timestamp: Date.now()
         };
-        
+
         return result;
-        
+
       } catch (error: any) {
         lastError = error;
-        
+
         // Don't retry on client errors
         if (error.status && error.status < 500) {
           break;
         }
-        
+
         // Wait before retry
         if (attempt < retries) {
           await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
         }
       }
     }
-    
+
     if (!navigator.onLine) {
       throw new NetworkError('No internet connection');
     }
-    
+
     throw lastError;
   }
-  
+
   // GET request
   async get<T>(endpoint: string, options: Omit<RequestOptions, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
-  
+
   // POST request
   async post<T>(endpoint: string, data?: any, options: Omit<RequestOptions, 'method'> = {}): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
@@ -124,7 +124,7 @@ class ApiService {
       body: data ? JSON.stringify(data) : undefined,
     });
   }
-  
+
   // PUT request
   async put<T>(endpoint: string, data?: any, options: Omit<RequestOptions, 'method'> = {}): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
@@ -133,7 +133,7 @@ class ApiService {
       body: data ? JSON.stringify(data) : undefined,
     });
   }
-  
+
   // DELETE request
   async delete<T>(endpoint: string, options: Omit<RequestOptions, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });

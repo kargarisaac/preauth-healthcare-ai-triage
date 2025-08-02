@@ -99,10 +99,10 @@ export function useVirtualTable({
   // Scroll to specific index
   const scrollToIndex = useCallback((index: number) => {
     if (!scrollElementRef.current) return;
-    
+
     const clampedIndex = Math.max(0, Math.min(index, items.length - 1));
     const scrollTop = clampedIndex * itemHeight;
-    
+
     scrollElementRef.current.scrollTop = scrollTop;
   }, [items.length, itemHeight]);
 
@@ -120,7 +120,7 @@ export function useVirtualTable({
     if (!scrollElement) return;
 
     scrollElement.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     return () => {
       scrollElement.removeEventListener('scroll', handleScroll);
       if (scrollTimeoutRef.current) {
@@ -184,14 +184,14 @@ export function useDynamicVirtualTable({
 
     items.forEach((item, index) => {
       positions[index] = totalHeight;
-      
+
       const itemId = getItemId(item);
       let height = itemHeights.get(itemId);
-      
+
       if (!height) {
         height = getItemHeight ? getItemHeight(item, index) : estimatedItemHeight;
       }
-      
+
       heights[index] = height;
       totalHeight += height;
     });
@@ -202,28 +202,28 @@ export function useDynamicVirtualTable({
   // Find visible range using binary search for efficiency
   const visibleRange = useMemo(() => {
     const { positions, heights } = itemMetrics;
-    
+
     // Binary search for start index
     let startIndex = 0;
     let endIndex = positions.length - 1;
-    
+
     while (startIndex <= endIndex) {
       const midIndex = Math.floor((startIndex + endIndex) / 2);
       const midPosition = positions[midIndex];
-      
+
       if (midPosition < scrollTop) {
         startIndex = midIndex + 1;
       } else {
         endIndex = midIndex - 1;
       }
     }
-    
+
     startIndex = Math.max(0, startIndex - overscan);
-    
+
     // Find end index
     let visibleEndIndex = startIndex;
     let currentPosition = positions[startIndex] || 0;
-    
+
     while (
       visibleEndIndex < positions.length &&
       currentPosition < scrollTop + containerHeight
@@ -231,9 +231,9 @@ export function useDynamicVirtualTable({
       currentPosition = positions[visibleEndIndex] + heights[visibleEndIndex];
       visibleEndIndex++;
     }
-    
+
     visibleEndIndex = Math.min(positions.length - 1, visibleEndIndex + overscan);
-    
+
     return { startIndex, endIndex: visibleEndIndex };
   }, [scrollTop, containerHeight, overscan, itemMetrics]);
 
@@ -241,7 +241,7 @@ export function useDynamicVirtualTable({
   const virtualItems = useMemo(() => {
     const result: (VirtualTableItem & { offsetTop: number })[] = [];
     const { positions, heights } = itemMetrics;
-    
+
     for (let i = visibleRange.startIndex; i <= visibleRange.endIndex; i++) {
       const item = items[i];
       if (item) {
@@ -284,10 +284,10 @@ export function useDynamicVirtualTable({
   // Scroll to specific index
   const scrollToIndex = useCallback((index: number) => {
     if (!scrollElementRef.current) return;
-    
+
     const clampedIndex = Math.max(0, Math.min(index, items.length - 1));
     const scrollTop = itemMetrics.positions[clampedIndex] || 0;
-    
+
     scrollElementRef.current.scrollTop = scrollTop;
   }, [items.length, itemMetrics.positions]);
 
@@ -305,7 +305,7 @@ export function useDynamicVirtualTable({
     if (!scrollElement) return;
 
     scrollElement.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     return () => {
       scrollElement.removeEventListener('scroll', handleScroll);
       if (scrollTimeoutRef.current) {

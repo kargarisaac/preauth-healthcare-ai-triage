@@ -71,21 +71,21 @@ global.FileReader = class FileReader {
   onloadstart: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null
   onloadend: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null
   onprogress: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null
-  
+
   readAsText() {
     setTimeout(() => {
       this.result = 'mock file content'
       this.onload?.call(this, {} as ProgressEvent<FileReader>)
     }, 10)
   }
-  
+
   readAsDataURL() {
     setTimeout(() => {
       this.result = 'data:text/plain;base64,bW9jayBmaWxlIGNvbnRlbnQ='
       this.onload?.call(this, {} as ProgressEvent<FileReader>)
     }, 10)
   }
-  
+
   abort() {}
   addEventListener() {}
   removeEventListener() {}

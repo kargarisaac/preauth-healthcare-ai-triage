@@ -13,7 +13,7 @@ const generateMockRequests = (count: number): RequestHistoryItem[] => {
   const statuses: Array<RequestHistoryItem['status']> = ['approved', 'pending', 'denied', 'under_review'];
   const priorities: Array<RequestHistoryItem['priority']> = ['low', 'medium', 'high', 'urgent'];
   const formats: Array<RequestHistoryItem['format']> = ['eClaimLink', 'Shafafiya', 'CSV', 'Manual'];
-  
+
   const providers = [
     'Emirates Hospital', 'Dubai Hospital', 'American Hospital Dubai',
     'Mediclinic City Hospital', 'NMC Royal Hospital', 'Aster Hospital',
@@ -34,10 +34,10 @@ const generateMockRequests = (count: number): RequestHistoryItem[] => {
   return Array.from({ length: count }, (_, index) => {
     const submissionDate = new Date();
     submissionDate.setDate(submissionDate.getDate() - Math.floor(Math.random() * 90));
-    
+
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const requestedAmount = Math.floor(Math.random() * 50000) + 1000;
-    const approvedAmount = status === 'approved' ? 
+    const approvedAmount = status === 'approved' ?
       Math.floor(requestedAmount * (0.8 + Math.random() * 0.2)) : undefined;
 
     return {
@@ -47,36 +47,36 @@ const generateMockRequests = (count: number): RequestHistoryItem[] => {
       memberName: members[Math.floor(Math.random() * members.length)],
       dateOfBirth: new Date(1970 + Math.floor(Math.random() * 40), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
       emiratesId: `784-${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000000) + 1000000}-${Math.floor(Math.random() * 90) + 10}`,
-      
+
       providerId: `PROV-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
       providerName: providers[Math.floor(Math.random() * providers.length)],
       providerType: Math.random() > 0.5 ? 'Hospital' : 'Clinic',
       facility: 'Main Campus',
-      
+
       type: Math.random() > 0.3 ? 'authorization' : 'claim',
       status,
       priority: priorities[Math.floor(Math.random() * priorities.length)],
       submissionDate: submissionDate.toISOString(),
       processedDate: status !== 'pending' ? new Date(submissionDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
       expiryDate: new Date(submissionDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      
+
       diagnosis: 'Primary diagnosis code',
       diagnosisCodes: [`ICD-${Math.floor(Math.random() * 900) + 100}`],
       procedure: services[Math.floor(Math.random() * services.length)],
       procedureCodes: [`CPT-${Math.floor(Math.random() * 90000) + 10000}`],
       serviceDescription: services[Math.floor(Math.random() * services.length)],
-      
+
       requestedAmount,
       approvedAmount,
       currency: 'AED',
-      
+
       format: formats[Math.floor(Math.random() * formats.length)],
       processingTime: Math.floor(Math.random() * 300) + 30,
       assignedTo: Math.random() > 0.5 ? 'Dr. Sarah Ahmed' : undefined,
       reviewedBy: status !== 'pending' ? 'Dr. Ahmed Hassan' : undefined,
-      
+
       documents: [],
-      
+
       createdAt: submissionDate.toISOString(),
       updatedAt: new Date().toISOString(),
       tags: [],
@@ -155,13 +155,13 @@ export function useRequestHistory(): UseRequestHistoryReturn {
 
       // For development, use mock data
       const mockData = generateMockRequests(500);
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       // Apply client-side filtering for mock data
       let filteredData = mockData;
-      
+
       // Search filter
       if (debouncedQuery) {
         const query = debouncedQuery.toLowerCase();
@@ -217,13 +217,13 @@ export function useRequestHistory(): UseRequestHistoryReturn {
         const { field, direction } = filters.sort;
         const aValue = a[field];
         const bValue = b[field];
-        
+
         let comparison = 0;
         if (aValue && bValue) {
           if (aValue < bValue) comparison = -1;
           if (aValue > bValue) comparison = 1;
         }
-        
+
         return direction === 'desc' ? -comparison : comparison;
       });
 

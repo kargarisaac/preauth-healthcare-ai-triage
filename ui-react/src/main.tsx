@@ -46,7 +46,7 @@ window.addEventListener('load', () => {
       // Log performance metrics in development
       if (process.env.NODE_ENV === 'development') {
         console.log('App fully loaded');
-        
+
         // Log performance entries
         const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
         if (navigation) {

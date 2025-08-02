@@ -10,7 +10,7 @@ const ProblemSection: React.FC = () => {
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-8">The Problem</h2>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Problem Flow Visualization */}
           <div className="order-2 lg:order-1">
@@ -22,28 +22,28 @@ const ProblemSection: React.FC = () => {
                   </div>
                   <span className="text-sm font-medium text-gray-700">Documents Upload</span>
                 </div>
-                
+
                 <div className="hidden sm:block text-2xl text-gray-400 transform rotate-0 sm:rotate-0">
                   →
                 </div>
                 <div className="sm:hidden text-2xl text-gray-400 transform rotate-90">
                   →
                 </div>
-                
+
                 <div className="flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-3xl mb-3">
                     👁️
                   </div>
                   <span className="text-sm font-medium text-gray-700">Manual Review</span>
                 </div>
-                
+
                 <div className="hidden sm:block text-2xl text-gray-400">
                   →
                 </div>
                 <div className="sm:hidden text-2xl text-gray-400 transform rotate-90">
                   →
                 </div>
-                
+
                 <div className="flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl mb-3">
                     ⏰
@@ -53,7 +53,7 @@ const ProblemSection: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Problem Description */}
           <div className="order-1 lg:order-2">
             <div className="prose prose-lg">

@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { 
-  AnalyticsMetrics, 
-  ProcessingTrend, 
-  FormatDistribution, 
+import {
+  AnalyticsMetrics,
+  ProcessingTrend,
+  FormatDistribution,
   ProviderPerformance,
   CostSavingsBreakdown,
-  QualityMetrics 
+  QualityMetrics
 } from '../../types/analytics';
 
 interface UseMetricsOptions {
@@ -32,7 +32,7 @@ interface UseMetricsReturn {
   metrics: AnalyticsMetrics | null;
   loading: boolean;
   error: string | null;
-  
+
   // Calculated KPIs
   kpis: {
     volume: KPICalculation;
@@ -44,19 +44,19 @@ interface UseMetricsReturn {
     errorRate: KPICalculation;
     roi: KPICalculation;
   };
-  
+
   // Benchmark comparisons
   benchmarks: {
     industryAverage: Record<string, number>;
     bestInClass: Record<string, number>;
     ourPosition: 'leading' | 'average' | 'lagging';
   };
-  
+
   // Utility functions
   calculateGrowthRate: (current: number, previous: number) => number;
   formatMetric: (value: number, type: 'currency' | 'percentage' | 'number' | 'time') => string;
   getMetricStatus: (value: number, target: number, thresholds: { warning: number; critical: number }) => 'good' | 'warning' | 'critical';
-  
+
   // Actions
   refresh: () => Promise<void>;
   exportMetrics: (format: 'json' | 'csv' | 'excel') => Promise<void>;
@@ -68,22 +68,22 @@ const generateMockMetrics = (): AnalyticsMetrics => ({
   dailyVolume: Math.round(Math.random() * 1000 + 500),
   monthlyVolume: Math.round(Math.random() * 20000 + 15000),
   volumeGrowthRate: Math.random() * 0.3 + 0.1, // 10-40% growth
-  
+
   automationRate: Math.random() * 0.3 + 0.7, // 70-100%
   manualTouchPoints: Math.round(Math.random() * 50 + 10),
   avgProcessingTime: Math.random() * 600 + 300, // 5-15 minutes in seconds
   slaCompliance: Math.random() * 0.2 + 0.8, // 80-100%
-  
+
   dataQualityScore: Math.random() * 0.2 + 0.8, // 80-100%
   errorRate: Math.random() * 0.05, // 0-5%
   successRate: Math.random() * 0.1 + 0.9, // 90-100%
   reprocessingRate: Math.random() * 0.03, // 0-3%
-  
+
   costSavings: Math.round(Math.random() * 50000 + 25000),
   roiPercentage: Math.random() * 100 + 150, // 150-250%
   avgCostPerTransaction: Math.random() * 10 + 5, // 5-15 AED
   totalSavingsYTD: Math.round(Math.random() * 500000 + 250000),
-  
+
   providerSatisfactionScore: Math.random() * 1.5 + 3.5, // 3.5-5.0 out of 5
   memberSatisfactionScore: Math.random() * 1.0 + 4.0, // 4.0-5.0 out of 5
   avgResponseTime: Math.random() * 30 + 15, // 15-45 minutes
@@ -98,12 +98,12 @@ const calculateKPI = (
 ): KPICalculation => {
   const change = current - previous;
   const changePercentage = previous !== 0 ? (change / previous) * 100 : 0;
-  
+
   let trend: 'up' | 'down' | 'stable' = 'stable';
   if (Math.abs(changePercentage) > 1) { // 1% threshold for stability
     trend = changePercentage > 0 ? 'up' : 'down';
   }
-  
+
   let status: 'good' | 'warning' | 'critical' = 'good';
   if (target && thresholds) {
     const deviation = Math.abs(current - target) / target;
@@ -113,7 +113,7 @@ const calculateKPI = (
       status = 'warning';
     }
   }
-  
+
   return {
     current,
     previous,
@@ -127,7 +127,7 @@ const calculateKPI = (
 
 export const useMetrics = (options: UseMetricsOptions = {}): UseMetricsReturn => {
   const { refreshInterval = 60, dateRange, aggregationLevel = 'daily' } = options;
-  
+
   const [metrics, setMetrics] = useState<AnalyticsMetrics | null>(null);
   const [previousMetrics, setPreviousMetrics] = useState<AnalyticsMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -137,17 +137,17 @@ export const useMetrics = (options: UseMetricsOptions = {}): UseMetricsReturn =>
   const fetchMetrics = async () => {
     try {
       setError(null);
-      
+
       // Store previous metrics before updating
       if (metrics) {
         setPreviousMetrics(metrics);
       }
-      
+
       // Mock API call - replace with actual API
       await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
       const newMetrics = generateMockMetrics();
       setMetrics(newMetrics);
-      
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
     } finally {
@@ -176,49 +176,49 @@ export const useMetrics = (options: UseMetricsOptions = {}): UseMetricsReturn =>
 
     return {
       volume: calculateKPI(
-        metrics.dailyVolume, 
-        previousMetrics.dailyVolume, 
-        1000, 
+        metrics.dailyVolume,
+        previousMetrics.dailyVolume,
+        1000,
         { warning: 0.1, critical: 0.2 }
       ),
       processingTime: calculateKPI(
-        metrics.avgProcessingTime / 60, 
-        previousMetrics.avgProcessingTime / 60, 
-        15, 
+        metrics.avgProcessingTime / 60,
+        previousMetrics.avgProcessingTime / 60,
+        15,
         { warning: 0.2, critical: 0.4 }
       ),
       automationRate: calculateKPI(
-        metrics.automationRate * 100, 
-        previousMetrics.automationRate * 100, 
-        85, 
+        metrics.automationRate * 100,
+        previousMetrics.automationRate * 100,
+        85,
         { warning: 0.1, critical: 0.2 }
       ),
       successRate: calculateKPI(
-        metrics.successRate * 100, 
-        previousMetrics.successRate * 100, 
-        95, 
+        metrics.successRate * 100,
+        previousMetrics.successRate * 100,
+        95,
         { warning: 0.05, critical: 0.1 }
       ),
       costSavings: calculateKPI(
-        metrics.costSavings, 
+        metrics.costSavings,
         previousMetrics.costSavings
       ),
       qualityScore: calculateKPI(
-        metrics.dataQualityScore * 100, 
-        previousMetrics.dataQualityScore * 100, 
-        90, 
+        metrics.dataQualityScore * 100,
+        previousMetrics.dataQualityScore * 100,
+        90,
         { warning: 0.1, critical: 0.2 }
       ),
       errorRate: calculateKPI(
-        metrics.errorRate * 100, 
-        previousMetrics.errorRate * 100, 
-        5, 
+        metrics.errorRate * 100,
+        previousMetrics.errorRate * 100,
+        5,
         { warning: 0.5, critical: 1.0 }
       ),
       roi: calculateKPI(
-        metrics.roiPercentage, 
-        previousMetrics.roiPercentage, 
-        200, 
+        metrics.roiPercentage,
+        previousMetrics.roiPercentage,
+        200,
         { warning: 0.15, critical: 0.3 }
       )
     };
@@ -245,18 +245,18 @@ export const useMetrics = (options: UseMetricsOptions = {}): UseMetricsReturn =>
     };
 
     let ourPosition: 'leading' | 'average' | 'lagging' = 'average';
-    
+
     if (metrics) {
       const ourAutomation = metrics.automationRate * 100;
       const ourProcessingTime = metrics.avgProcessingTime / 60;
       const ourSuccess = metrics.successRate * 100;
-      
+
       const leadingCount = [
         ourAutomation > bestInClass.automationRate * 0.9,
         ourProcessingTime < bestInClass.processingTime * 1.2,
         ourSuccess > bestInClass.successRate * 0.95
       ].filter(Boolean).length;
-      
+
       if (leadingCount >= 2) {
         ourPosition = 'leading';
       } else if (leadingCount === 0) {
@@ -298,8 +298,8 @@ export const useMetrics = (options: UseMetricsOptions = {}): UseMetricsReturn =>
   };
 
   const getMetricStatus = (
-    value: number, 
-    target: number, 
+    value: number,
+    target: number,
     thresholds: { warning: number; critical: number }
   ): 'good' | 'warning' | 'critical' => {
     const deviation = Math.abs(value - target) / target;

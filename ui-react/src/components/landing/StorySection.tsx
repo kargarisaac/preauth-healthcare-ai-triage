@@ -10,7 +10,7 @@ const StorySection: React.FC = () => {
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-8">Our Story</h2>
         </div>
-        
+
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 lg:p-12">
           <div className="prose prose-lg mx-auto">
             <p className="text-lg text-gray-700 leading-relaxed text-center">
@@ -20,7 +20,7 @@ const StorySection: React.FC = () => {
               insurance processes. We built Nazmito to flip that script, starting with the UAE.
             </p>
           </div>
-          
+
           <div className="mt-12 flex justify-center">
             <div className="bg-white rounded-xl p-6 shadow-soft border border-gray-200 max-w-md">
               <div className="flex items-center">

@@ -105,7 +105,7 @@ const LiveMetricCard: React.FC<LiveMetricCardProps> = ({
           </div>
         )}
       </div>
-      
+
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-gray-700">{title}</h3>
         <div className="flex items-baseline space-x-2">
@@ -114,7 +114,7 @@ const LiveMetricCard: React.FC<LiveMetricCardProps> = ({
           </span>
           <span className="text-sm text-gray-600">{unit}</span>
         </div>
-        
+
         {change !== undefined && (
           <div className={`flex items-center text-xs ${
             change > 0 ? 'text-green-600' : change < 0 ? 'text-red-600' : 'text-gray-600'
@@ -155,7 +155,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (days > 0) return `${days}d ${hours}h`;
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
@@ -170,7 +170,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
           <span className="font-medium capitalize">{health.status}</span>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-3">
           <div className="flex items-center space-x-3">
@@ -183,7 +183,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
               <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                 <div
                   className={`h-2 rounded-full transition-all duration-300 ${
-                    health.cpuUsage > 80 ? 'bg-red-500' : 
+                    health.cpuUsage > 80 ? 'bg-red-500' :
                     health.cpuUsage > 60 ? 'bg-yellow-500' : 'bg-green-500'
                   }`}
                   style={{ width: `${health.cpuUsage}%` }}
@@ -191,7 +191,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <MemoryStick className="h-4 w-4 text-purple-500" />
             <div className="flex-1">
@@ -202,7 +202,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
               <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                 <div
                   className={`h-2 rounded-full transition-all duration-300 ${
-                    health.memoryUsage > 85 ? 'bg-red-500' : 
+                    health.memoryUsage > 85 ? 'bg-red-500' :
                     health.memoryUsage > 70 ? 'bg-yellow-500' : 'bg-green-500'
                   }`}
                   style={{ width: `${health.memoryUsage}%` }}
@@ -211,7 +211,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="space-y-3">
           <div className="flex items-center space-x-3">
             <HardDrive className="h-4 w-4 text-green-500" />
@@ -223,7 +223,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
               <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                 <div
                   className={`h-2 rounded-full transition-all duration-300 ${
-                    health.diskUsage > 90 ? 'bg-red-500' : 
+                    health.diskUsage > 90 ? 'bg-red-500' :
                     health.diskUsage > 75 ? 'bg-yellow-500' : 'bg-green-500'
                   }`}
                   style={{ width: `${health.diskUsage}%` }}
@@ -231,7 +231,7 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between text-sm">
             <span className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-gray-400" />
@@ -241,12 +241,12 @@ const SystemHealthCard: React.FC<SystemHealthCardProps> = ({ health }) => {
           </div>
         </div>
       </div>
-      
+
       <div className="mt-4 pt-4 border-t border-gray-200">
         <div className="flex items-center justify-between text-sm">
           <span>API Response Time</span>
           <span className={`font-medium ${
-            health.apiResponseTime > 1000 ? 'text-red-600' : 
+            health.apiResponseTime > 1000 ? 'text-red-600' :
             health.apiResponseTime > 500 ? 'text-yellow-600' : 'text-green-600'
           }`}>
             {health.apiResponseTime.toFixed(0)}ms
@@ -269,7 +269,7 @@ const GaugeChart: React.FC<GaugeChartProps> = ({
   const percentage = ((value - min) / (max - min)) * 100;
   const circumference = 2 * Math.PI * (size / 2 - 10);
   const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
-  
+
   return (
     <div className="flex flex-col items-center">
       <div className="relative" style={{ width: size, height: size }}>
@@ -330,11 +330,11 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
   // Mock real-time data updates for demonstration
   useEffect(() => {
     if (!metrics) return;
-    
+
     const interval = setInterval(() => {
       const now = new Date();
       const timeString = now.toLocaleTimeString();
-      
+
       setHistoricalData(prev => {
         const newData = {
           time: timeString,
@@ -342,11 +342,11 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
           processingTime: Math.round(Math.random() * 30 + 120), // Mock processing time in seconds
           successRate: Math.round(Math.random() * 10 + 90) // Mock success rate
         };
-        
+
         return [...prev.slice(-29), newData]; // Keep last 30 data points
       });
     }, 5000); // Update every 5 seconds
-    
+
     return () => clearInterval(interval);
   }, [metrics]);
 
@@ -384,7 +384,7 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
           <h2 className="text-lg font-semibold text-gray-900">Real-time Metrics</h2>
           <p className="text-sm text-gray-600">Live performance monitoring and system health</p>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             {isConnected ? (
@@ -398,13 +398,13 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
               {connectionStatus}
             </span>
           </div>
-          
+
           {lastUpdate && (
             <div className="text-xs text-gray-500">
               Last update: {lastUpdate.toLocaleTimeString()}
             </div>
           )}
-          
+
           <Button
             size="sm"
             variant={enabled ? "secondary" : "primary"}
@@ -427,7 +427,7 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
             icon={<Activity className="h-5 w-5" />}
             isLive={isConnected}
           />
-          
+
           <LiveMetricCard
             title="Processing Time"
             value={Math.round(metrics.avgProcessingTime / 60)}
@@ -437,7 +437,7 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
             icon={<Clock className="h-5 w-5" />}
             isLive={isConnected}
           />
-          
+
           <LiveMetricCard
             title="Automation Rate"
             value={Math.round(metrics.automationRate * 100)}
@@ -447,7 +447,7 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
             icon={<Zap className="h-5 w-5" />}
             isLive={isConnected}
           />
-          
+
           <LiveMetricCard
             title="Error Rate"
             value={Math.round(metrics.errorRate * 100)}
@@ -463,7 +463,7 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* System Health */}
         {systemHealth && <SystemHealthCard health={systemHealth} />}
-        
+
         {/* Performance Gauges */}
         {metrics && (
           <Card className="p-6">
@@ -476,7 +476,7 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
                 unit="%"
                 color="#0066cc"
               />
-              
+
               <GaugeChart
                 value={Math.round(metrics.dataQualityScore * 100)}
                 max={100}
@@ -484,7 +484,7 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
                 unit="%"
                 color="#00a86b"
               />
-              
+
               <GaugeChart
                 value={Math.round(metrics.slaCompliance * 100)}
                 max={100}
@@ -492,7 +492,7 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
                 unit="%"
                 color="#ff6b35"
               />
-              
+
               <GaugeChart
                 value={Math.round(metrics.successRate * 100)}
                 max={100}
@@ -511,22 +511,22 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Real-time Processing Activity
           </h3>
-          
+
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={historicalData}>
-                <XAxis 
-                  dataKey="time" 
+                <XAxis
+                  dataKey="time"
                   stroke="#666"
                   fontSize={12}
                   tick={{ fontSize: 10 }}
                 />
-                <YAxis 
+                <YAxis
                   stroke="#666"
                   fontSize={12}
                   tick={{ fontSize: 10 }}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     backgroundColor: 'white',
                     border: '1px solid #e5e7eb',

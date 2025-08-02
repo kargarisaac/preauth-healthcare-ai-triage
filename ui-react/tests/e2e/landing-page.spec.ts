@@ -8,7 +8,7 @@ test.describe('Landing Page', () => {
   test('should display main navigation', async ({ page }) => {
     // Check for main navigation elements
     await expect(page.getByRole('navigation')).toBeVisible()
-    
+
     // Check for key navigation links
     await expect(page.getByRole('link', { name: /home/i })).toBeVisible()
     await expect(page.getByRole('link', { name: /features/i })).toBeVisible()
@@ -20,7 +20,7 @@ test.describe('Landing Page', () => {
     // Check for hero section elements
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.getByText(/AI-powered pre-authorization/i)).toBeVisible()
-    
+
     // Check for CTA buttons
     const ctaButtons = page.getByRole('button')
     await expect(ctaButtons.first()).toBeVisible()
@@ -30,7 +30,7 @@ test.describe('Landing Page', () => {
     // Find and click the main CTA button
     const ctaButton = page.getByRole('button', { name: /get started/i }).first()
     await ctaButton.click()
-    
+
     // Should navigate to dashboard
     await expect(page).toHaveURL(/\/dashboard/)
   })
@@ -56,7 +56,7 @@ test.describe('Landing Page', () => {
 
   test('should display pricing section', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /pricing/i })).toBeVisible()
-    
+
     // Check for pricing tiers
     await expect(page.getByText(/starter/i)).toBeVisible()
     await expect(page.getByText(/professional/i)).toBeVisible()
@@ -65,7 +65,7 @@ test.describe('Landing Page', () => {
 
   test('should display FAQ section', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /frequently asked questions/i })).toBeVisible()
-    
+
     // Check for expandable FAQ items
     const faqItems = page.locator('[data-testid="faq-item"]')
     await expect(faqItems.first()).toBeVisible()
@@ -81,7 +81,7 @@ test.describe('Landing Page', () => {
   test('should be responsive on mobile', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 })
-    
+
     // Check that mobile navigation works
     const mobileMenuToggle = page.getByRole('button', { name: /menu/i })
     if (await mobileMenuToggle.isVisible()) {
@@ -93,10 +93,10 @@ test.describe('Landing Page', () => {
   test('should have proper SEO elements', async ({ page }) => {
     // Check for essential SEO elements
     await expect(page).toHaveTitle(/Nazmito/i)
-    
+
     const metaDescription = page.locator('meta[name="description"]')
     await expect(metaDescription).toHaveAttribute('content', /.+/)
-    
+
     // Check for structured data
     const structuredData = page.locator('script[type="application/ld+json"]')
     await expect(structuredData).toBeAttached()
@@ -105,10 +105,10 @@ test.describe('Landing Page', () => {
   test('should handle smooth scrolling', async ({ page }) => {
     // Click on a navigation link that should scroll to section
     await page.getByRole('link', { name: /features/i }).click()
-    
+
     // Wait for scroll animation
     await page.waitForTimeout(1000)
-    
+
     // Check that we scrolled to the features section
     const featuresSection = page.locator('[data-testid="features-section"]')
     await expect(featuresSection).toBeInViewport()

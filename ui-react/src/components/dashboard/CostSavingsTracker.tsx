@@ -14,11 +14,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  Target, 
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Target,
   Calculator,
   PieChart as PieChartIcon,
   BarChart3,
@@ -55,7 +55,7 @@ const ROICalculator: React.FC<ROICalculatorProps> = ({ totalSavings, totalCosts,
         <h3 className="text-lg font-semibold text-gray-900">ROI Calculator</h3>
         <Calculator className="h-5 w-5 text-blue-500" />
       </div>
-      
+
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center p-4 bg-green-50 rounded-lg">
@@ -65,7 +65,7 @@ const ROICalculator: React.FC<ROICalculatorProps> = ({ totalSavings, totalCosts,
               {new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(totalSavings)}
             </p>
           </div>
-          
+
           <div className="text-center p-4 bg-blue-50 rounded-lg">
             <Target className="h-8 w-8 text-blue-600 mx-auto mb-2" />
             <p className="text-sm text-gray-600">Implementation Cost</p>
@@ -74,7 +74,7 @@ const ROICalculator: React.FC<ROICalculatorProps> = ({ totalSavings, totalCosts,
             </p>
           </div>
         </div>
-        
+
         <div className="text-center p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
           <Award className="h-10 w-10 text-purple-600 mx-auto mb-2" />
           <p className="text-sm text-gray-600">Return on Investment</p>
@@ -92,14 +92,14 @@ const SavingsProjection: React.FC<SavingsProjectionProps> = ({ currentMonthly, y
   // const monthsRemaining = 12 - (new Date().getMonth() + 1);
   const projectedYearly = currentMonthly * 12;
   const onTrack = projectedYearly >= yearlyTarget;
-  
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Yearly Projection</h3>
         <Calendar className="h-5 w-5 text-blue-500" />
       </div>
-      
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Monthly Average</span>
@@ -107,21 +107,21 @@ const SavingsProjection: React.FC<SavingsProjectionProps> = ({ currentMonthly, y
             {new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(currentMonthly)}
           </span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Yearly Target</span>
           <span className="font-medium">
             {new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(yearlyTarget)}
           </span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Projected Yearly</span>
           <span className={`font-medium ${onTrack ? 'text-green-600' : 'text-yellow-600'}`}>
             {new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(projectedYearly)}
           </span>
         </div>
-        
+
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Progress to Target</span>
@@ -129,7 +129,7 @@ const SavingsProjection: React.FC<SavingsProjectionProps> = ({ currentMonthly, y
               {(progress * 100).toFixed(1)}%
             </span>
           </div>
-          
+
           <div className="w-full bg-gray-200 rounded-full h-3">
             <div
               className={`h-3 rounded-full transition-all duration-300 ${
@@ -139,12 +139,12 @@ const SavingsProjection: React.FC<SavingsProjectionProps> = ({ currentMonthly, y
             />
           </div>
         </div>
-        
+
         <div className={`p-3 rounded-lg ${onTrack ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
           <div className="flex items-center space-x-2">
             {onTrack ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
             <span className="text-sm font-medium">
-              {onTrack 
+              {onTrack
                 ? `On track to exceed target by ${new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(projectedYearly - yearlyTarget)}`
                 : `Behind target by ${new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(yearlyTarget - projectedYearly)}`
               }
@@ -169,12 +169,12 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
   const generateHistoricalData = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const currentMonth = new Date().getMonth();
-    
+
     return months.slice(0, currentMonth + 1).map((month, index) => {
       const baseAmount = metrics.costSavings;
       const variation = (Math.random() - 0.5) * 0.3; // ±15% variation
       const monthlyAmount = baseAmount * (1 + variation);
-      
+
       return {
         month,
         amount: Math.round(monthlyAmount),
@@ -229,7 +229,7 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
           <h2 className="text-lg font-semibold text-gray-900">Cost Savings & ROI Tracker</h2>
           <p className="text-sm text-gray-600">Financial impact analysis and ROI projections</p>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button
             variant={chartType === 'bar' ? 'primary' : 'secondary'}
@@ -265,7 +265,7 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
             <DollarSign className="h-8 w-8 text-green-500" />
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -277,7 +277,7 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
             <Target className="h-8 w-8 text-blue-500" />
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -287,7 +287,7 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
             <TrendingUp className="h-8 w-8 text-purple-500" />
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -325,28 +325,28 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
             {chartType === 'bar' ? (
               <BarChart data={savingsBreakdown}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="category" 
+                <XAxis
+                  dataKey="category"
                   stroke="#666"
                   fontSize={12}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis 
+                <YAxis
                   stroke="#666"
                   fontSize={12}
                   tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => [
                     new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(value),
                     'Savings'
                   ]}
                   labelFormatter={(label) => `Category: ${label}`}
                 />
-                <Bar 
-                  dataKey="amount" 
+                <Bar
+                  dataKey="amount"
                   fill="#0066cc"
                   radius={[4, 4, 0, 0]}
                 />
@@ -368,7 +368,7 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => [
                     new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(value),
                     'Savings'
@@ -383,7 +383,7 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
           {savingsBreakdown.map((category, index) => (
             <div key={category.category} className="flex items-center space-x-2">
-              <div 
+              <div
                 className="w-4 h-4 rounded"
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
@@ -393,7 +393,7 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
                   {new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(category.amount)}
                 </p>
                 <div className={`flex items-center text-xs ${
-                  category.trend === 'up' ? 'text-green-600' : 
+                  category.trend === 'up' ? 'text-green-600' :
                   category.trend === 'down' ? 'text-red-600' : 'text-gray-600'
                 }`}>
                   {category.trend === 'up' && <TrendingUp className="h-3 w-3 mr-1" />}
@@ -420,12 +420,12 @@ export const CostSavingsTracker: React.FC<CostSavingsTrackerProps> = ({
             <AreaChart data={historicalData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" stroke="#666" fontSize={12} />
-              <YAxis 
-                stroke="#666" 
+              <YAxis
+                stroke="#666"
                 fontSize={12}
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value: number, name: string) => [
                   new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }).format(value),
                   name

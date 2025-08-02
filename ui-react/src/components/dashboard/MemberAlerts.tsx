@@ -96,7 +96,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0) {
       return `${Math.abs(diffDays)} days overdue`;
     } else if (diffDays === 0) {
@@ -186,9 +186,9 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
     return filtered.sort((a, b) => {
       const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
       const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
-      
+
       if (priorityDiff !== 0) return priorityDiff;
-      
+
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     });
   }, [careGaps, filters]);
@@ -240,11 +240,11 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
         <div>
           <h2 className="text-xl font-semibold text-gray-900">Care Management</h2>
           <p className="text-sm text-gray-600">
-            {analysis.totalGaps} care gaps • {analysis.urgentGaps} urgent • 
+            {analysis.totalGaps} care gaps • {analysis.urgentGaps} urgent •
             Potential savings: {formatCurrency(analysis.potentialSavings)}
           </p>
         </div>
-        
+
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4 text-center">
           <div className="bg-red-50 p-3 rounded-lg">
@@ -307,7 +307,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
               }`} />
             </Button>
           </div>
-          
+
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -324,7 +324,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                   <option value="low">Low</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
                 <select
@@ -339,7 +339,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                   <option value="follow_up">Follow-up</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
                 <select
@@ -377,7 +377,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
               const PriorityIcon = priorityDisplay.icon;
               const isExpanded = expandedItems.has(gap.id);
               const isOverdue = new Date(gap.dueDate) < new Date();
-              
+
               return (
                 <Card key={gap.id} className={`p-4 ${isOverdue ? 'border-red-200 bg-red-50' : ''}`}>
                   <div className="flex items-start space-x-4">
@@ -385,7 +385,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${priorityDisplay.bgColor}`}>
                       <Icon className={`h-5 w-5 ${priorityDisplay.color}`} />
                     </div>
-                    
+
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
@@ -397,13 +397,13 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                             {gap.description}
                           </p>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2 ml-4">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${priorityDisplay.bgColor} ${priorityDisplay.color}`}>
                             <PriorityIcon className="h-3 w-3" />
                             <span>{priorityDisplay.label}</span>
                           </span>
-                          
+
                           <button
                             onClick={() => toggleExpansion(gap.id)}
                             className="text-gray-400 hover:text-gray-600"
@@ -416,24 +416,24 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                           </button>
                         </div>
                       </div>
-                      
+
                       {/* Summary Info */}
                       <div className="flex items-center text-sm text-gray-500 space-x-4 mb-3">
                         <span className="flex items-center">
                           <Clock className="h-4 w-4 mr-1" />
                           {formatDate(gap.dueDate)}
                         </span>
-                        
+
                         <span className="flex items-center">
                           <DollarSign className="h-4 w-4 mr-1" />
                           {formatCurrency(gap.potentialCostSaving)} potential savings
                         </span>
-                        
+
                         <span className="capitalize">
                           {gap.type.replace('_', ' ')}
                         </span>
                       </div>
-                      
+
                       {/* Actions */}
                       {showActions && gap.status === 'open' && (
                         <div className="flex items-center space-x-2 mb-3">
@@ -445,7 +445,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                             <Calendar className="h-4 w-4 mr-1" />
                             Schedule
                           </Button>
-                          
+
                           <Button
                             variant="outline"
                             size="sm"
@@ -454,7 +454,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                             <Phone className="h-4 w-4 mr-1" />
                             Call
                           </Button>
-                          
+
                           <Button
                             variant="outline"
                             size="sm"
@@ -463,7 +463,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                             <Mail className="h-4 w-4 mr-1" />
                             Email
                           </Button>
-                          
+
                           <div className="relative">
                             <select
                               value={gap.status}
@@ -478,7 +478,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                           </div>
                         </div>
                       )}
-                      
+
                       {/* Expanded Details */}
                       {isExpanded && (
                         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -488,13 +488,13 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                               <p className="text-sm text-gray-600 mb-4">
                                 {gap.recommendation}
                               </p>
-                              
+
                               <h4 className="text-sm font-medium text-gray-900 mb-2">Evidence Base</h4>
                               <p className="text-sm text-gray-600">
                                 {gap.evidenceBase}
                               </p>
                             </div>
-                            
+
                             <div>
                               <h4 className="text-sm font-medium text-gray-900 mb-2">Details</h4>
                               <div className="space-y-2 text-sm">
@@ -563,7 +563,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                       'text-blue-600'
                     }`} />
                   </div>
-                  
+
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div>
@@ -574,7 +574,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                           {recommendation.description}
                         </p>
                       </div>
-                      
+
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         recommendation.status === 'completed' ? 'bg-green-100 text-green-700' :
                         recommendation.status === 'approved' ? 'bg-blue-100 text-blue-700' :
@@ -584,16 +584,16 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                         {recommendation.status}
                       </span>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div>
                         <h4 className="text-sm font-medium text-gray-900 mb-1">Expected Outcome</h4>
                         <p className="text-sm text-gray-600 mb-3">{recommendation.expectedOutcome}</p>
-                        
+
                         <h4 className="text-sm font-medium text-gray-900 mb-1">Timeframe</h4>
                         <p className="text-sm text-gray-600">{recommendation.timeframe}</p>
                       </div>
-                      
+
                       <div>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
@@ -651,7 +651,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                     <h3 className="text-base font-semibold text-gray-900">{metric.measure}</h3>
                     <p className="text-sm text-gray-600">{metric.description}</p>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     {metric.trend === 'improving' ? (
                       <TrendingUp className="h-5 w-5 text-green-500" />
@@ -669,7 +669,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   {/* Progress Bar */}
                   <div>
@@ -688,7 +688,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                       />
                     </div>
                   </div>
-                  
+
                   {/* Metrics Grid */}
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
@@ -704,7 +704,7 @@ export const MemberAlerts: React.FC<MemberAlertsProps> = ({
                       <div className="text-xs text-gray-600">Benchmark</div>
                     </div>
                   </div>
-                  
+
                   <div className="text-xs text-gray-500 text-center">
                     Last updated: {new Date(metric.lastUpdated).toLocaleDateString('en-AE')}
                   </div>

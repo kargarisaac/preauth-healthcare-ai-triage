@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { clsx } from 'clsx';
-import { 
-  ChevronDown, 
-  ChevronRight, 
-  Copy, 
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
   Search,
   FileText,
   Eye,
@@ -55,7 +55,7 @@ const RawDataViewer: React.FC<RawDataViewerProps> = ({
       const dataType = Array.isArray(value) ? 'array' : typeof value;
       const jsonString = JSON.stringify(value);
       const size = jsonString.length;
-      
+
       let preview = '';
       if (dataType === 'string') {
         preview = String(value).substring(0, 100);
@@ -91,7 +91,7 @@ const RawDataViewer: React.FC<RawDataViewerProps> = ({
         section.preview,
         JSON.stringify(section.data)
       ].join(' ').toLowerCase();
-      
+
       return searchableContent.includes(searchQuery.toLowerCase());
     });
   }, [dataSections, searchQuery]);
@@ -181,7 +181,7 @@ const RawDataViewer: React.FC<RawDataViewerProps> = ({
             {searchQuery && ` (filtered by "${searchQuery}")`}
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {/* View Mode Toggle */}
           <div className="flex border border-gray-300 rounded-md overflow-hidden">
@@ -244,7 +244,7 @@ const RawDataViewer: React.FC<RawDataViewerProps> = ({
           >
             Expand All
           </Button>
-          
+
           <Button
             variant="secondary"
             size="sm"

@@ -87,7 +87,7 @@ export interface ErrorResponse {
 /**
  * FHIR Resource types that can be generated
  */
-export type FHIRResourceType = 
+export type FHIRResourceType =
   | 'Bundle'
   | 'Claim'
   | 'ServiceRequest'
@@ -102,7 +102,7 @@ export type FHIRResourceType =
 /**
  * File processing status
  */
-export type ProcessingStatus = 
+export type ProcessingStatus =
   | 'idle'
   | 'uploading'
   | 'processing'
@@ -112,7 +112,7 @@ export type ProcessingStatus =
 /**
  * Supported file formats
  */
-export type SupportedFormat = 
+export type SupportedFormat =
   | 'eclaim'
   | 'shafafiya'
   | 'csv'

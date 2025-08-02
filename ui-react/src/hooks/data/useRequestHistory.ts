@@ -43,7 +43,7 @@ export function useRequestHistory() {
   const fetchRequests = useCallback(async (newFilters?: Partial<RequestFilters>) => {
     const currentFilters = newFilters ? { ...filters, ...newFilters } : filters;
     const cacheKey = generateCacheKey(currentFilters);
-    
+
     // Check cache first
     const cachedEntry = cache.get(cacheKey);
     if (cachedEntry && isCacheValid(cachedEntry)) {
@@ -56,15 +56,15 @@ export function useRequestHistory() {
 
     try {
       const queryParams = new URLSearchParams();
-      
+
       // Add pagination
       queryParams.append('page', currentFilters.pagination.page.toString());
       queryParams.append('page_size', currentFilters.pagination.pageSize.toString());
-      
+
       // Add sorting
       queryParams.append('sort_field', currentFilters.sort.field as string);
       queryParams.append('sort_direction', currentFilters.sort.direction);
-      
+
       // Add search criteria
       const { search } = currentFilters;
       if (search.query) queryParams.append('query', search.query);
@@ -75,11 +75,11 @@ export function useRequestHistory() {
       if (search.assignedTo?.length) queryParams.append('assigned_to', search.assignedTo.join(','));
       if (search.tags?.length) queryParams.append('tags', search.tags.join(','));
       if (search.hasDocuments !== undefined) queryParams.append('has_documents', search.hasDocuments.toString());
-      
+
       // Add date range
       if (search.dateRange?.from) queryParams.append('date_from', search.dateRange.from);
       if (search.dateRange?.to) queryParams.append('date_to', search.dateRange.to);
-      
+
       // Add amount range
       if (search.amountRange?.min) queryParams.append('amount_min', search.amountRange.min.toString());
       if (search.amountRange?.max) queryParams.append('amount_max', search.amountRange.max.toString());
@@ -96,16 +96,16 @@ export function useRequestHistory() {
       }
 
       const result: RequestHistoryResponse = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch request history');
       }
 
       const { requests: fetchedRequests, total: fetchedTotal } = result.data;
-      
+
       setRequests(fetchedRequests);
       setTotal(fetchedTotal);
-      
+
       // Cache the results
       cache.set(cacheKey, {
         key: cacheKey,
@@ -142,7 +142,7 @@ export function useRequestHistory() {
       }
 
       const result: RequestDetailsResponse = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch request details');
       }
@@ -203,14 +203,14 @@ export function useRequestHistory() {
       }
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Bulk operation failed');
       }
 
       // Clear cache to force refresh
       cache.clear();
-      
+
       showToast({
         type: 'success',
         title: 'Bulk Operation Complete',

@@ -72,10 +72,10 @@ const KPICard: React.FC<KPICardProps> = ({
         return `${val.toFixed(1)}%`;
       }
       if (unit === 'AED') {
-        return new Intl.NumberFormat('en-AE', { 
-          style: 'currency', 
-          currency: 'AED', 
-          minimumFractionDigits: 0 
+        return new Intl.NumberFormat('en-AE', {
+          style: 'currency',
+          currency: 'AED',
+          minimumFractionDigits: 0
         }).format(val);
       }
       if (unit === 'min') {
@@ -87,7 +87,7 @@ const KPICard: React.FC<KPICardProps> = ({
   };
 
   const isPositiveChange = change !== undefined && change > 0;
-  const isOnTarget = target !== undefined && typeof value === 'number' && 
+  const isOnTarget = target !== undefined && typeof value === 'number' &&
     Math.abs(value - target) <= (target * 0.05);
 
   return (
@@ -104,10 +104,10 @@ const KPICard: React.FC<KPICardProps> = ({
           </div>
         )}
       </div>
-      
+
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-        
+
         <div className="flex items-baseline space-x-2">
           <span className="text-2xl font-bold text-gray-900">
             {formatValue(value)}
@@ -116,7 +116,7 @@ const KPICard: React.FC<KPICardProps> = ({
             <span className="text-sm text-gray-500">{unit}</span>
           )}
         </div>
-        
+
         {change !== undefined && (
           <div className={`flex items-center text-sm ${
             isPositiveChange ? 'text-green-600' : 'text-red-600'
@@ -129,13 +129,13 @@ const KPICard: React.FC<KPICardProps> = ({
             <span>{Math.abs(change).toFixed(1)}% vs last period</span>
           </div>
         )}
-        
+
         {target !== undefined && (
           <div className="text-xs text-gray-500">
             Target: {isPercentage ? `${target}%` : formatValue(target)}
           </div>
         )}
-        
+
         {description && (
           <p className="text-xs text-gray-500 mt-2">{description}</p>
         )}
@@ -208,14 +208,14 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
               <div className="h-8 bg-gray-200 rounded w-20"></div>
             </div>
           </div>
-          
+
           {/* KPI Cards skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-40 bg-gray-200 rounded"></div>
             ))}
           </div>
-          
+
           {/* Additional metrics skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
@@ -351,7 +351,7 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
           <h2 className="text-2xl font-bold text-gray-900">Analytics Overview</h2>
           <p className="text-gray-600">Real-time healthcare data processing insights</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-gray-400" />
@@ -367,7 +367,7 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
               ))}
             </select>
           </div>
-          
+
           <Button
             variant="secondary"
             size="sm"
@@ -377,7 +377,7 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
             <RefreshCw className="h-4 w-4" />
             <span>Refresh</span>
           </Button>
-          
+
           <Button
             variant="secondary"
             size="sm"
@@ -437,7 +437,7 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
             <p className="text-sm text-gray-600">Total Requests Processed</p>
             <p className="text-xs text-gray-500 mt-1">All time</p>
           </div>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
               <Clock className="h-8 w-8 text-green-500" />
@@ -448,16 +448,16 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
             <p className="text-sm text-gray-600">Avg Response Time (min)</p>
             <p className="text-xs text-gray-500 mt-1">Within SLA targets</p>
           </div>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
               <DollarSign className="h-8 w-8 text-purple-500" />
             </div>
             <p className="text-2xl font-bold text-gray-900">
-              {new Intl.NumberFormat('en-AE', { 
-                style: 'currency', 
-                currency: 'AED', 
-                minimumFractionDigits: 0 
+              {new Intl.NumberFormat('en-AE', {
+                style: 'currency',
+                currency: 'AED',
+                minimumFractionDigits: 0
               }).format(metrics.totalSavingsYTD)}
             </p>
             <p className="text-sm text-gray-600">Total Savings YTD</p>

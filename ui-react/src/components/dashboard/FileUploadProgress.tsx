@@ -143,7 +143,7 @@ const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
             <span>{uploadSpeed}</span>
           )}
         </div>
-        
+
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div
             className={`h-full transition-all duration-300 ease-out ${
@@ -175,7 +175,7 @@ const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
               <span className="font-medium">{formatTime(estimatedTimeRemaining)}</span>
             </div>
           )}
-          
+
           {error && status === 'error' && (
             <div className="p-3 bg-error-50 border border-error-200 rounded-md">
               <div className="flex items-start space-x-2">

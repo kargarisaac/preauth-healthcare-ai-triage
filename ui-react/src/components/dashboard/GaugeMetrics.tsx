@@ -129,7 +129,7 @@ const AnimatedGauge: React.FC<AnimatedGaugeProps> = ({
     // Draw needle
     const needleLength = radius * 0.6;
     const needleAngle = angleScale(data.value);
-    
+
     const needleGroup = g.append('g')
       .attr('class', 'needle');
 
@@ -198,7 +198,7 @@ const AnimatedGauge: React.FC<AnimatedGaugeProps> = ({
     if (data.target !== undefined) {
       const targetAngle = angleScale(data.target);
       const targetRadius = radius * 0.95;
-      
+
       g.append('circle')
         .attr('cx', Math.sin(targetAngle) * targetRadius)
         .attr('cy', -Math.cos(targetAngle) * targetRadius)
@@ -263,28 +263,28 @@ const AnimatedGauge: React.FC<AnimatedGaugeProps> = ({
           {icon}
         </div>
       </div>
-      
+
       <h3 className="text-sm font-medium text-gray-900 mb-1">{title}</h3>
-      
+
       <svg
         ref={svgRef}
         width={responsiveSize}
         height={responsiveSize}
         className="mx-auto"
       />
-      
+
       <div className="mt-2 space-y-1">
         <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white`}
              style={{ backgroundColor: getStatusColor() }}>
           {getStatusLabel()}
         </div>
-        
+
         {data.target !== undefined && (
           <p className="text-xs text-gray-500">
             Target: {data.target}%
           </p>
         )}
-        
+
         {description && (
           <p className="text-xs text-gray-600 mt-2">
             {description}
@@ -323,13 +323,13 @@ export const GaugeMetrics: React.FC<GaugeMetricsProps> = ({
           <h2 className="text-lg font-semibold text-gray-900">Performance Gauges</h2>
           <p className="text-sm text-gray-600">Real-time key performance indicators</p>
         </div>
-        
+
         <div className="flex items-center text-sm text-gray-500">
           <Target className="h-4 w-4 mr-1" />
           <span>Target indicators shown in red</span>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {gauges.map((gauge) => (
           <AnimatedGauge
@@ -341,14 +341,14 @@ export const GaugeMetrics: React.FC<GaugeMetricsProps> = ({
           />
         ))}
       </div>
-      
+
       {/* Summary insights */}
       <Card className="p-6 mt-6">
         <div className="flex items-center mb-4">
           <Award className="h-5 w-5 text-blue-600 mr-2" />
           <h3 className="text-lg font-semibold text-gray-900">Performance Summary</h3>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
@@ -360,7 +360,7 @@ export const GaugeMetrics: React.FC<GaugeMetricsProps> = ({
             </p>
             <p className="text-xs text-gray-500">of {gauges.length} total</p>
           </div>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
               <TrendingUp className="h-8 w-8 text-blue-500" />
@@ -371,7 +371,7 @@ export const GaugeMetrics: React.FC<GaugeMetricsProps> = ({
             </p>
             <p className="text-xs text-gray-500">across all metrics</p>
           </div>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
               <AlertTriangle className="h-8 w-8 text-yellow-500" />

@@ -61,7 +61,7 @@ describe('Button Component', () => {
     const user = userEvent.setup()
     const handleClick = vi.fn()
     render(<Button onClick={handleClick}>Clickable</Button>)
-    
+
     await user.click(screen.getByRole('button'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
@@ -70,7 +70,7 @@ describe('Button Component', () => {
     const user = userEvent.setup()
     const handleClick = vi.fn()
     render(<Button onClick={handleClick} disabled>Disabled</Button>)
-    
+
     await user.click(screen.getByRole('button'))
     expect(handleClick).not.toHaveBeenCalled()
   })
@@ -79,7 +79,7 @@ describe('Button Component', () => {
     const user = userEvent.setup()
     const handleClick = vi.fn()
     render(<Button onClick={handleClick} loading>Loading</Button>)
-    
+
     await user.click(screen.getByRole('button'))
     expect(handleClick).not.toHaveBeenCalled()
   })
@@ -105,14 +105,14 @@ describe('Button Component', () => {
       const user = userEvent.setup()
       const handleClick = vi.fn()
       render(<Button onClick={handleClick}>Keyboard Button</Button>)
-      
+
       const button = screen.getByRole('button')
       button.focus()
       expect(button).toHaveFocus()
-      
+
       await user.keyboard('{Enter}')
       expect(handleClick).toHaveBeenCalledTimes(1)
-      
+
       await user.keyboard(' ')
       expect(handleClick).toHaveBeenCalledTimes(2)
     })

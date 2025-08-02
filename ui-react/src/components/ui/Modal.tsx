@@ -56,7 +56,7 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   return createPortal(
-    <div 
+    <div
       className="modal-overlay animate-fade-in"
       onClick={handleOverlayClick}
       role="dialog"
@@ -91,7 +91,7 @@ const Modal: React.FC<ModalProps> = ({
             )}
           </div>
         )}
-        
+
         <div className="p-6">
           {children}
         </div>

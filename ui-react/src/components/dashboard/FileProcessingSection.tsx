@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { clsx } from 'clsx';
-import { 
-  Upload, 
-  FileText, 
+import {
+  Upload,
+  FileText,
   Database,
   Zap,
   CheckCircle,
@@ -101,7 +101,7 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       handleFileSelect(files[0]);
@@ -127,7 +127,7 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
 
   const determineFormat = useCallback((file: File): string => {
     if (selectedFormat !== 'auto') return selectedFormat;
-    
+
     const extension = file.name.split('.').pop()?.toLowerCase();
     if (extension === 'csv') return 'csv';
     if (extension === 'xml') {
@@ -139,7 +139,7 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
 
   const handleProcess = useCallback(async () => {
     if (!currentFile) return;
-    
+
     const format = determineFormat(currentFile);
     await processFile(format);
   }, [currentFile, processFile, determineFormat]);
@@ -177,7 +177,7 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
           Process Healthcare Data
         </h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Upload your XML or CSV healthcare files for AI-powered processing into FHIR-compliant format. 
+          Upload your XML or CSV healthcare files for AI-powered processing into FHIR-compliant format.
           Supports eClaimLink (Dubai), Shafafiya (Abu Dhabi), and Healthcare CSV formats.
         </p>
       </div>
@@ -191,8 +191,8 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
               <div
                 className={clsx(
                   'border-2 border-dashed rounded-lg p-8 text-center transition-all',
-                  dragOver 
-                    ? 'border-blue-400 bg-blue-50' 
+                  dragOver
+                    ? 'border-blue-400 bg-blue-50'
                     : currentFile
                     ? 'border-green-300 bg-green-50'
                     : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
@@ -322,7 +322,7 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
                     <span className="text-gray-900">{uploadProgress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     />
@@ -361,7 +361,7 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
               <p className="text-sm text-gray-600 mb-4">
                 Test the platform with sample healthcare data files.
               </p>
-              
+
               {sampleFiles.map((sample) => (
                 <div
                   key={sample.id}

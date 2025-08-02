@@ -74,10 +74,10 @@ const FileTypeSelector: React.FC<FileTypeSelectorProps> = ({
           <div
             key={format.id}
             className={`
-              relative cursor-pointer transition-all duration-200 
+              relative cursor-pointer transition-all duration-200
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'}
-              ${selectedFormat === format.id 
-                ? 'ring-2 ring-primary-500 shadow-md' 
+              ${selectedFormat === format.id
+                ? 'ring-2 ring-primary-500 shadow-md'
                 : 'ring-1 ring-gray-200 hover:ring-gray-300'
               }
               rounded-lg

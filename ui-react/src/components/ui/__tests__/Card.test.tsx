@@ -107,13 +107,13 @@ describe('Card Component', () => {
         <div>Content</div>
       </Card>
     )
-    
+
     const header = document.querySelector('.card-header')
     expect(header).toBeInTheDocument()
-    
+
     const title = screen.getByRole('heading')
     expect(title).toHaveClass('text-lg', 'font-semibold', 'text-gray-900')
-    
+
     const subtitle = screen.getByText('Test Subtitle')
     expect(subtitle).toHaveClass('text-sm', 'text-gray-600', 'mt-1')
   })
@@ -125,7 +125,7 @@ describe('Card Component', () => {
         <button>Action Button</button>
       </Card>
     )
-    
+
     const cardBody = document.querySelector('.card-body')
     expect(cardBody).toBeInTheDocument()
     expect(screen.getByText('Paragraph content')).toBeInTheDocument()
@@ -156,7 +156,7 @@ describe('Card Component', () => {
           </div>
         </Card>
       )
-      
+
       expect(screen.getByText('Left content')).toBeInTheDocument()
       expect(screen.getByText('Right content')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Primary Action' })).toBeInTheDocument()

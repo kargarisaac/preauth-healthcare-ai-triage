@@ -75,7 +75,7 @@ export const exportChartsAsPDF = async (
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 20;
     const contentWidth = pageWidth - (margin * 2);
-    
+
     let currentY = margin;
 
     // Add header
@@ -101,7 +101,7 @@ export const exportChartsAsPDF = async (
     // Process each chart
     for (let i = 0; i < charts.length; i++) {
       const chart = charts[i];
-      
+
       // Check if we need a new page
       if (currentY > pageHeight - 100) {
         pdf.addPage();
@@ -178,7 +178,7 @@ export const exportDataAsCSV = (
   try {
     // Prepare CSV data
     const csvRows: string[] = [];
-    
+
     // Header
     csvRows.push('# Healthcare Analytics Data Export');
     csvRows.push(`# Generated on: ${new Date().toISOString()}`);
@@ -187,7 +187,7 @@ export const exportDataAsCSV = (
     // Metrics section
     csvRows.push('## Key Metrics');
     csvRows.push('Metric,Value,Unit');
-    
+
     const metrics = data.metrics;
     csvRows.push(`Total Processed,${metrics.totalProcessed},requests`);
     csvRows.push(`Daily Volume,${metrics.dailyVolume},requests`);
@@ -203,7 +203,7 @@ export const exportDataAsCSV = (
     // Trends section
     csvRows.push('## Processing Trends');
     csvRows.push('Date,Volume,Processing Time (sec),Success Rate,Error Count,Automation Rate');
-    
+
     data.trends.forEach(trend => {
       csvRows.push([
         trend.date,
@@ -219,7 +219,7 @@ export const exportDataAsCSV = (
     // Format distribution
     csvRows.push('## Format Distribution');
     csvRows.push('Format,Count,Percentage,Avg Processing Time,Success Rate');
-    
+
     data.formatDistribution.forEach(format => {
       csvRows.push([
         format.format,
@@ -234,7 +234,7 @@ export const exportDataAsCSV = (
     // Provider performance
     csvRows.push('## Provider Performance');
     csvRows.push('Provider ID,Provider Name,Total Requests,Approval Rate,Avg Response Time,Quality Score');
-    
+
     data.providerPerformance.forEach(provider => {
       csvRows.push([
         provider.providerId,
@@ -388,15 +388,15 @@ export const formatMetricValue = (
         currency: 'AED',
         minimumFractionDigits: 0
       }).format(value);
-    
+
     case 'percentage':
       return `${value.toFixed(2)}%`;
-    
+
     case 'time':
       const hours = Math.floor(value / 3600);
       const minutes = Math.floor((value % 3600) / 60);
       const seconds = Math.floor(value % 60);
-      
+
       if (hours > 0) {
         return `${hours}h ${minutes}m ${seconds}s`;
       } else if (minutes > 0) {
@@ -404,7 +404,7 @@ export const formatMetricValue = (
       } else {
         return `${seconds}s`;
       }
-    
+
     case 'number':
     default:
       return value.toLocaleString();

@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { clsx } from 'clsx';
-import { 
-  ChevronDown, 
-  ChevronRight, 
-  Copy, 
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
   Search,
   Database,
   FileText,
@@ -92,7 +92,7 @@ const FHIRBundleViewer: React.FC<FHIRBundleViewerProps> = ({
 
   const filteredResources = useMemo(() => {
     if (!bundle?.fhir_resources) return {};
-    
+
     if (!searchQuery) return bundle.fhir_resources;
 
     const filtered: Record<string, any> = {};
@@ -100,7 +100,7 @@ const FHIRBundleViewer: React.FC<FHIRBundleViewerProps> = ({
 
     Object.entries(bundle.fhir_resources).forEach(([resourceType, resources]) => {
       const matchingResources: Record<string, any> = {};
-      
+
       Object.entries(resources as Record<string, FHIRResource>).forEach(([id, resource]) => {
         const resourceString = JSON.stringify(resource).toLowerCase();
         if (resourceString.includes(query)) {
@@ -201,27 +201,27 @@ const FHIRBundleViewer: React.FC<FHIRBundleViewerProps> = ({
     // Extract key information for preview
     const getPreviewInfo = (resource: FHIRResource) => {
       const info: string[] = [];
-      
+
       if (resource.identifier) {
         const identifier = Array.isArray(resource.identifier) ? resource.identifier[0] : resource.identifier;
         if (identifier?.value) info.push(`ID: ${identifier.value}`);
       }
-      
+
       if (resource.name) {
         const name = Array.isArray(resource.name) ? resource.name[0] : resource.name;
         if (name?.family && name?.given) {
           info.push(`${name.given.join(' ')} ${name.family}`);
         }
       }
-      
+
       if (resource.code?.coding?.[0]?.display) {
         info.push(resource.code.coding[0].display);
       }
-      
+
       if (resource.status) {
         info.push(`Status: ${resource.status}`);
       }
-      
+
       return info.slice(0, 3); // Limit to 3 items
     };
 
@@ -318,7 +318,7 @@ const FHIRBundleViewer: React.FC<FHIRBundleViewerProps> = ({
             {searchQuery && ` (filtered by "${searchQuery}")`}
           </p>
         </div>
-        
+
         <div className="flex space-x-2">
           <Button
             variant="secondary"
@@ -382,7 +382,7 @@ const FHIRBundleViewer: React.FC<FHIRBundleViewerProps> = ({
           Object.entries(filteredResources).map(([resourceType, resources]) => (
             <div key={resourceType}>
               {renderResourceHeader(resourceType, resources as Record<string, FHIRResource>)}
-              
+
               {expandedResources.has(resourceType) && (
                 <div className="mt-3">
                   {Object.entries(resources as Record<string, FHIRResource>).map(([id, resource]) =>

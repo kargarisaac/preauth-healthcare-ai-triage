@@ -9,25 +9,25 @@ export const handlers = [
   http.post(`${API_BASE_URL}/process/eclaim`, async ({ request }) => {
     const formData = await request.formData()
     const file = formData.get('file') as File
-    
+
     if (!file) {
       return HttpResponse.json(mockApiResponses.processFile.error, { status: 400 })
     }
-    
+
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 100))
-    
+
     return HttpResponse.json(mockApiResponses.processFile.success)
   }),
 
   http.post(`${API_BASE_URL}/process/shafafiya`, async ({ request }) => {
     const formData = await request.formData()
     const file = formData.get('file') as File
-    
+
     if (!file) {
       return HttpResponse.json(mockApiResponses.processFile.error, { status: 400 })
     }
-    
+
     return HttpResponse.json({
       ...mockApiResponses.processFile.success,
       result: {
@@ -40,11 +40,11 @@ export const handlers = [
   http.post(`${API_BASE_URL}/process/csv`, async ({ request }) => {
     const formData = await request.formData()
     const file = formData.get('file') as File
-    
+
     if (!file) {
       return HttpResponse.json(mockApiResponses.processFile.error, { status: 400 })
     }
-    
+
     return HttpResponse.json({
       ...mockApiResponses.processFile.success,
       result: {
@@ -66,7 +66,7 @@ export const handlers = [
 
     // Filter by search
     if (search) {
-      items = items.filter(item => 
+      items = items.filter(item =>
         item.fileName.toLowerCase().includes(search.toLowerCase()) ||
         item.metadata?.sender?.toLowerCase().includes(search.toLowerCase())
       )
@@ -87,11 +87,11 @@ export const handlers = [
 
   http.get(`${API_BASE_URL}/requests/:id`, ({ params }) => {
     const { id } = params
-    
+
     if (id === mockRequestHistoryItem.id) {
       return HttpResponse.json(mockRequestHistoryItem)
     }
-    
+
     return HttpResponse.json({ error: 'Request not found' }, { status: 404 })
   }),
 
@@ -108,7 +108,7 @@ export const handlers = [
   http.get(`${API_BASE_URL}/members/search`, ({ request }) => {
     const url = new URL(request.url)
     const query = url.searchParams.get('q')
-    
+
     if (!query) {
       return HttpResponse.json({ members: [] })
     }
@@ -121,7 +121,7 @@ export const handlers = [
         emiratesId: '784-1990-1234567-1',
         policyNumber: 'POL-2024-001'
       }
-    ].filter(member => 
+    ].filter(member =>
       member.name.toLowerCase().includes(query.toLowerCase()) ||
       member.emiratesId.includes(query) ||
       member.policyNumber.includes(query)

@@ -70,7 +70,7 @@ export const ProcessingHeatmap: React.FC<ProcessingHeatmapProps> = ({
       const maxVolume = Math.max(...data.map(d => d.volume));
       const threshold = filters.volumeThreshold === 'high' ? maxVolume * 0.7 :
                        filters.volumeThreshold === 'medium' ? maxVolume * 0.4 : maxVolume * 0.1;
-      
+
       filteredData = filteredData.filter(d => {
         if (filters.volumeThreshold === 'high') return d.volume >= threshold;
         if (filters.volumeThreshold === 'medium') return d.volume >= threshold && d.volume < maxVolume * 0.7;
@@ -234,9 +234,9 @@ export const ProcessingHeatmap: React.FC<ProcessingHeatmapProps> = ({
 
   // Calculate summary statistics
   const totalVolume = processedData.reduce((sum, d) => sum + d.volume, 0);
-  const avgIntensity = processedData.length > 0 ? 
+  const avgIntensity = processedData.length > 0 ?
     processedData.reduce((sum, d) => sum + d.intensity, 0) / processedData.length : 0;
-  const peakHour = processedData.reduce((peak, d) => 
+  const peakHour = processedData.reduce((peak, d) =>
     d.volume > peak.volume ? d : peak, { hour: 0, volume: 0 });
 
   return (
@@ -247,7 +247,7 @@ export const ProcessingHeatmap: React.FC<ProcessingHeatmapProps> = ({
           <h3 className="text-lg font-semibold text-gray-900">Processing Activity Heatmap</h3>
           <p className="text-sm text-gray-600">Request volume by day and hour</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-gray-400" />
@@ -264,7 +264,7 @@ export const ProcessingHeatmap: React.FC<ProcessingHeatmapProps> = ({
               <option value="quarter">This Quarter</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4 text-gray-400" />
             <select
@@ -293,7 +293,7 @@ export const ProcessingHeatmap: React.FC<ProcessingHeatmapProps> = ({
             <p className="font-semibold text-gray-900">{totalVolume.toLocaleString()} requests</p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
           <Clock className="h-5 w-5 text-green-600" />
           <div>
@@ -303,7 +303,7 @@ export const ProcessingHeatmap: React.FC<ProcessingHeatmapProps> = ({
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
           <Calendar className="h-5 w-5 text-purple-600" />
           <div>

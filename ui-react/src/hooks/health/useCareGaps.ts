@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  CareGap, 
-  InterventionRecommendation, 
+import {
+  CareGap,
+  InterventionRecommendation,
   QualityMetric,
   Member,
-  ChronicCondition 
+  ChronicCondition
 } from '../../types/healthcare';
 
 interface CareGapAnalysis {
@@ -47,7 +47,7 @@ export const useCareGaps = (memberId?: string) => {
   // Mock API calls - replace with actual clinical decision support system
   const fetchCareGapsAPI = async (id: string): Promise<CareGap[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    
+
     return [
       {
         id: '1',
@@ -131,7 +131,7 @@ export const useCareGaps = (memberId?: string) => {
 
   const fetchRecommendationsAPI = async (id: string): Promise<InterventionRecommendation[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     return [
       {
         id: '1',
@@ -190,7 +190,7 @@ export const useCareGaps = (memberId?: string) => {
 
   const fetchQualityMetricsAPI = async (id: string): Promise<QualityMetric[]> => {
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     return [
       {
         measure: 'HbA1c Control',
@@ -235,12 +235,12 @@ export const useCareGaps = (memberId?: string) => {
   const analyzeCareGapsForMember = useCallback((member: Member): CareGap[] => {
     const gaps: CareGap[] = [];
     const today = new Date();
-    
+
     // Check chronic conditions for care gaps
     member.medicalHistory.chronicConditions.forEach(condition => {
       const lastReview = new Date(condition.lastReview);
       const daysSinceReview = Math.floor((today.getTime() - lastReview.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       // Diabetes-specific gaps
       if (condition.condition.toLowerCase().includes('diabetes')) {
         if (daysSinceReview > 90) {
@@ -260,7 +260,7 @@ export const useCareGaps = (memberId?: string) => {
             updatedAt: today.toISOString()
           });
         }
-        
+
         // Annual eye exam
         if (daysSinceReview > 365) {
           gaps.push({
@@ -280,7 +280,7 @@ export const useCareGaps = (memberId?: string) => {
           });
         }
       }
-      
+
       // Hypertension-specific gaps
       if (condition.condition.toLowerCase().includes('hypertension')) {
         if (daysSinceReview > 180) {
@@ -302,10 +302,10 @@ export const useCareGaps = (memberId?: string) => {
         }
       }
     });
-    
+
     // Age-based preventive care gaps
     const age = Math.floor((today.getTime() - new Date(member.demographics.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-    
+
     if (age >= 50) {
       gaps.push({
         id: `colonoscopy-${member.id}`,
@@ -323,7 +323,7 @@ export const useCareGaps = (memberId?: string) => {
         updatedAt: today.toISOString()
       });
     }
-    
+
     return gaps;
   }, []);
 
@@ -331,15 +331,15 @@ export const useCareGaps = (memberId?: string) => {
   const calculateAnalysis = useCallback((gaps: CareGap[]): CareGapAnalysis => {
     const today = new Date();
     const overduegaps = gaps.filter(gap => new Date(gap.dueDate) < today);
-    
+
     return {
       totalGaps: gaps.length,
       urgentGaps: gaps.filter(gap => gap.priority === 'urgent').length,
       highPriorityGaps: gaps.filter(gap => gap.priority === 'high').length,
       potentialSavings: gaps.reduce((sum, gap) => sum + gap.potentialCostSaving, 0),
-      completionRate: gaps.length > 0 ? 
+      completionRate: gaps.length > 0 ?
         (gaps.filter(gap => gap.status === 'completed').length / gaps.length) * 100 : 100,
-      averageDaysOverdue: overduegaps.length > 0 ? 
+      averageDaysOverdue: overduegaps.length > 0 ?
         overduegaps.reduce((sum, gap) => {
           const daysDiff = Math.floor((today.getTime() - new Date(gap.dueDate).getTime()) / (1000 * 60 * 60 * 24));
           return sum + daysDiff;
@@ -350,16 +350,16 @@ export const useCareGaps = (memberId?: string) => {
   // Load care gaps for member
   const loadCareGaps = useCallback(async (id: string) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+
     try {
       const [careGaps, recommendations, qualityMetrics] = await Promise.all([
         fetchCareGapsAPI(id),
         fetchRecommendationsAPI(id),
         fetchQualityMetricsAPI(id)
       ]);
-      
+
       const analysis = calculateAnalysis(careGaps);
-      
+
       setState({
         careGaps,
         recommendations,
@@ -381,19 +381,19 @@ export const useCareGaps = (memberId?: string) => {
   // Generate care gaps from member profile
   const generateCareGaps = useCallback(async (member: Member) => {
     setState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       const generatedGaps = analyzeCareGapsForMember(member);
       const existingGaps = await fetchCareGapsAPI(member.id);
       const allGaps = [...existingGaps, ...generatedGaps];
-      
+
       // Remove duplicates based on category and member
-      const uniqueGaps = allGaps.filter((gap, index, self) => 
+      const uniqueGaps = allGaps.filter((gap, index, self) =>
         index === self.findIndex(g => g.category === gap.category && g.memberId === gap.memberId)
       );
-      
+
       const analysis = calculateAnalysis(uniqueGaps);
-      
+
       setState(prev => ({
         ...prev,
         careGaps: uniqueGaps,
@@ -412,16 +412,16 @@ export const useCareGaps = (memberId?: string) => {
 
   // Update care gap status
   const updateCareGapStatus = useCallback(async (
-    gapId: string, 
+    gapId: string,
     status: CareGap['status'],
     notes?: string
   ) => {
     setState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       // Mock API call
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       setState(prev => ({
         ...prev,
         careGaps: prev.careGaps.map(gap =>
@@ -486,11 +486,11 @@ export const useCareGaps = (memberId?: string) => {
     isLoading: state.isLoading,
     error: state.error,
     lastUpdated: state.lastUpdated,
-    
+
     // Computed values
     careGapsByType,
     recommendationsByType,
-    
+
     // Actions
     loadCareGaps,
     generateCareGaps,

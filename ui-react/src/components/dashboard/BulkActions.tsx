@@ -84,7 +84,7 @@ const BulkActionModal: React.FC<BulkActionModalProps> = ({
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
-  
+
   if (!action) return null;
 
   const handleConfirm = async () => {
@@ -421,7 +421,7 @@ const BulkActionModal: React.FC<BulkActionModalProps> = ({
     >
       <div className="space-y-6">
         {getModalContent()}
-        
+
         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
           <Button
             variant="secondary"
@@ -474,10 +474,10 @@ export function BulkActions({ selectedCount, selectedIds, onClearSelection }: Bu
           data,
         });
       }
-      
+
       onClearSelection();
       setActiveAction(null);
-      
+
     } catch (error) {
       // Error is handled by the hook
     }
@@ -513,7 +513,7 @@ export function BulkActions({ selectedCount, selectedIds, onClearSelection }: Bu
                 {selectedCount} request{selectedCount > 1 ? 's' : ''} selected
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               {BULK_ACTIONS.map((action) => {
                 const Icon = getActionIcon(action.icon);
@@ -536,7 +536,7 @@ export function BulkActions({ selectedCount, selectedIds, onClearSelection }: Bu
               })}
             </div>
           </div>
-          
+
           <Button
             variant="tertiary"
             size="sm"

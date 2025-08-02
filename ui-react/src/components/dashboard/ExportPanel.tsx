@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
-import { 
-  Download, 
+import {
+  Download,
   FileText,
   Database,
   Printer,
@@ -166,7 +166,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
     }
 
     const csvRows: string[] = [];
-    
+
     // Add bundle info header
     csvRows.push('Bundle Information');
     csvRows.push(`Authorization ID,${bundle.authorization_id || 'N/A'}`);
@@ -178,7 +178,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
     // Process each resource type
     Object.entries(bundle.fhir_resources).forEach(([resourceType, resources]) => {
       csvRows.push(`${resourceType} Resources`);
-      
+
       const resourceArray = Object.values(resources as Record<string, any>);
       if (resourceArray.length === 0) return;
 
@@ -318,7 +318,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
         <h1 style="color: #1f2937; margin-bottom: 10px;">Nazmito Processing Report</h1>
         <p style="color: #6b7280; margin: 0;">Generated on ${new Date().toLocaleDateString()}</p>
       </div>
-      
+
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
         <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
           <h3 style="color: #1f2937; margin-top: 0;">Bundle Information</h3>
@@ -326,7 +326,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
           <p><strong>Total Resources:</strong> ${bundle?.total || 0}</p>
           <p><strong>Processing Time:</strong> ${metadata?.processing_time_seconds?.toFixed(2) || 0}s</p>
         </div>
-        
+
         <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
           <h3 style="color: #1f2937; margin-top: 0;">File Information</h3>
           <p><strong>Filename:</strong> ${metadata?.filename || 'N/A'}</p>
@@ -334,11 +334,11 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
           <p><strong>Format:</strong> ${metadata?.format || 'Unknown'}</p>
         </div>
       </div>
-      
+
       ${bundle?.fhir_resources ? `
         <div style="background: #f9fafb; padding: 20px; border-radius: 8px;">
           <h3 style="color: #1f2937; margin-top: 0;">Resource Types</h3>
-          ${Object.entries(bundle.fhir_resources).map(([type, resources]) => 
+          ${Object.entries(bundle.fhir_resources).map(([type, resources]) =>
             `<p><strong>${type}:</strong> ${Object.keys(resources as Record<string, any>).length} items</p>`
           ).join('')}
         </div>
@@ -445,7 +445,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
               onClick={() => setSelectedFormat(format.id)}
             >
               <div className="flex items-center space-x-3 mb-2">
-                <format.icon className={clsx('w-6 h-6', 
+                <format.icon className={clsx('w-6 h-6',
                   selectedFormat === format.id ? format.color : 'text-gray-400'
                 )} />
                 <h5 className="font-semibold text-gray-900">{format.name}</h5>
@@ -462,7 +462,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {exportOptions.map((option) => {
             const isSupported = selectedFormatConfig?.supportedData.includes(option.id as any);
-            
+
             return (
               <div
                 key={option.id}
@@ -513,7 +513,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
       {exportStatus.type && (
         <div className={clsx(
           'flex items-center space-x-2 p-4 rounded-lg',
-          exportStatus.type === 'success' 
+          exportStatus.type === 'success'
             ? 'bg-green-50 border border-green-200 text-green-800'
             : 'bg-red-50 border border-red-200 text-red-800'
         )}>
@@ -535,7 +535,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
             'Please select a valid format and data combination'
           )}
         </div>
-        
+
         <div className="flex space-x-3">
           <Button
             variant="secondary"
@@ -545,7 +545,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
             <Printer className="w-4 h-4 mr-2" />
             Print
           </Button>
-          
+
           <Button
             variant="primary"
             onClick={handleExport}

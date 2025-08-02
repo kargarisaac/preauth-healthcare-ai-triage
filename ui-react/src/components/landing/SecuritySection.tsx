@@ -39,7 +39,7 @@ const SecuritySection: React.FC = () => {
             and least-privilege. Immutable logs for audits.
           </p>
         </div>
-        
+
         {/* Security Timeline */}
         <div className="mb-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -49,7 +49,7 @@ const SecuritySection: React.FC = () => {
                 {index < milestones.length - 1 && (
                   <div className="hidden lg:block absolute top-6 left-full w-full h-0.5 bg-gray-200 z-0"></div>
                 )}
-                
+
                 <div className="relative bg-white rounded-2xl p-6 shadow-soft border border-gray-200 hover:shadow-medium transition-shadow z-10">
                   <div className="text-center">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 text-primary-600 rounded-full font-bold text-sm mb-4">
@@ -70,7 +70,7 @@ const SecuritySection: React.FC = () => {
             ))}
           </div>
         </div>
-        
+
         {/* Security Note */}
         <div className="bg-gray-50 rounded-2xl p-8 text-center">
           <div className="max-w-2xl mx-auto">

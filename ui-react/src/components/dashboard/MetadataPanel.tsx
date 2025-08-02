@@ -1,11 +1,11 @@
 import React from 'react';
 import { clsx } from 'clsx';
-import { 
-  Clock, 
-  FileText, 
-  Database, 
-  BarChart3, 
-  CheckCircle, 
+import {
+  Clock,
+  FileText,
+  Database,
+  BarChart3,
+  CheckCircle,
   AlertTriangle,
   Info,
   Zap,

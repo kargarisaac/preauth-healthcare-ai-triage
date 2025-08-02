@@ -70,24 +70,24 @@ export const useAutocomplete = (
   // Fuzzy matching algorithm
   const fuzzyScore = useCallback((term: string, target: string): number => {
     if (!term || !target) return 0;
-    
+
     if (!caseSensitive) {
       term = term.toLowerCase();
       target = target.toLowerCase();
     }
-    
+
     // Exact match gets highest score
     if (target === term) return 100;
-    
+
     // Substring match gets high score
     if (target.includes(term)) return 90;
-    
+
     // Fuzzy character matching
     let score = 0;
     let termIndex = 0;
     let consecutiveMatches = 0;
     let maxConsecutive = 0;
-    
+
     for (let i = 0; i < target.length && termIndex < term.length; i++) {
       if (target[i] === term[termIndex]) {
         score += 1;
@@ -98,14 +98,14 @@ export const useAutocomplete = (
         consecutiveMatches = 0;
       }
     }
-    
+
     // Bonus for consecutive matches
     score += maxConsecutive * 2;
-    
+
     // Penalty for unmatched characters
     const unmatchedPenalty = (term.length - termIndex) * 2;
     score = Math.max(0, score - unmatchedPenalty);
-    
+
     // Calculate percentage
     const maxPossibleScore = term.length + maxConsecutive * 2;
     return maxPossibleScore > 0 ? (score / maxPossibleScore) * 100 : 0;
@@ -128,7 +128,7 @@ export const useAutocomplete = (
           _score: Math.max(
             fuzzyScore(query, option.value),
             fuzzyScore(query, option.label),
-            option.metadata && option.metadata.searchTerms 
+            option.metadata && option.metadata.searchTerms
               ? Math.max(...option.metadata.searchTerms.map((term: string) => fuzzyScore(query, term)))
               : 0
           )
@@ -147,11 +147,11 @@ export const useAutocomplete = (
       filtered = availableOptions.filter(option => {
         const value = caseSensitive ? option.value : option.value.toLowerCase();
         const label = caseSensitive ? option.label : option.label.toLowerCase();
-        
-        return value.includes(searchTerm) || 
+
+        return value.includes(searchTerm) ||
                label.includes(searchTerm) ||
-               (option.metadata?.searchTerms && 
-                option.metadata.searchTerms.some((term: string) => 
+               (option.metadata?.searchTerms &&
+                option.metadata.searchTerms.some((term: string) =>
                   (caseSensitive ? term : term.toLowerCase()).includes(searchTerm)
                 ));
       });
@@ -163,24 +163,24 @@ export const useAutocomplete = (
   // Highlight matching text
   const highlightText = useCallback((text: string, query: string): string => {
     if (!highlightMatches || !query) return text;
-    
+
     const searchTerm = caseSensitive ? query : query.toLowerCase();
     const targetText = caseSensitive ? text : text.toLowerCase();
-    
+
     const index = targetText.indexOf(searchTerm);
     if (index === -1) return text;
-    
-    return text.substring(0, index) + 
-           `<mark>${text.substring(index, index + query.length)}</mark>` + 
+
+    return text.substring(0, index) +
+           `<mark>${text.substring(index, index + query.length)}</mark>` +
            text.substring(index + query.length);
   }, [highlightMatches, caseSensitive]);
 
   // Group suggestions by category
   const groupedSuggestions = useMemo(() => {
     if (!groupByCategory) return { ungrouped: state.suggestions };
-    
+
     const groups: { [key: string]: AutocompleteOption[] } = {};
-    
+
     state.suggestions.forEach(suggestion => {
       const category = suggestion.category || 'Other';
       if (!groups[category]) {
@@ -188,19 +188,19 @@ export const useAutocomplete = (
       }
       groups[category].push(suggestion);
     });
-    
+
     return groups;
   }, [state.suggestions, groupByCategory]);
 
   // Fetch suggestions
   const fetchSuggestions = useCallback(async (query: string) => {
     if (!query || query.length < minLength) {
-      setState(prev => ({ 
-        ...prev, 
-        suggestions: [], 
-        isLoading: false, 
+      setState(prev => ({
+        ...prev,
+        suggestions: [],
+        isLoading: false,
         isOpen: false,
-        error: null 
+        error: null
       }));
       return;
     }
@@ -261,8 +261,8 @@ export const useAutocomplete = (
   const selectNext = useCallback(() => {
     setState(prev => ({
       ...prev,
-      selectedIndex: prev.selectedIndex < prev.suggestions.length - 1 
-        ? prev.selectedIndex + 1 
+      selectedIndex: prev.selectedIndex < prev.suggestions.length - 1
+        ? prev.selectedIndex + 1
         : 0
     }));
   }, []);
@@ -270,8 +270,8 @@ export const useAutocomplete = (
   const selectPrevious = useCallback(() => {
     setState(prev => ({
       ...prev,
-      selectedIndex: prev.selectedIndex > 0 
-        ? prev.selectedIndex - 1 
+      selectedIndex: prev.selectedIndex > 0
+        ? prev.selectedIndex - 1
         : prev.suggestions.length - 1
     }));
   }, []);
@@ -340,7 +340,7 @@ export const useAutocomplete = (
     isLoading: state.isLoading,
     isOpen: state.isOpen,
     error: state.error,
-    
+
     // Actions
     setQuery,
     clearQuery,
@@ -350,11 +350,11 @@ export const useAutocomplete = (
     getSelectedSuggestion,
     closeSuggestions,
     openSuggestions,
-    
+
     // Utilities
     handleKeyDown,
     highlightText,
-    
+
     // Config
     minLength,
     maxResults

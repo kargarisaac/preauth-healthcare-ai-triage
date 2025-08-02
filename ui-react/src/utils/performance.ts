@@ -40,7 +40,7 @@ export const measurePerformance = (name: string, startMark: string, endMark?: st
       } else {
         performance.measure(name, startMark);
       }
-      
+
       const measure = performance.getEntriesByName(name, 'measure')[0];
       if (measure && process.env.NODE_ENV === 'development') {
         console.log(`Performance measure ${name}:`, measure.duration, 'ms');

@@ -15,7 +15,7 @@ const ContactSection: React.FC = () => {
               <p className="text-xl text-gray-600 mb-8">
                 Ready to transform your pre-authorization process? Get in touch to schedule a demo.
               </p>
-              
+
               <div className="space-y-6">
                 <a
                   href="mailto:kargarisaac@gmail.com"
@@ -29,7 +29,7 @@ const ContactSection: React.FC = () => {
                     <div className="text-lg font-semibold text-gray-900">kargarisaac@gmail.com</div>
                   </div>
                 </a>
-                
+
                 <a
                   href="tel:+358451571107"
                   className="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group"
@@ -44,7 +44,7 @@ const ContactSection: React.FC = () => {
                 </a>
               </div>
             </div>
-            
+
             {/* CTA Section */}
             <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-12 lg:p-16 flex items-center">
               <div className="text-center w-full">
@@ -55,7 +55,7 @@ const ContactSection: React.FC = () => {
                 <p className="text-primary-100 mb-8 text-lg">
                   Schedule a personalized demo and see how Nazmito can transform your pre-authorization process.
                 </p>
-                
+
                 <a
                   href="mailto:kargarisaac@gmail.com?subject=Demo%20Request&body=Hi%20Isaac,%0D%0A%0D%0AI'm%20interested%20in%20scheduling%20a%20demo%20of%20Nazmito.%0D%0A%0D%0AOrganization:%20%0D%0ARole:%20%0D%0APreferred%20date/time:%20%0D%0A%0D%0AThanks!"
                   className="inline-flex items-center px-8 py-4 bg-white text-primary-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors shadow-soft hover:shadow-medium group"
@@ -63,7 +63,7 @@ const ContactSection: React.FC = () => {
                   <span>Request a Demo</span>
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </a>
-                
+
                 <div className="mt-6 text-primary-200 text-sm">
                   Usually reply within 2 hours
                 </div>

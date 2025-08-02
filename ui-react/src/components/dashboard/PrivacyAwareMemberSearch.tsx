@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Shield, Eye, EyeOff, Lock, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { Member } from '../../types/healthcare';
-import { 
-  usePDPLCompliance, 
-  PDPLProcessingPurpose, 
-  PDPLLegalBasis, 
+import {
+  usePDPLCompliance,
+  PDPLProcessingPurpose,
+  PDPLLegalBasis,
   PDPLDataCategory,
-  ConsentRecord 
+  ConsentRecord
 } from '../../utils/pdplCompliance';
 import { MemberSearch } from './MemberSearch';
 import { MemberProfile } from './MemberProfile';
@@ -62,7 +62,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
   // Check user permissions for the current purpose
   const checkUserPermissions = useCallback((member: Member) => {
     const notices: PrivacyNotice[] = [];
-    
+
     // Check if user role has access to this data
     const rolePermissions = {
       admin: [PDPLProcessingPurpose.HEALTHCARE_TREATMENT, PDPLProcessingPurpose.INSURANCE_CLAIMS, PDPLProcessingPurpose.QUALITY_IMPROVEMENT],
@@ -73,7 +73,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
     };
 
     const allowedPurposes = rolePermissions[userRole as keyof typeof rolePermissions] || [];
-    
+
     if (!allowedPurposes.includes(purpose)) {
       notices.push({
         title: 'Access Restricted',
@@ -99,9 +99,9 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
 
     // Check for sensitive data categories
     const healthDataCategories = [PDPLDataCategory.HEALTH_DATA, PDPLDataCategory.SENSITIVE_PERSONAL];
-    const hasHealthData = member.medicalHistory.chronicConditions.length > 0 || 
+    const hasHealthData = member.medicalHistory.chronicConditions.length > 0 ||
                          member.medicalHistory.allergies.length > 0;
-    
+
     if (hasHealthData && !checkProcessing(member.id, purpose, healthDataCategories)) {
       notices.push({
         title: 'Consent Required',
@@ -147,15 +147,15 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
 
     // Mask sensitive data based on role and purpose
     const maskedData = maskData(member, userRole, purpose);
-    
+
     setSelectedMember(member);
     setMaskedMember(maskedData);
-    
+
     // Initialize visibility settings based on data sensitivity
     const initialVisibility: { [key: string]: boolean } = {};
     Object.keys(maskedData).forEach(key => {
       const categories = classifyField(key);
-      const isSensitive = categories.some(cat => 
+      const isSensitive = categories.some(cat =>
         [PDPLDataCategory.HEALTH_DATA, PDPLDataCategory.SENSITIVE_PERSONAL].includes(cat)
       );
       initialVisibility[key] = !isSensitive; // Hide sensitive data by default
@@ -170,7 +170,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
   // Toggle data field visibility
   const toggleDataVisibility = useCallback((field: string) => {
     setDataVisible(prev => ({ ...prev, [field]: !prev[field] }));
-    
+
     // Log sensitive data access
     const categories = classifyField(field);
     if (categories.some(cat => [PDPLDataCategory.HEALTH_DATA, PDPLDataCategory.SENSITIVE_PERSONAL].includes(cat))) {
@@ -216,7 +216,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
 
     recordConsent(consentRecord);
     setShowConsentModal(false);
-    
+
     // Update privacy notices
     const updatedNotices = privacyNotices.filter(notice => notice.title !== 'Consent Required');
     setPrivacyNotices(updatedNotices);
@@ -232,7 +232,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
   // Privacy-aware member card component
   const PrivacyAwareMemberCard: React.FC<{ member: Member }> = ({ member }) => {
     const [showSensitiveData, setShowSensitiveData] = useState(false);
-    
+
     return (
       <div className="relative">
         {/* Privacy overlay for sensitive data */}
@@ -266,7 +266,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
             </div>
           </div>
         )}
-        
+
         <MemberCard
           member={member}
           onClick={() => handleMemberSelect(member)}
@@ -365,12 +365,12 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
                   Privacy-Protected Member Profile
                 </h2>
               </div>
-              
+
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-600">
                   Viewing as: {userRole} | Purpose: {purpose}
                 </span>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -454,7 +454,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
                       I consent to the processing of my personal health data for {purpose}
                     </label>
                   </div>
-                  
+
                   <div className="flex items-center">
                     <input
                       type="checkbox"
@@ -466,7 +466,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
                       I consent to sharing my data with authorized healthcare providers
                     </label>
                   </div>
-                  
+
                   <div className="flex items-center">
                     <input
                       type="checkbox"

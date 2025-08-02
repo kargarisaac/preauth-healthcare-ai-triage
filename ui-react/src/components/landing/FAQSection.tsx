@@ -24,8 +24,8 @@ const FAQSection: React.FC = () => {
   ];
 
   const toggleItem = (index: number) => {
-    setOpenItems(prev => 
-      prev.includes(index) 
+    setOpenItems(prev =>
+      prev.includes(index)
         ? prev.filter(i => i !== index)
         : [...prev, index]
     );
@@ -42,11 +42,11 @@ const FAQSection: React.FC = () => {
             Frequently Asked Questions
           </h2>
         </div>
-        
+
         <div className="space-y-4">
           {faqs.map((faq, index) => {
             const isOpen = openItems.includes(index);
-            
+
             return (
               <div
                 key={index}
@@ -67,7 +67,7 @@ const FAQSection: React.FC = () => {
                     )}
                   </div>
                 </button>
-                
+
                 <div
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${
                     isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
@@ -85,7 +85,7 @@ const FAQSection: React.FC = () => {
             );
           })}
         </div>
-        
+
         <div className="mt-12 text-center">
           <p className="text-gray-600 mb-6">
             Have more questions? We'd love to help.

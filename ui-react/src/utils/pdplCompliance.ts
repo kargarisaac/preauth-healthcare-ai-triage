@@ -1,6 +1,6 @@
 /**
  * UAE Personal Data Protection Law (PDPL) Compliance Utilities
- * 
+ *
  * This module provides utilities for ensuring compliance with UAE Federal Decree Law No. 45 of 2021
  * on the Protection of Personal Data (PDPL) for healthcare applications.
  */
@@ -10,7 +10,7 @@ import { Member } from '../types/healthcare';
 // PDPL Data Categories
 export enum PDPLDataCategory {
   PERSONAL_IDENTIFIABLE = 'personal_identifiable',
-  SENSITIVE_PERSONAL = 'sensitive_personal', 
+  SENSITIVE_PERSONAL = 'sensitive_personal',
   HEALTH_DATA = 'health_data',
   FINANCIAL_DATA = 'financial_data',
   LOCATION_DATA = 'location_data',
@@ -172,7 +172,7 @@ export class PDPLComplianceManager {
 
     // Check pattern matches
     const categories: PDPLDataCategory[] = [];
-    
+
     if (SENSITIVE_FIELD_PATTERNS.some(pattern => pattern.test(fieldPath))) {
       categories.push(PDPLDataCategory.SENSITIVE_PERSONAL);
     }
@@ -206,8 +206,8 @@ export class PDPLComplianceManager {
     dataCategories: PDPLDataCategory[]
   ): boolean {
     const consents = this.consentRecords.get(memberId) || [];
-    const relevantConsent = consents.find(c => 
-      c.purpose === purpose && 
+    const relevantConsent = consents.find(c =>
+      c.purpose === purpose &&
       !c.withdrawn &&
       (!c.expiryDate || new Date(c.expiryDate) > new Date())
     );
@@ -236,7 +236,7 @@ export class PDPLComplianceManager {
     }
 
     const pseudonymized = JSON.parse(JSON.stringify(data));
-    
+
     // Replace sensitive identifiers with hashed versions
     if (typeof pseudonymized === 'object' && pseudonymized !== null) {
       this.recursivePseudonymize(pseudonymized, memberId);
@@ -254,7 +254,7 @@ export class PDPLComplianceManager {
         this.recursivePseudonymize(value, memberId, currentPath);
       } else if (typeof value === 'string') {
         const categories = this.classifyDataField(currentPath);
-        
+
         if (categories.includes(PDPLDataCategory.SENSITIVE_PERSONAL) ||
             categories.includes(PDPLDataCategory.PERSONAL_IDENTIFIABLE)) {
           obj[key] = this.hashValue(value, memberId);
@@ -267,13 +267,13 @@ export class PDPLComplianceManager {
     // Simple hash function - in production, use a proper cryptographic hash
     let hash = 0;
     const input = value + salt;
-    
+
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
-    
+
     return `***${Math.abs(hash).toString(36).substring(0, 6)}***`;
   }
 
@@ -282,7 +282,7 @@ export class PDPLComplianceManager {
    */
   maskMemberData(member: Member, userRole: string, purpose: PDPLProcessingPurpose): Partial<Member> {
     const maskedMember = JSON.parse(JSON.stringify(member));
-    
+
     // Role-based access control
     switch (userRole) {
       case 'admin':
@@ -386,7 +386,7 @@ export class PDPLComplianceManager {
     };
 
     this.auditLogs.push(auditEntry);
-    
+
     // In production, this should be sent to a secure audit logging service
     console.log('[PDPL Audit]', auditEntry);
 
@@ -411,7 +411,7 @@ export class PDPLComplianceManager {
   withdrawConsent(memberId: string, purpose: PDPLProcessingPurpose): void {
     const consents = this.consentRecords.get(memberId) || [];
     const consent = consents.find(c => c.purpose === purpose && !c.withdrawn);
-    
+
     if (consent) {
       consent.withdrawn = true;
       consent.withdrawnDate = new Date().toISOString();
@@ -444,7 +444,7 @@ export class PDPLComplianceManager {
     const createdDate = new Date(member.createdAt);
     const retentionPeriod = settings?.dataRetentionPeriod || 2555; // Default 7 years in days
     const deleteAfter = new Date(createdDate.getTime() + retentionPeriod * 24 * 60 * 60 * 1000);
-    
+
     if (new Date() > deleteAfter) {
       return {
         shouldRetain: false,
@@ -465,7 +465,7 @@ export class PDPLComplianceManager {
     const activeConditions = member.medicalHistory.chronicConditions.filter(
       c => c.status === 'active' || c.status === 'chronic'
     );
-    
+
     if (activeConditions.length > 0) {
       return {
         shouldRetain: true,
@@ -486,7 +486,7 @@ export class PDPLComplianceManager {
   exportMemberData(memberId: string, format: 'json' | 'xml' | 'csv' | 'pdf' = 'json'): any {
     // This would integrate with the actual data source
     // For now, returning a placeholder structure
-    
+
     const exportData = {
       exportDate: new Date().toISOString(),
       exportedBy: 'system',
@@ -522,7 +522,7 @@ export class PDPLComplianceManager {
 // Utility functions for React components
 export const usePDPLCompliance = () => {
   const compliance = PDPLComplianceManager.getInstance();
-  
+
   return {
     classifyField: (field: string) => compliance.classifyDataField(field),
     checkProcessing: (memberId: string, purpose: PDPLProcessingPurpose, categories: PDPLDataCategory[]) =>

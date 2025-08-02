@@ -10,7 +10,7 @@ interface ResponsiveChartConfig {
   baseWidth?: number;
   baseHeight?: number;
   aspectRatio?: number;
-  
+
   // Responsive breakpoints
   breakpoints?: {
     sm: number;  // 640px
@@ -18,7 +18,7 @@ interface ResponsiveChartConfig {
     lg: number;  // 1024px
     xl: number;  // 1280px
   };
-  
+
   // Size adjustments per breakpoint
   sizeAdjustments?: {
     sm?: { width?: number; height?: number };
@@ -26,13 +26,13 @@ interface ResponsiveChartConfig {
     lg?: { width?: number; height?: number };
     xl?: { width?: number; height?: number };
   };
-  
+
   // Minimum and maximum constraints
   minWidth?: number;
   maxWidth?: number;
   minHeight?: number;
   maxHeight?: number;
-  
+
   // Chart-specific options
   maintainAspectRatio?: boolean;
   autoResize?: boolean;
@@ -47,7 +47,7 @@ interface UseResponsiveChartReturn {
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
-  
+
   // Chart configuration helpers
   getResponsiveMargin: () => { top: number; right: number; bottom: number; left: number };
   getResponsiveFontSize: () => { title: number; axis: number; legend: number; tooltip: number };
@@ -55,7 +55,7 @@ interface UseResponsiveChartReturn {
   shouldShowLegend: () => boolean;
   shouldShowLabels: () => boolean;
   getOptimalTickCount: () => { x: number; y: number };
-  
+
   // Manual control
   updateDimensions: (width?: number, height?: number) => void;
   recalculate: () => void;
@@ -92,12 +92,12 @@ const useDebounce = <T extends (...args: any[]) => any>(
   delay: number
 ): T => {
   const timeoutRef = useRef<NodeJS.Timeout>();
-  
+
   return useCallback(((...args: Parameters<T>) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    
+
     timeoutRef.current = setTimeout(() => {
       callback(...args);
     }, delay);
@@ -109,12 +109,12 @@ export const useResponsiveChart = (
 ): UseResponsiveChartReturn => {
   const fullConfig = { ...DEFAULT_CONFIG, ...config };
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const [dimensions, setDimensions] = useState<ChartDimensions>({
     width: fullConfig.baseWidth,
     height: fullConfig.baseHeight
   });
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [currentBreakpoint, setCurrentBreakpoint] = useState<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('lg');
 
@@ -131,11 +131,11 @@ export const useResponsiveChart = (
   const calculateDimensions = useCallback((containerWidth?: number): ChartDimensions => {
     let targetWidth = containerWidth || fullConfig.baseWidth;
     let targetHeight = fullConfig.baseHeight;
-    
+
     // Determine breakpoint
     const breakpoint = determineBreakpoint(targetWidth);
     setCurrentBreakpoint(breakpoint);
-    
+
     // Apply size adjustments for current breakpoint
     const adjustments = breakpoint === 'xs' ? undefined : fullConfig.sizeAdjustments[breakpoint];
     if (adjustments) {
@@ -146,23 +146,23 @@ export const useResponsiveChart = (
         targetHeight = targetHeight * adjustments.height;
       }
     }
-    
+
     // Maintain aspect ratio if enabled
     if (fullConfig.maintainAspectRatio && fullConfig.aspectRatio) {
       targetHeight = targetWidth / fullConfig.aspectRatio;
     }
-    
+
     // Apply constraints
     targetWidth = Math.max(
-      fullConfig.minWidth, 
+      fullConfig.minWidth,
       Math.min(targetWidth, fullConfig.maxWidth)
     );
-    
+
     targetHeight = Math.max(
       fullConfig.minHeight,
       Math.min(targetHeight, fullConfig.maxHeight)
     );
-    
+
     return {
       width: Math.round(targetWidth),
       height: Math.round(targetHeight)
@@ -172,10 +172,10 @@ export const useResponsiveChart = (
   // Debounced resize handler
   const debouncedResize = useDebounce(() => {
     if (!containerRef.current) return;
-    
+
     const containerRect = containerRef.current.getBoundingClientRect();
     const newDimensions = calculateDimensions(containerRect.width);
-    
+
     setDimensions(newDimensions);
     setIsLoading(false);
   }, fullConfig.debounceMs);
@@ -187,9 +187,9 @@ export const useResponsiveChart = (
     const resizeObserver = new ResizeObserver(() => {
       debouncedResize();
     });
-    
+
     resizeObserver.observe(containerRef.current);
-    
+
     return () => {
       resizeObserver.disconnect();
     };
@@ -204,7 +204,7 @@ export const useResponsiveChart = (
     };
 
     window.addEventListener('resize', handleWindowResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleWindowResize);
     };
@@ -237,7 +237,7 @@ export const useResponsiveChart = (
   // Chart configuration helpers
   const getResponsiveMargin = useCallback(() => {
     const baseMargin = { top: 20, right: 30, bottom: 60, left: 60 };
-    
+
     switch (currentBreakpoint) {
       case 'xs':
         return { top: 10, right: 15, bottom: 40, left: 40 };
@@ -256,7 +256,7 @@ export const useResponsiveChart = (
 
   const getResponsiveFontSize = useCallback(() => {
     const baseSizes = { title: 16, axis: 12, legend: 12, tooltip: 11 };
-    
+
     switch (currentBreakpoint) {
       case 'xs':
         return { title: 14, axis: 10, legend: 10, tooltip: 9 };
@@ -303,7 +303,7 @@ export const useResponsiveChart = (
   const getOptimalTickCount = useCallback(() => {
     const baseX = Math.floor(dimensions.width / 80); // ~80px per tick
     const baseY = Math.floor(dimensions.height / 40); // ~40px per tick
-    
+
     switch (currentBreakpoint) {
       case 'xs':
         return { x: Math.max(3, Math.floor(baseX * 0.6)), y: Math.max(3, Math.floor(baseY * 0.7)) };

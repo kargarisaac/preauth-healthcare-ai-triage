@@ -1,10 +1,10 @@
 import React from 'react';
 import { RequestHistory } from '@/components/dashboard/RequestHistory';
 import Card from '@/components/ui/Card';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Clock, 
+import {
+  BarChart3,
+  TrendingUp,
+  Clock,
   DollarSign,
   Users,
   CheckCircle,
@@ -92,7 +92,7 @@ const RequestHistoryDemo: React.FC = () => {
               <p className="text-sm text-gray-600">Handle thousands of requests with smooth performance</p>
             </div>
           </div>
-          
+
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <TrendingUp className="h-5 w-5 text-green-600" />
@@ -102,7 +102,7 @@ const RequestHistoryDemo: React.FC = () => {
               <p className="text-sm text-gray-600">Real-time search with highlighting and filters</p>
             </div>
           </div>
-          
+
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-purple-100 rounded-lg">
               <AlertTriangle className="h-5 w-5 text-purple-600" />
@@ -112,7 +112,7 @@ const RequestHistoryDemo: React.FC = () => {
               <p className="text-sm text-gray-600">Approve, deny, or assign multiple requests at once</p>
             </div>
           </div>
-          
+
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-orange-100 rounded-lg">
               <BarChart3 className="h-5 w-5 text-orange-600" />
@@ -122,7 +122,7 @@ const RequestHistoryDemo: React.FC = () => {
               <p className="text-sm text-gray-600">Export to CSV, Excel, or PDF formats</p>
             </div>
           </div>
-          
+
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-red-100 rounded-lg">
               <XCircle className="h-5 w-5 text-red-600" />
@@ -132,7 +132,7 @@ const RequestHistoryDemo: React.FC = () => {
               <p className="text-sm text-gray-600">Real-time status updates with audit trails</p>
             </div>
           </div>
-          
+
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-indigo-100 rounded-lg">
               <Clock className="h-5 w-5 text-indigo-600" />

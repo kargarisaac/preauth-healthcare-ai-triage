@@ -20,7 +20,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const showToast = (toast: Omit<ToastMessage, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9);
     const newToast: ToastMessage = { ...toast, id };
-    
+
     setToasts(prev => [...prev, newToast]);
 
     // Auto remove toast after duration

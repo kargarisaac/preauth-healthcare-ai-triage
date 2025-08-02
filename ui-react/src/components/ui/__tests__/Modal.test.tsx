@@ -73,7 +73,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     await user.click(screen.getByRole('button'))
     expect(mockOnClose).toHaveBeenCalledTimes(1)
   })
@@ -85,7 +85,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     await user.keyboard('{Escape}')
     expect(mockOnClose).toHaveBeenCalledTimes(1)
   })
@@ -97,7 +97,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     const overlay = screen.getByRole('dialog')
     await user.click(overlay)
     expect(mockOnClose).toHaveBeenCalledTimes(1)
@@ -110,7 +110,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     const overlay = screen.getByRole('dialog')
     await user.click(overlay)
     expect(mockOnClose).not.toHaveBeenCalled()
@@ -123,7 +123,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     await user.click(screen.getByText('Modal Content'))
     expect(mockOnClose).not.toHaveBeenCalled()
   })
@@ -134,7 +134,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     let modalContent = document.querySelector('.modal-content')
     expect(modalContent).toHaveClass('modal-content-lg')
 
@@ -143,7 +143,7 @@ describe('Modal Component', () => {
         <div>Modal Content</div>
       </Modal>
     )
-    
+
     modalContent = document.querySelector('.modal-content')
     expect(modalContent).toHaveClass('modal-content-xl')
   })
@@ -180,7 +180,7 @@ describe('Modal Component', () => {
           <div>Modal Content</div>
         </Modal>
       )
-      
+
       const dialog = screen.getByRole('dialog')
       expect(dialog).toHaveAttribute('aria-modal', 'true')
       expect(dialog).toHaveAttribute('aria-labelledby', 'modal-title')
@@ -192,7 +192,7 @@ describe('Modal Component', () => {
           <div>Modal Content</div>
         </Modal>
       )
-      
+
       const modalContent = document.querySelector('.modal-content')
       expect(modalContent).toHaveFocus()
     })
@@ -203,7 +203,7 @@ describe('Modal Component', () => {
           <div>Modal Content</div>
         </Modal>
       )
-      
+
       const dialog = screen.getByRole('dialog')
       expect(dialog).not.toHaveAttribute('aria-labelledby')
     })
@@ -217,7 +217,7 @@ describe('Modal Component', () => {
           <div>Modal Content</div>
         </Modal>
       )
-      
+
       await user.keyboard('{Enter}')
       await user.keyboard(' ')
       await user.keyboard('{Tab}')

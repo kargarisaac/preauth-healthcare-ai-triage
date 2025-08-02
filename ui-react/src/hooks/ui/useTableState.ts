@@ -54,14 +54,14 @@ export function useTableState() {
       const updated = prev.map(col =>
         col.key === columnKey ? { ...col, visible: !col.visible } : col
       );
-      
+
       // Save to localStorage
       try {
         localStorage.setItem(STORAGE_KEYS.COLUMNS, JSON.stringify(updated));
       } catch (error) {
         console.warn('Failed to save table columns to localStorage:', error);
       }
-      
+
       return updated;
     });
   }, []);
@@ -72,14 +72,14 @@ export function useTableState() {
       const updated = prev.map(col =>
         col.key === columnKey ? { ...col, width } : col
       );
-      
+
       // Save to localStorage
       try {
         localStorage.setItem(STORAGE_KEYS.COLUMNS, JSON.stringify(updated));
       } catch (error) {
         console.warn('Failed to save table columns to localStorage:', error);
       }
-      
+
       return updated;
     });
   }, []);
@@ -90,14 +90,14 @@ export function useTableState() {
       const result = Array.from(prev);
       const [removed] = result.splice(startIndex, 1);
       result.splice(endIndex, 0, removed);
-      
+
       // Save to localStorage
       try {
         localStorage.setItem(STORAGE_KEYS.COLUMNS, JSON.stringify(result));
       } catch (error) {
         console.warn('Failed to save table columns to localStorage:', error);
       }
-      
+
       return result;
     });
   }, []);
@@ -158,12 +158,12 @@ export function useTableState() {
   const selectRowRange = useCallback((startRowId: string, endRowId: string, allRowIds: string[]) => {
     const startIndex = allRowIds.indexOf(startRowId);
     const endIndex = allRowIds.indexOf(endRowId);
-    
+
     if (startIndex !== -1 && endIndex !== -1) {
       const minIndex = Math.min(startIndex, endIndex);
       const maxIndex = Math.max(startIndex, endIndex);
       const rangeIds = allRowIds.slice(minIndex, maxIndex + 1);
-      
+
       setSelectedRows(prev => {
         const newSelection = new Set([...prev, ...rangeIds]);
         return Array.from(newSelection);

@@ -24,12 +24,12 @@ const REQUEST_TIMEOUT = 30000; // 30 seconds
 function createTimeoutController(timeoutMs = REQUEST_TIMEOUT) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  
+
   // Clear timeout if request completes
   const originalSignal = controller.signal;
   const cleanup = () => clearTimeout(timeoutId);
   originalSignal.addEventListener('abort', cleanup);
-  
+
   return { controller, cleanup };
 }
 
@@ -39,19 +39,19 @@ async function handleApiResponse<T>(response: Response): Promise<T> {
     const errorText = await response.text().catch(() => 'Unknown error');
     throw new Error(`API Error ${response.status}: ${errorText}`);
   }
-  
+
   const contentType = response.headers.get('content-type');
   if (contentType?.includes('application/json')) {
     return response.json();
   }
-  
+
   throw new Error('Invalid response format');
 }
 
 // Helper function to build query parameters
 function buildQueryParams(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (Array.isArray(value)) {
@@ -63,7 +63,7 @@ function buildQueryParams(params: Record<string, any>): string {
       }
     }
   });
-  
+
   return searchParams.toString();
 }
 
@@ -71,7 +71,7 @@ class RequestHistoryService {
   // Get paginated request history
   async getRequests(filters: RequestFilters): Promise<RequestHistoryResponse> {
     const { controller, cleanup } = createTimeoutController();
-    
+
     try {
       const queryParams = buildQueryParams({
         page: filters.pagination.page,
@@ -80,14 +80,14 @@ class RequestHistoryService {
         sortDirection: filters.sort.direction,
         ...filters.search,
       });
-      
+
       const response = await fetch(`${ENDPOINTS.REQUESTS}?${queryParams}`, {
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
+
       return await handleApiResponse<RequestHistoryResponse>(response);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -102,7 +102,7 @@ class RequestHistoryService {
   // Get detailed request information
   async getRequestDetails(requestId: string): Promise<RequestHistoryItem> {
     const { controller, cleanup } = createTimeoutController();
-    
+
     try {
       const response = await fetch(ENDPOINTS.REQUEST_DETAILS(requestId), {
         signal: controller.signal,
@@ -110,7 +110,7 @@ class RequestHistoryService {
           'Content-Type': 'application/json',
         },
       });
-      
+
       const result = await handleApiResponse<{ data: RequestHistoryItem }>(response);
       return result.data;
     } catch (error) {
@@ -131,7 +131,7 @@ class RequestHistoryService {
   ): Promise<RequestHistoryResponse> {
     const { controller, cleanup } = createTimeoutController();
     const combinedSignal = signal || controller.signal;
-    
+
     try {
       const body = {
         query,
@@ -139,7 +139,7 @@ class RequestHistoryService {
         sort: filters.sort,
         pagination: filters.pagination,
       };
-      
+
       const response = await fetch(ENDPOINTS.SEARCH, {
         method: 'POST',
         signal: combinedSignal,
@@ -148,7 +148,7 @@ class RequestHistoryService {
         },
         body: JSON.stringify(body),
       });
-      
+
       return await handleApiResponse<RequestHistoryResponse>(response);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -166,14 +166,14 @@ class RequestHistoryService {
     options: RequestExportOptions
   ): Promise<Blob> {
     const { controller, cleanup } = createTimeoutController(60000); // 1 minute for exports
-    
+
     try {
       const body = {
         filters: filters.search,
         sort: filters.sort,
         options,
       };
-      
+
       const response = await fetch(ENDPOINTS.EXPORT, {
         method: 'POST',
         signal: controller.signal,
@@ -182,11 +182,11 @@ class RequestHistoryService {
         },
         body: JSON.stringify(body),
       });
-      
+
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`);
       }
-      
+
       return await response.blob();
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -201,7 +201,7 @@ class RequestHistoryService {
   // Bulk operations (approve, deny, assign, etc.)
   async performBulkOperation(payload: BulkOperationPayload): Promise<void> {
     const { controller, cleanup } = createTimeoutController();
-    
+
     try {
       const response = await fetch(ENDPOINTS.BULK_OPERATIONS, {
         method: 'POST',
@@ -211,7 +211,7 @@ class RequestHistoryService {
         },
         body: JSON.stringify(payload),
       });
-      
+
       await handleApiResponse(response);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -231,7 +231,7 @@ class RequestHistoryService {
     assignees: Array<{ id: string; name: string; count: number }>;
   }> {
     const { controller, cleanup } = createTimeoutController();
-    
+
     try {
       const queryParams = filters ? buildQueryParams(filters) : '';
       const response = await fetch(`${ENDPOINTS.FACETS}?${queryParams}`, {
@@ -240,7 +240,7 @@ class RequestHistoryService {
           'Content-Type': 'application/json',
         },
       });
-      
+
       const result = await handleApiResponse<{ data: any }>(response);
       return result.data;
     } catch (error) {
@@ -261,11 +261,11 @@ class RequestHistoryService {
       const link = document.createElement('a');
       link.href = url;
       link.download = filename;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
@@ -290,14 +290,14 @@ class RequestHistoryService {
   async getCachedRequests(filters: RequestFilters): Promise<RequestHistoryResponse> {
     const cacheKey = this.getCacheKey(filters);
     const cached = this.cache.get(cacheKey);
-    
+
     if (cached && this.isCacheValid(cached.timestamp)) {
       return cached.data;
     }
-    
+
     const data = await this.getRequests(filters);
     this.cache.set(cacheKey, { data, timestamp: Date.now() });
-    
+
     return data;
   }
 

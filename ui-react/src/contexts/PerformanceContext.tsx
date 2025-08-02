@@ -36,19 +36,19 @@ const detectLowEndDevice = (): boolean => {
   if (memory && memory.jsHeapSizeLimit < 1073741824) { // Less than 1GB
     return true;
   }
-  
+
   // Check CPU cores
   const cores = navigator.hardwareConcurrency;
   if (cores && cores <= 2) {
     return true;
   }
-  
+
   // Check connection type
   const connection = (navigator as any).connection;
   if (connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g')) {
     return true;
   }
-  
+
   return false;
 };
 
@@ -71,10 +71,10 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = React.mem
     LCP: null,
     TTFB: null,
   });
-  
+
   const [networkStatus, setNetworkStatus] = useState(() => getNetworkStatus());
   const [isLowEndDevice] = useState(() => detectLowEndDevice());
-  const [prefersReducedMotion] = useState(() => 
+  const [prefersReducedMotion] = useState(() =>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
 
@@ -84,7 +84,7 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = React.mem
       // Mock metrics update - replace with actual web vitals
       setMetrics(prev => ({ ...prev }));
     }, 5000);
-    
+
     return () => {
       clearInterval(metricsInterval);
     };
@@ -111,7 +111,7 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = React.mem
         } else {
           performance.measure(name, startMark);
         }
-        
+
         const measure = performance.getEntriesByName(name, 'measure')[0];
         return measure?.duration || 0;
       } catch (error) {

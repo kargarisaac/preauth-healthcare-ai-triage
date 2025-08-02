@@ -10,20 +10,20 @@ import { PWAInstallPrompt } from '@components/ui/PWAInstallPrompt';
 import { ErrorBoundary } from '@components/ui/ErrorBoundary';
 
 // Lazy load pages with better loading states
-const LandingPage = lazy(() => 
+const LandingPage = lazy(() =>
   import('@pages/Landing/LandingPage').then(module => ({
     default: module.default
   }))
 );
 
-const DashboardPage = lazy(() => 
+const DashboardPage = lazy(() =>
   Promise.all([
     import('@pages/Dashboard/DashboardPage'),
     new Promise(resolve => setTimeout(resolve, 200)) // Minimum loading time
   ]).then(([module]) => ({ default: module.default }))
 );
 
-const AnalyticsShowcase = lazy(() => 
+const AnalyticsShowcase = lazy(() =>
   import('@pages/Analytics/AnalyticsShowcase')
 );
 
@@ -60,39 +60,39 @@ function App() {
               <div className="min-h-screen bg-gray-50">
                 <Suspense fallback={<AdaptiveLoadingSpinner />}>
                   <Routes>
-                    <Route 
-                      path="/" 
+                    <Route
+                      path="/"
                       element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <LandingPage />
                         </Suspense>
-                      } 
+                      }
                     />
-                    <Route 
-                      path="/dashboard/*" 
+                    <Route
+                      path="/dashboard/*"
                       element={
                         <Suspense fallback={<AdaptiveLoadingSpinner route="/dashboard" />}>
                           <DashboardPage />
                         </Suspense>
-                      } 
+                      }
                     />
-                    <Route 
-                      path="/analytics" 
+                    <Route
+                      path="/analytics"
                       element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <AnalyticsShowcase />
                         </Suspense>
-                      } 
+                      }
                     />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Suspense>
-                
+
                 {/* PWA Install Prompt */}
-                <PWAInstallPrompt 
-                  variant="banner" 
-                  position="bottom" 
-                  autoShow={true} 
+                <PWAInstallPrompt
+                  variant="banner"
+                  position="bottom"
+                  autoShow={true}
                 />
               </div>
             </ProcessingProvider>

@@ -23,11 +23,11 @@ import {
   Bell,
   MessageCircle
 } from 'lucide-react';
-import { 
-  CareGap, 
-  InterventionRecommendation, 
+import {
+  CareGap,
+  InterventionRecommendation,
   Member,
-  QualityMetric 
+  QualityMetric
 } from '../../types/healthcare';
 import { useCareGaps } from '../../hooks/health/useCareGaps';
 import { Card } from '../ui/Card';
@@ -105,7 +105,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays <= 1) return 'Today';
     if (diffDays <= 7) return `${diffDays} days`;
     if (diffDays <= 30) return `${Math.ceil(diffDays / 7)} weeks`;
@@ -140,7 +140,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
         label: 'Low'
       }
     };
-    
+
     return configs[priority as keyof typeof configs] || configs.medium;
   };
 
@@ -156,7 +156,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
       screening: Shield,
       referral: Users
     };
-    
+
     return icons[type as keyof typeof icons] || Activity;
   };
 
@@ -166,7 +166,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
     const due = new Date(dueDate);
     const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return {
       days: Math.abs(diffDays),
       isOverdue: diffDays < 0
@@ -181,7 +181,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
     if (filters.priority !== 'all') {
       filtered = filtered.filter(gap => gap.priority === filters.priority);
     }
-    
+
     if (filters.status !== 'all') {
       filtered = filtered.filter(gap => gap.status === filters.status);
     }
@@ -191,11 +191,11 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
       const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
       const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
       const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-      
+
       if (aPriority !== bPriority) {
         return bPriority - aPriority; // Higher priority first
       }
-      
+
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(); // Earlier due date first
     });
   }, [careGaps, filters]);
@@ -206,7 +206,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
     if (filters.priority !== 'all') {
       filtered = filtered.filter(rec => rec.priority === filters.priority);
     }
-    
+
     if (filters.status !== 'all') {
       filtered = filtered.filter(rec => rec.status === filters.status);
     }
@@ -215,14 +215,14 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
       const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
       const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
       const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-      
+
       return bPriority - aPriority;
     });
   }, [recommendations, filters]);
 
-  // Quality metrics with issues  
+  // Quality metrics with issues
   const qualityIssues = useMemo(() => {
-    return qualityMetrics.filter(metric => 
+    return qualityMetrics.filter(metric =>
       metric.current < metric.target || metric.trend === 'declining'
     );
   }, [qualityMetrics]);
@@ -245,7 +245,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
       return isOverdue && gap.status === 'open';
     }).length;
     const totalSavings = careGaps.reduce((sum, gap) => sum + gap.potentialCostSaving, 0);
-    const highPriorityRecommendations = recommendations.filter(rec => 
+    const highPriorityRecommendations = recommendations.filter(rec =>
       rec.priority === 'high' && rec.status === 'recommended'
     ).length;
 
@@ -298,7 +298,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
             {alertStats.urgentGaps + alertStats.overdueGaps} urgent items requiring attention
           </p>
         </div>
-        
+
         {showFilters && (
           <Button
             variant={showFiltersPanel ? "default" : "outline"}
@@ -322,7 +322,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
             <AlertTriangle className="h-8 w-8 text-red-500" />
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -332,7 +332,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
             <Clock className="h-8 w-8 text-orange-500" />
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -344,7 +344,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
             <DollarSign className="h-8 w-8 text-green-500" />
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -354,7 +354,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
             <Zap className="h-8 w-8 text-blue-500" />
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -386,7 +386,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                 <option value="low">Low</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Status
@@ -402,7 +402,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                 <option value="completed">Completed</option>
               </select>
             </div>
-            
+
             <div className="flex items-end">
               <Button
                 variant="ghost"
@@ -456,7 +456,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${priorityConfig.bgColor}`}>
                       <PriorityIcon className={`h-5 w-5 ${priorityConfig.color}`} />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
                         <div>
@@ -467,33 +467,33 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                             {gap.description}
                           </p>
                         </div>
-                        
+
                         <div className="flex flex-col items-end space-y-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityConfig.bgColor} ${priorityConfig.color}`}>
                             {priorityConfig.label}
                           </span>
-                          
+
                           <div className={`text-xs font-medium ${
-                            isOverdue ? 'text-red-600' : 
+                            isOverdue ? 'text-red-600' :
                             days <= 7 ? 'text-orange-600' : 'text-gray-600'
                           }`}>
                             {isOverdue ? `${days} days overdue` : `Due in ${days} days`}
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span className="flex items-center">
                             <TypeIcon className="h-4 w-4 mr-1" />
                             {gap.type.replace('_', ' ')}
                           </span>
-                          
+
                           <span className="flex items-center">
                             <DollarSign className="h-4 w-4 mr-1" />
                             {formatCurrency(gap.potentialCostSaving)} potential savings
                           </span>
-                          
+
                           {gap.assignedProvider && (
                             <span className="flex items-center">
                               <Users className="h-4 w-4 mr-1" />
@@ -501,7 +501,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                             </span>
                           )}
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                           {gap.status === 'open' && (
                             <>
@@ -527,13 +527,13 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                               </Button>
                             </>
                           )}
-                          
+
                           {gap.status === 'scheduled' && (
                             <span className={`px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700`}>
                               Scheduled
                             </span>
                           )}
-                          
+
                           {gap.status === 'completed' && (
                             <span className={`px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700`}>
                               <CheckCircle className="h-3 w-3 mr-1 inline" />
@@ -542,7 +542,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Recommendation */}
                       <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                         <h5 className="text-sm font-medium text-blue-900 mb-1">Recommendation:</h5>
@@ -589,7 +589,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${priorityConfig.bgColor}`}>
                       <TypeIcon className={`h-5 w-5 ${priorityConfig.color}`} />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
                         <div>
@@ -600,24 +600,24 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                             {recommendation.description}
                           </p>
                         </div>
-                        
+
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityConfig.bgColor} ${priorityConfig.color}`}>
                           {priorityConfig.label}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
                             {recommendation.timeframe}
                           </span>
-                          
+
                           <span className="flex items-center">
                             <DollarSign className="h-4 w-4 mr-1" />
                             {formatCurrency(recommendation.costEstimate)}
                           </span>
-                          
+
                           {recommendation.qualityMeasure && (
                             <span className="flex items-center">
                               <Activity className="h-4 w-4 mr-1" />
@@ -625,7 +625,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                             </span>
                           )}
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                           {recommendation.status === 'recommended' && (
                             <Button
@@ -639,13 +639,13 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                               Schedule
                             </Button>
                           )}
-                          
+
                           {recommendation.status === 'approved' && (
                             <span className={`px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700`}>
                               Approved
                             </span>
                           )}
-                          
+
                           {recommendation.status === 'scheduled' && (
                             <span className={`px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700`}>
                               Scheduled
@@ -653,7 +653,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Expected Outcome */}
                       <div className="mt-3 p-3 bg-green-50 rounded-lg">
                         <h5 className="text-sm font-medium text-green-900 mb-1">Expected Outcome:</h5>
@@ -696,9 +696,9 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                     </span>
                   </div>
                 </div>
-                
+
                 <p className="text-sm text-gray-600 mb-3">{metric.description}</p>
-                
+
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Current:</span>

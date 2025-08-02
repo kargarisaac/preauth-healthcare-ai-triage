@@ -6,25 +6,25 @@ export interface AnalyticsMetrics {
   dailyVolume: number;
   monthlyVolume: number;
   volumeGrowthRate: number;
-  
+
   // Automation & Efficiency Metrics
   automationRate: number;
   manualTouchPoints: number;
   avgProcessingTime: number; // in seconds
   slaCompliance: number; // percentage
-  
+
   // Quality & Performance Metrics
   dataQualityScore: number;
   errorRate: number;
   successRate: number;
   reprocessingRate: number;
-  
+
   // Financial Metrics
   costSavings: number;
   roiPercentage: number;
   avgCostPerTransaction: number;
   totalSavingsYTD: number;
-  
+
   // Provider & Member Metrics
   providerSatisfactionScore: number;
   memberSatisfactionScore: number;

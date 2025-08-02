@@ -45,11 +45,11 @@ const HowItWorksSection: React.FC = () => {
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">How Nazmito Works</h2>
         </div>
-        
+
         <div className="relative">
           {/* Timeline line - hidden on mobile, visible on desktop */}
           <div className="hidden lg:block absolute left-1/2 transform -translate-x-px h-full w-0.5 bg-gray-200"></div>
-          
+
           <div className="space-y-12">
             {steps.map((step, index) => (
               <div key={step.number} className="relative">
@@ -59,7 +59,7 @@ const HowItWorksSection: React.FC = () => {
                     {step.number}
                   </div>
                 </div>
-                
+
                 {/* Content */}
                 <div className={`lg:grid lg:grid-cols-2 lg:gap-8 items-center ${
                   index % 2 === 0 ? '' : 'lg:grid-cols-2'
@@ -86,7 +86,7 @@ const HowItWorksSection: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  
+
                   {/* Spacer for desktop layout */}
                   <div className={`hidden lg:block ${
                     index % 2 === 0 ? 'lg:order-2' : 'lg:order-1'

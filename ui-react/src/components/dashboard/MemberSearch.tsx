@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  Search, 
-  Mic, 
-  MicOff, 
-  Filter, 
-  X, 
-  Clock, 
-  Users, 
+import {
+  Search,
+  Mic,
+  MicOff,
+  Filter,
+  X,
+  Clock,
+  Users,
   ScanLine,
   ChevronDown,
   Settings,
@@ -55,10 +55,10 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedSearchFilters>({});
-  
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  
+
   // Custom hooks
   const {
     searchResults,
@@ -73,7 +73,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
     clearSearch,
     loadMore
   } = useMemberSearch();
-  
+
   const {
     isSupported: voiceSupported,
     isListening,
@@ -97,7 +97,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
   const handleSearchChange = useCallback(async (value: string) => {
     setSearchQuery(value);
     setSelectedSuggestionIndex(-1);
-    
+
     if (value.length >= 2) {
       await getSuggestions(value);
       setShowSuggestions(true);
@@ -110,15 +110,15 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
   const handleSearch = useCallback(async (query?: string) => {
     const searchTerm = query || searchQuery;
     if (!searchTerm.trim()) return;
-    
+
     const criteria: SearchCriteria = {
       query: searchTerm,
       ...advancedFilters
     };
-    
+
     await searchMembers(criteria);
     setShowSuggestions(false);
-    
+
     if (onSearchResults) {
       onSearchResults(searchResults.members);
     }
@@ -128,7 +128,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
   const handleSuggestionSelect = useCallback((suggestion: SearchSuggestion) => {
     setSearchQuery(suggestion.label);
     setShowSuggestions(false);
-    
+
     if (suggestion.type === 'member') {
       handleSearch(suggestion.value);
     } else {
@@ -189,17 +189,17 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
       }
       return;
     }
-    
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedSuggestionIndex(prev => 
+        setSelectedSuggestionIndex(prev =>
           prev < suggestions.length - 1 ? prev + 1 : 0
         );
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedSuggestionIndex(prev => 
+        setSelectedSuggestionIndex(prev =>
           prev > 0 ? prev - 1 : suggestions.length - 1
         );
         break;
@@ -222,7 +222,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        suggestionsRef.current && 
+        suggestionsRef.current &&
         !suggestionsRef.current.contains(event.target as Node) &&
         searchInputRef.current &&
         !searchInputRef.current.contains(event.target as Node)
@@ -230,7 +230,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
         setShowSuggestions(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -288,7 +288,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               disabled={isLoading}
             />
-            
+
             {/* Voice Search Indicator */}
             {isListening && (
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -298,14 +298,14 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
                 </div>
               </div>
             )}
-            
+
             {/* Loading Indicator */}
             {isLoading && (
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
               </div>
             )}
-            
+
             {/* Clear Button */}
             {searchQuery && !isLoading && (
               <button
@@ -319,7 +319,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
               </button>
             )}
           </div>
-          
+
           {/* Action Buttons */}
           <div className="flex items-center space-x-2 ml-3">
             {/* Voice Search Button */}
@@ -337,7 +337,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
                 )}
               </Button>
             )}
-            
+
             {/* Barcode Search Button */}
             {showBarcodeSearch && (
               <Button
@@ -349,7 +349,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
                 <ScanLine className="h-4 w-4" />
               </Button>
             )}
-            
+
             {/* Advanced Search Toggle */}
             {showAdvancedSearch && (
               <Button
@@ -366,7 +366,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
             )}
           </div>
         </div>
-        
+
         {/* Search Suggestions */}
         {showSuggestions && suggestions.length > 0 && (
           <div
@@ -408,7 +408,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
             ))}
           </div>
         )}
-        
+
         {/* Recent Searches */}
         {showSuggestions && suggestions.length === 0 && searchHistory.length > 0 && (
           <div
@@ -436,7 +436,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
           </div>
         )}
       </div>
-      
+
       {/* Advanced Search Filters */}
       {showAdvancedFilters && (
         <Card className="mt-4 p-4">
@@ -451,7 +451,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
               Clear All
             </Button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Provider Filter */}
             <div>
@@ -469,7 +469,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
                 <option value="Sharjah Health Authority">Sharjah Health Authority</option>
               </select>
             </div>
-            
+
             {/* Plan Type Filter */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -487,7 +487,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
                 <option value="Essential">Essential</option>
               </select>
             </div>
-            
+
             {/* Risk Level Filter */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -504,7 +504,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
                 <option value="high">High Risk</option>
               </select>
             </div>
-            
+
             {/* Emirate Filter */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -525,7 +525,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
                 <option value="Fujairah">Fujairah</option>
               </select>
             </div>
-            
+
             {/* Age Range Filter */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -554,7 +554,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
                 />
               </div>
             </div>
-            
+
             {/* Chronic Conditions Filter */}
             <div className="flex items-center">
               <input
@@ -569,7 +569,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
               </label>
             </div>
           </div>
-          
+
           {/* Apply Filters Button */}
           <div className="mt-4 flex justify-end">
             <Button
@@ -589,7 +589,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
           </div>
         </Card>
       )}
-      
+
       {/* Voice Search Status */}
       {voiceError && (
         <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -599,7 +599,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Search Results Summary */}
       {searchStats.hasResults && (
         <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
@@ -614,7 +614,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
               </span>
             )}
           </div>
-          
+
           {searchStats.canLoadMore && (
             <Button
               variant="ghost"
@@ -627,7 +627,7 @@ export const MemberSearch: React.FC<MemberSearchProps> = ({
           )}
         </div>
       )}
-      
+
       {/* Error Display */}
       {error && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">

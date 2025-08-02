@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  AnalyticsDashboardData, 
-  AnalyticsMetrics, 
+import {
+  AnalyticsDashboardData,
+  AnalyticsMetrics,
   DateRangePreset,
-  AnalyticsApiResponse 
+  AnalyticsApiResponse
 } from '../../types/analytics';
 
 interface UseAnalyticsOptions {
@@ -40,20 +40,20 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}): UseAnalyticsRet
     try {
       setError(null);
       const params = new URLSearchParams();
-      
+
       if (currentDateRange) {
         params.append('start_date', currentDateRange.startDate.toISOString());
         params.append('end_date', currentDateRange.endDate.toISOString());
       }
 
       const response = await fetch(`/api/analytics?${params.toString()}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result: AnalyticsApiResponse<AnalyticsDashboardData> = await response.json();
-      
+
       if (result.success && result.data) {
         setData(result.data);
         setLastUpdated(new Date());
@@ -83,14 +83,14 @@ export const useAnalytics = (options: UseAnalyticsOptions = {}): UseAnalyticsRet
     try {
       const params = new URLSearchParams();
       params.append('format', format);
-      
+
       if (currentDateRange) {
         params.append('start_date', currentDateRange.startDate.toISOString());
         params.append('end_date', currentDateRange.endDate.toISOString());
       }
 
       const response = await fetch(`/api/analytics/export?${params.toString()}`);
-      
+
       if (!response.ok) {
         throw new Error(`Export failed: ${response.status}`);
       }

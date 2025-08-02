@@ -57,7 +57,7 @@ const mockBarcodeDetection = (imageData: ImageData): Promise<BarcodeSearchResult
           confidence: 0.92
         }
       ];
-      
+
       // Simulate random detection success (70% chance)
       if (Math.random() > 0.3) {
         const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
@@ -71,7 +71,7 @@ const mockBarcodeDetection = (imageData: ImageData): Promise<BarcodeSearchResult
 
 export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
-  
+
   const [state, setState] = useState<ScannerState>({
     isScanning: false,
     isInitialized: false,
@@ -108,18 +108,18 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
         video: finalConfig.video,
         audio: finalConfig.audio
       });
-      
-      setState(prev => ({ 
-        ...prev, 
-        hasPermission: true, 
+
+      setState(prev => ({
+        ...prev,
+        hasPermission: true,
         stream,
-        error: null 
+        error: null
       }));
-      
+
       return true;
     } catch (error) {
       let errorMessage = 'Camera access denied';
-      
+
       if (error instanceof Error) {
         switch (error.name) {
           case 'NotAllowedError':
@@ -138,13 +138,13 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
             errorMessage = `Camera error: ${error.message}`;
         }
       }
-      
-      setState(prev => ({ 
-        ...prev, 
-        hasPermission: false, 
-        error: errorMessage 
+
+      setState(prev => ({
+        ...prev,
+        hasPermission: false,
+        error: errorMessage
       }));
-      
+
       return false;
     }
   }, [finalConfig, isSupported]);
@@ -160,7 +160,7 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
       videoElement.srcObject = state.stream;
       videoElement.setAttribute('playsinline', 'true');
       videoElement.setAttribute('muted', 'true');
-      
+
       return new Promise<boolean>((resolve) => {
         videoElement.onloadedmetadata = () => {
           videoElement.play()
@@ -173,16 +173,16 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
               resolve(false);
             });
         };
-        
+
         videoElement.onerror = () => {
           setState(prev => ({ ...prev, error: 'Failed to load video stream' }));
           resolve(false);
         };
       });
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Failed to initialize video' 
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Failed to initialize video'
       }));
       return false;
     }
@@ -195,19 +195,19 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    
+
     if (!ctx) return null;
 
     // Set canvas size to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     // Draw current frame to canvas
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
+
     // Get image data for analysis
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    
+
     // Analyze for barcodes (using mock detection)
     return await mockBarcodeDetection(imageData);
   }, []);
@@ -218,14 +218,14 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
 
     try {
       const result = await analyzeFrame();
-      
+
       if (result && result.confidence > 0.7) {
         setState(prev => ({ ...prev, lastResult: result }));
-        
+
         if (!finalConfig.continuous) {
           stopScanning();
         }
-        
+
         return;
       }
     } catch (error) {
@@ -275,19 +275,19 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
 
     // Start scanning loop
     scanningLoop();
-    
+
     return true;
   }, [state.isScanning, state.isInitialized, initializeVideo, scanningLoop, finalConfig.timeout]);
 
   // Stop scanning
   const stopScanning = useCallback(() => {
     setState(prev => ({ ...prev, isScanning: false }));
-    
+
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-    
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -297,13 +297,13 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
   // Reset scanner state
   const reset = useCallback(() => {
     stopScanning();
-    setState(prev => ({ 
-      ...prev, 
-      lastResult: null, 
+    setState(prev => ({
+      ...prev,
+      lastResult: null,
       error: null,
       isInitialized: false
     }));
-    
+
     if (state.stream) {
       state.stream.getTracks().forEach(track => track.stop());
       setState(prev => ({ ...prev, stream: null, hasPermission: null }));
@@ -313,29 +313,29 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
   // Toggle camera facing mode (front/back)
   const toggleCamera = useCallback(async () => {
     const newFacingMode = finalConfig.video.facingMode === 'environment' ? 'user' : 'environment';
-    
+
     // Stop current stream
     if (state.stream) {
       state.stream.getTracks().forEach(track => track.stop());
     }
-    
+
     // Request new stream with different facing mode
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { ...finalConfig.video, facingMode: newFacingMode },
         audio: finalConfig.audio
       });
-      
+
       setState(prev => ({ ...prev, stream, isInitialized: false }));
-      
+
       // Reinitialize if we have a video element
       if (videoRef.current) {
         await initializeVideo(videoRef.current);
       }
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Failed to switch camera' 
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Failed to switch camera'
       }));
     }
   }, [finalConfig, state.stream, initializeVideo]);
@@ -343,7 +343,7 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
   // Parse barcode result to extract healthcare information
   const parseHealthcareBarcode = useCallback((result: BarcodeSearchResult) => {
     const { type, value } = result;
-    
+
     switch (type) {
       case 'emirates_id':
         // Emirates ID format: 784-YYYY-NNNNNNN-D
@@ -354,7 +354,7 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
           searchValue: value,
           displayName: 'Emirates ID'
         };
-        
+
       case 'insurance_card':
         // Insurance card format varies by provider
         return {
@@ -363,7 +363,7 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
           searchValue: value,
           displayName: 'Policy Number'
         };
-        
+
       case 'member_id':
         // Member ID format
         return {
@@ -372,7 +372,7 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
           searchValue: value,
           displayName: 'Member ID'
         };
-        
+
       default:
         return {
           isValid: false,
@@ -397,18 +397,18 @@ export const useBarcodeScanner = (config: BarcodeScannerConfig = {}) => {
     hasPermission: state.hasPermission,
     error: state.error,
     lastResult: state.lastResult,
-    
+
     // Actions
     startScanning,
     stopScanning,
     reset,
     toggleCamera,
     requestPermission,
-    
+
     // Utilities
     isSupported,
     parseHealthcareBarcode,
-    
+
     // Refs for video and canvas elements
     setVideoRef: (ref: HTMLVideoElement | null) => { videoRef.current = ref; },
     setCanvasRef: (ref: HTMLCanvasElement | null) => { canvasRef.current = ref; }

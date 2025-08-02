@@ -53,7 +53,7 @@ const DEFAULT_OPTIONS: Required<VoiceSearchOptions> = {
 
 export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
   const config = { ...DEFAULT_OPTIONS, ...options };
-  
+
   const [voiceCapability, setVoiceCapability] = useState<VoiceSearchCapability>({
     isSupported: false,
     isListening: false,
@@ -64,7 +64,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
 
   const [interimTranscript, setInterimTranscript] = useState('');
   const [finalTranscript, setFinalTranscript] = useState('');
-  
+
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isManualStop = useRef(false);
@@ -73,7 +73,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const isSupported = !!SpeechRecognition;
-    
+
     setVoiceCapability(prev => ({
       ...prev,
       isSupported
@@ -99,7 +99,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
     if (!recognitionRef.current) return;
 
     const recognition = recognitionRef.current;
-    
+
     // Configure recognition
     recognition.continuous = config.continuous;
     recognition.interimResults = config.interimResults;
@@ -116,9 +116,9 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
         const result = event.results[i];
         const transcript = result[0].transcript;
         const confidence = result[0].confidence || 0;
-        
+
         maxConfidence = Math.max(maxConfidence, confidence);
-        
+
         if (result.isFinal) {
           final += transcript;
         } else {
@@ -144,7 +144,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
         isListening: true,
         error: undefined
       }));
-      
+
       // Set timeout for auto-stop
       if (config.autoStop && config.timeout > 0) {
         timeoutRef.current = setTimeout(() => {
@@ -159,19 +159,19 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
         ...prev,
         isListening: false
       }));
-      
+
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-      
+
       setInterimTranscript('');
     });
 
     // Handle recognition errors
     recognition.addEventListener('error', (event: SpeechRecognitionErrorEvent) => {
       let errorMessage = 'Voice recognition error occurred';
-      
+
       switch (event.error) {
         case 'no-speech':
           errorMessage = 'No speech detected. Please try again.';
@@ -197,7 +197,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
         default:
           errorMessage = `Voice recognition error: ${event.error}`;
       }
-      
+
       setVoiceCapability(prev => ({
         ...prev,
         isListening: false,
@@ -245,7 +245,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
         confidence: 0,
         error: undefined
       }));
-      
+
       isManualStop.current = false;
       recognitionRef.current.start();
     } catch (error) {
@@ -310,7 +310,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
   // Voice search specific commands for healthcare
   const processHealthcareVoiceCommand = useCallback((transcript: string) => {
     const cleanTranscript = transcript.toLowerCase().trim();
-    
+
     // Common healthcare voice commands
     const commands = {
       // Search patterns
@@ -318,18 +318,18 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
       searchById: /(?:search|find|look for)\s+(?:id|emirates id|member id)\s+(.+)/,
       searchByPhone: /(?:search|find|look for)\s+phone\s+(.+)/,
       searchByPolicy: /(?:search|find|look for)\s+policy\s+(?:number)?\s*(.+)/,
-      
+
       // Navigation patterns
       showProfile: /(?:show|open|display)\s+(?:profile|details)\s+(?:for|of)\s+(.+)/,
       showHistory: /(?:show|open|display)\s+(?:history|timeline)\s+(?:for|of)\s+(.+)/,
       showGaps: /(?:show|open|display)\s+(?:care gaps|gaps|alerts)\s+(?:for|of)\s+(.+)/,
-      
+
       // Actions
       approve: /(?:approve|accept)\s+(.+)/,
       deny: /(?:deny|reject|decline)\s+(.+)/,
       schedule: /(?:schedule|book)\s+(.+)/
     };
-    
+
     for (const [action, pattern] of Object.entries(commands)) {
       const match = cleanTranscript.match(pattern);
       if (match) {
@@ -341,7 +341,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
         };
       }
     }
-    
+
     // Return raw search if no specific command matched
     return {
       action: 'search',
@@ -354,7 +354,7 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
   // Process final transcript for healthcare commands
   const processVoiceCommand = useCallback(() => {
     if (!finalTranscript) return null;
-    
+
     return processHealthcareVoiceCommand(finalTranscript);
   }, [finalTranscript, processHealthcareVoiceCommand]);
 
@@ -363,19 +363,19 @@ export const useVoiceSearch = (options: VoiceSearchOptions = {}) => {
     ...voiceCapability,
     interimTranscript,
     finalTranscript,
-    
+
     // Actions
     startListening,
     stopListening,
     toggleListening,
     clearTranscript,
     resetVoiceSearch,
-    
+
     // Utilities
     getCurrentTranscript,
     processVoiceCommand,
     processHealthcareVoiceCommand,
-    
+
     // Configuration
     isConfigured: !!recognitionRef.current,
     language: config.language,

@@ -9,7 +9,7 @@ const FileUploadPage: React.FC = () => {
           File Processing Center
         </h1>
         <p className="text-gray-600 max-w-3xl mx-auto">
-          Upload and process healthcare data files with AI-powered intelligence. 
+          Upload and process healthcare data files with AI-powered intelligence.
           Transform XML and CSV files into FHIR-compliant format with comprehensive validation and analysis.
         </p>
       </div>

@@ -140,7 +140,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents }) => {
       ) : (
         documents.map((document) => {
           const Icon = getDocumentIcon(document.type);
-          
+
           return (
             <div key={document.id} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
               <Icon className="w-6 h-6 text-blue-600 mr-3" />
@@ -149,7 +149,7 @@ const DocumentList: React.FC<DocumentListProps> = ({ documents }) => {
                   {document.name}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {document.type.replace('_', ' ')} • {formatFileSize(document.size)} • 
+                  {document.type.replace('_', ' ')} • {formatFileSize(document.size)} •
                   Uploaded {new Date(document.uploadedAt).toLocaleDateString()}
                 </p>
               </div>
@@ -485,7 +485,7 @@ export function RequestDetails({ requestId, compact = false, onClose }: RequestD
                       </div>
                     </div>
                   )}
-                  
+
                   {request.notes && (
                     <div>
                       <label className="text-sm font-medium text-gray-500 mb-2 block">Notes</label>

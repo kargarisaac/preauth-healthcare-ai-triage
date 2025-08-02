@@ -45,22 +45,22 @@ interface UseChartDataReturn {
   processingTrendData: LineChartData[];
   volumeTrendData: LineChartData[];
   performanceTrendData: LineChartData[];
-  
+
   // Pie Chart Data
   formatDistributionData: PieChartData[];
   statusDistributionData: PieChartData[];
   geographicDistributionData: PieChartData[];
-  
+
   // Bar Chart Data
   providerPerformanceData: BarChartData[];
   costSavingsData: BarChartData[];
   qualityMetricsData: BarChartData[];
-  
+
   // Gauge Chart Data
   automationRateGauge: GaugeChartData;
   qualityScoreGauge: GaugeChartData;
   slaComplianceGauge: GaugeChartData;
-  
+
   // Heatmap Data
   processingHeatmapData: Array<{
     day: string;
@@ -68,7 +68,7 @@ interface UseChartDataReturn {
     value: number;
     intensity: number;
   }>;
-  
+
   // Utility functions
   formatCurrency: (value: number) => string;
   formatPercentage: (value: number) => string;
@@ -90,11 +90,11 @@ export const useChartData = (
     errorRate: number;
   }
 ): UseChartDataReturn => {
-  
+
   // Processing Trend Line Charts
   const processingTrendData = useMemo((): LineChartData[] => {
     if (!trends.length) return [];
-    
+
     return [
       {
         id: 'volume',
@@ -134,7 +134,7 @@ export const useChartData = (
 
   const volumeTrendData = useMemo((): LineChartData[] => {
     if (!trends.length) return [];
-    
+
     return [
       {
         id: 'volume_trend',
@@ -151,7 +151,7 @@ export const useChartData = (
 
   const performanceTrendData = useMemo((): LineChartData[] => {
     if (!trends.length) return [];
-    
+
     return [
       {
         id: 'automation_rate',
@@ -188,11 +188,11 @@ export const useChartData = (
 
   const statusDistributionData = useMemo((): PieChartData[] => {
     if (!metrics) return [];
-    
+
     const approved = metrics.successRate * 100;
     const errors = metrics.errorRate * 100;
     const pending = 100 - approved - errors;
-    
+
     return [
       { name: 'Approved', value: approved, percentage: approved, color: CHART_COLORS.success },
       { name: 'Pending', value: pending, percentage: pending, color: CHART_COLORS.warning },
@@ -217,9 +217,9 @@ export const useChartData = (
       .map(provider => ({
         category: provider.providerName,
         value: Math.round(provider.qualityScore * 100),
-        color: provider.qualityScore > 0.8 ? CHART_COLORS.success : 
+        color: provider.qualityScore > 0.8 ? CHART_COLORS.success :
                provider.qualityScore > 0.6 ? CHART_COLORS.warning : CHART_COLORS.error,
-        trend: provider.qualityScore > 0.8 ? 'up' : 
+        trend: provider.qualityScore > 0.8 ? 'up' :
                provider.qualityScore > 0.6 ? 'stable' : 'down'
       }));
   }, [providerPerformance]);
@@ -236,7 +236,7 @@ export const useChartData = (
 
   const qualityMetricsData = useMemo((): BarChartData[] => {
     if (!metrics) return [];
-    
+
     return [
       {
         category: 'Data Quality',
@@ -329,7 +329,7 @@ export const useChartData = (
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m`;
     }

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Download, 
-  RefreshCw, 
+import {
+  BarChart3,
+  TrendingUp,
+  Download,
+  RefreshCw,
   Calendar,
   Maximize2,
   Minimize2,
@@ -59,7 +59,7 @@ const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
         <Calendar className="h-4 w-4" />
         <span>{dateRange.label}</span>
       </Button>
-      
+
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-50">
           <div className="py-1">
@@ -120,7 +120,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  
+
   // Custom hooks
   const {
     dateRange,
@@ -221,7 +221,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
           <p className="text-gray-600">Comprehensive healthcare data processing insights</p>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-3">
           {/* Real-time Status */}
           <RealTimeStatus
@@ -229,14 +229,14 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             connectionStatus={connectionStatus}
             lastUpdate={lastRealTimeUpdate}
           />
-          
+
           {/* Date Range Selector */}
           <DateRangeSelector
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
             presets={dateRangePresets}
           />
-          
+
           {/* Action Buttons */}
           <Button
             variant="secondary"
@@ -248,7 +248,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <RefreshCw className={`h-4 w-4 ${analyticsLoading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </Button>
-          
+
           <div className="relative">
             <Button
               variant="secondary"
@@ -260,7 +260,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <span>Export</span>
             </Button>
           </div>
-          
+
           <Button
             variant="secondary"
             size="sm"
@@ -283,7 +283,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               <div className="mt-2 space-y-1">
                 {alerts.slice(0, 3).map((alert) => (
                   <p key={alert.id} className="text-sm text-yellow-700">
-                    {alert.name}: {alert.currentValue} {alert.unit} 
+                    {alert.name}: {alert.currentValue} {alert.unit}
                     ({alert.status === 'warning' ? 'Above warning' : 'Critical'} threshold)
                   </p>
                 ))}
@@ -327,7 +327,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               data={analyticsData}
               isLoading={analyticsLoading}
             />
-            
+
             {/* Key Metrics */}
             {metrics && (
               <MetricsGrid
@@ -336,7 +336,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 showTrends={true}
               />
             )}
-            
+
             {/* Processing Charts */}
             <ProcessingCharts
               trends={trends}
@@ -383,7 +383,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 System Status: {systemHealth.status.charAt(0).toUpperCase() + systemHealth.status.slice(1)}
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-6 text-sm text-gray-600">
               <span>CPU: {systemHealth.cpuUsage.toFixed(1)}%</span>
               <span>Memory: {systemHealth.memoryUsage.toFixed(1)}%</span>

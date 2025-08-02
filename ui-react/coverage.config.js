@@ -27,7 +27,7 @@ export default {
       statements: 80
     }
   },
-  
+
   // Files to include in coverage
   include: [
     'src/**/*.{ts,tsx}',
@@ -39,7 +39,7 @@ export default {
     '!src/main.tsx',
     '!src/vite-env.d.ts'
   ],
-  
+
   // Files to exclude from coverage
   exclude: [
     'node_modules/',
@@ -53,7 +53,7 @@ export default {
     '**/__tests__/**/*',
     '**/*.stories.{ts,tsx}'
   ],
-  
+
   // Coverage reporters
   reporters: [
     'text',
@@ -63,19 +63,19 @@ export default {
     'lcov',
     'cobertura'
   ],
-  
+
   // Output directory for coverage reports
   reportsDirectory: 'coverage',
-  
+
   // Clean coverage directory before each run
   clean: true,
-  
+
   // Skip files with no statements
   skipEmpty: true,
-  
+
   // Include untested files in coverage report
   all: true,
-  
+
   // Watermarks for coverage levels
   watermarks: {
     statements: [70, 90],

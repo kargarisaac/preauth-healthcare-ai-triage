@@ -154,13 +154,13 @@ const Badge: React.FC<BadgeProps> = ({
   className = '',
 }) => {
   const Icon = getIconComponent(config.icon);
-  
+
   const sizeClasses = {
     sm: 'px-2 py-0.5 text-xs',
     md: 'px-2.5 py-0.5 text-sm',
     lg: 'px-3 py-1 text-base',
   };
-  
+
   const iconSizes = {
     sm: 'w-3 h-3',
     md: 'w-4 h-4',
@@ -295,7 +295,7 @@ export const AmountBadge: React.FC<AmountBadgeProps> = ({
     approved: 'bg-green-100 text-green-700',
     denied: 'bg-red-100 text-red-700',
   };
-  
+
   const sizeClasses = {
     sm: 'px-2 py-0.5 text-xs',
     md: 'px-2.5 py-0.5 text-sm',
@@ -386,13 +386,13 @@ export const CustomBadge: React.FC<CustomBadgeProps> = ({
     purple: 'bg-purple-100 text-purple-700',
     pink: 'bg-pink-100 text-pink-700',
   };
-  
+
   const sizeClasses = {
     sm: 'px-2 py-0.5 text-xs',
     md: 'px-2.5 py-0.5 text-sm',
     lg: 'px-3 py-1 text-base',
   };
-  
+
   const iconSizes = {
     sm: 'w-3 h-3',
     md: 'w-4 h-4',

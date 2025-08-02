@@ -15,12 +15,12 @@ import {
   ResponsiveContainer,
   ReferenceLine
 } from 'recharts';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Clock, 
-  Users, 
-  Target, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Users,
+  Target,
   AlertTriangle,
   Calendar,
   Filter
@@ -83,9 +83,9 @@ const TrendAnalysisCard: React.FC<TrendAnalysisCardProps> = ({
           </div>
         )}
       </div>
-      
+
       <h4 className="text-sm font-medium text-gray-600 mb-1">{title}</h4>
-      
+
       <div className="flex items-baseline space-x-2">
         <span className="text-xl font-bold text-gray-900">
           {currentValue.toFixed(1)}{unit}
@@ -95,7 +95,7 @@ const TrendAnalysisCard: React.FC<TrendAnalysisCardProps> = ({
           <span className="ml-1">{Math.abs(change).toFixed(1)}%</span>
         </div>
       </div>
-      
+
       {target && (
         <div className="text-xs text-gray-500 mt-1">
           Target: {target.toFixed(1)}{unit}
@@ -216,7 +216,7 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
           <h2 className="text-lg font-semibold text-gray-900">Performance Trends Analysis</h2>
           <p className="text-sm text-gray-600">Historical performance analysis and trend monitoring</p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-gray-400" />
@@ -232,7 +232,7 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
               ))}
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4 text-gray-400" />
             <select
@@ -268,23 +268,23 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="date" 
+              <XAxis
+                dataKey="date"
                 stroke="#666"
                 fontSize={12}
               />
-              <YAxis 
+              <YAxis
                 yAxisId="left"
                 stroke="#666"
                 fontSize={12}
               />
-              <YAxis 
+              <YAxis
                 yAxisId="right"
                 orientation="right"
                 stroke="#666"
                 fontSize={12}
               />
-              <Tooltip 
+              <Tooltip
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
@@ -304,15 +304,15 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
                 }}
               />
               <Legend />
-              
+
               {/* Reference lines for targets */}
               <ReferenceLine yAxisId="right" y={95} stroke="#dc3545" strokeDasharray="5 5" label="Success Target" />
               <ReferenceLine yAxisId="right" y={85} stroke="#0066cc" strokeDasharray="5 5" label="Automation Target" />
-              
-              <Bar 
+
+              <Bar
                 yAxisId="left"
-                dataKey="volume" 
-                fill="#0066cc40" 
+                dataKey="volume"
+                fill="#0066cc40"
                 name="Volume"
               />
               <Line
@@ -363,8 +363,8 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
               <div key={provider.providerId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                    index === 0 ? 'bg-yellow-500' : 
-                    index === 1 ? 'bg-gray-400' : 
+                    index === 0 ? 'bg-yellow-500' :
+                    index === 1 ? 'bg-gray-400' :
                     index === 2 ? 'bg-yellow-600' : 'bg-blue-500'
                   }`}>
                     {index + 1}
@@ -401,7 +401,7 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
             {qualityMetrics.map((metric, index) => {
               const progressPercentage = (metric.current / metric.target) * 100;
               const isOnTrack = progressPercentage >= 90;
-              
+
               return (
                 <div key={index} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -419,7 +419,7 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${
@@ -428,7 +428,7 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
                       style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span>{metric.description}</span>
                     <span className={isOnTrack ? 'text-green-600' : 'text-yellow-600'}>
@@ -458,7 +458,7 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" stroke="#666" fontSize={12} />
               <YAxis stroke="#666" fontSize={12} />
-              <Tooltip 
+              <Tooltip
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (

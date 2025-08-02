@@ -21,7 +21,7 @@ describe('API Integration Tests', () => {
 
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('id')
       expect(result).toHaveProperty('status', 'completed')
       expect(result).toHaveProperty('result')
@@ -40,7 +40,7 @@ describe('API Integration Tests', () => {
 
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('id')
       expect(result).toHaveProperty('status', 'completed')
       expect(result.result).toHaveProperty('fileType', 'shafafiya')
@@ -58,7 +58,7 @@ describe('API Integration Tests', () => {
 
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('id')
       expect(result).toHaveProperty('status', 'completed')
       expect(result.result).toHaveProperty('fileType', 'csv')
@@ -75,14 +75,14 @@ describe('API Integration Tests', () => {
 
       expect(response.ok).toBe(false)
       expect(response.status).toBe(400)
-      
+
       const result = await response.json()
       expect(result).toHaveProperty('error')
     })
 
     it('should handle server errors gracefully', async () => {
       enableNetworkError()
-      
+
       const formData = new FormData()
       const testFile = new File(['<test>data</test>'], 'test.xml', { type: 'text/xml' })
       formData.append('file', testFile)
@@ -94,7 +94,7 @@ describe('API Integration Tests', () => {
 
       expect(response.ok).toBe(false)
       expect(response.status).toBe(500)
-      
+
       resetToDefaultHandlers()
     })
   })
@@ -102,10 +102,10 @@ describe('API Integration Tests', () => {
   describe('Request History API', () => {
     it('should fetch request history with pagination', async () => {
       const response = await fetch('http://localhost:8000/api/requests?page=1&limit=10')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('items')
       expect(result).toHaveProperty('total')
       expect(result).toHaveProperty('page', 1)
@@ -115,30 +115,30 @@ describe('API Integration Tests', () => {
 
     it('should search requests by query', async () => {
       const response = await fetch('http://localhost:8000/api/requests?search=ahmed')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('items')
       expect(Array.isArray(result.items)).toBe(true)
     })
 
     it('should filter requests by status', async () => {
       const response = await fetch('http://localhost:8000/api/requests?status=approved')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('items')
       expect(Array.isArray(result.items)).toBe(true)
     })
 
     it('should fetch individual request details', async () => {
       const response = await fetch('http://localhost:8000/api/requests/test-request-1')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('id', 'test-request-1')
       expect(result).toHaveProperty('fileName')
       expect(result).toHaveProperty('status')
@@ -146,19 +146,19 @@ describe('API Integration Tests', () => {
 
     it('should return 404 for non-existent request', async () => {
       const response = await fetch('http://localhost:8000/api/requests/non-existent-id')
-      
+
       expect(response.ok).toBe(false)
       expect(response.status).toBe(404)
     })
 
     it('should handle service unavailable errors', async () => {
       enableNetworkError()
-      
+
       const response = await fetch('http://localhost:8000/api/requests')
-      
+
       expect(response.ok).toBe(false)
       expect(response.status).toBe(503)
-      
+
       resetToDefaultHandlers()
     })
   })
@@ -166,10 +166,10 @@ describe('API Integration Tests', () => {
   describe('Analytics API', () => {
     it('should fetch processing metrics', async () => {
       const response = await fetch('http://localhost:8000/api/analytics/metrics')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('totalFiles')
       expect(result).toHaveProperty('successfulFiles')
       expect(result).toHaveProperty('failedFiles')
@@ -178,10 +178,10 @@ describe('API Integration Tests', () => {
 
     it('should fetch chart data', async () => {
       const response = await fetch('http://localhost:8000/api/analytics/charts')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('dailyProcessing')
       expect(result).toHaveProperty('processingTimes')
       expect(result).toHaveProperty('errorDistribution')
@@ -192,39 +192,39 @@ describe('API Integration Tests', () => {
   describe('Member Search API', () => {
     it('should search members by query', async () => {
       const response = await fetch('http://localhost:8000/api/members/search?q=ahmed')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('members')
       expect(Array.isArray(result.members)).toBe(true)
     })
 
     it('should return empty results for no query', async () => {
       const response = await fetch('http://localhost:8000/api/members/search')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('members', [])
     })
 
     it('should search by Emirates ID', async () => {
       const response = await fetch('http://localhost:8000/api/members/search?q=784-1990')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('members')
       expect(Array.isArray(result.members)).toBe(true)
     })
 
     it('should search by policy number', async () => {
       const response = await fetch('http://localhost:8000/api/members/search?q=POL-2024')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('members')
       expect(Array.isArray(result.members)).toBe(true)
     })
@@ -233,10 +233,10 @@ describe('API Integration Tests', () => {
   describe('Health Check API', () => {
     it('should return healthy status', async () => {
       const response = await fetch('http://localhost:8000/api/health')
-      
+
       expect(response.ok).toBe(true)
       const result = await response.json()
-      
+
       expect(result).toHaveProperty('status', 'healthy')
       expect(result).toHaveProperty('timestamp')
     })
@@ -248,7 +248,7 @@ describe('API Integration Tests', () => {
       const timeoutPromise = fetch('http://localhost:9999/api/timeout', {
         signal: AbortSignal.timeout(1000)
       })
-      
+
       await expect(timeoutPromise).rejects.toThrow()
     })
 
@@ -261,10 +261,10 @@ describe('API Integration Tests', () => {
           })
         })
       )
-      
+
       const response = await fetch('http://localhost:8000/api/malformed')
       expect(response.ok).toBe(true)
-      
+
       // Should throw when trying to parse invalid JSON
       await expect(response.json()).rejects.toThrow()
     })
@@ -273,7 +273,7 @@ describe('API Integration Tests', () => {
       // Test cross-origin request
       const response = await fetch('http://different-origin.com/api/test')
         .catch(error => error)
-      
+
       expect(response).toBeInstanceOf(Error)
     })
   })

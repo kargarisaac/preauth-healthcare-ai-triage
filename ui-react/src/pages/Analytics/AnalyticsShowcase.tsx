@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  DollarSign, 
-  Activity, 
-  Target, 
+import {
+  BarChart3,
+  TrendingUp,
+  DollarSign,
+  Activity,
+  Target,
   Clock,
   Users,
   Zap,
@@ -21,7 +21,7 @@ import { ProcessingHeatmap } from '../../components/dashboard/ProcessingHeatmap'
 import { GaugeMetrics } from '../../components/dashboard/GaugeMetrics';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import { 
+import {
   generateMockAnalyticsDashboardData,
   generateMockAnalyticsMetrics
 } from '../../utils/mockAnalyticsData';
@@ -52,14 +52,14 @@ const AnalyticsShowcase: React.FC<AnalyticsShowcaseProps> = ({
     const interval = setInterval(() => {
       setMockData(generateMockAnalyticsDashboardData());
     }, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
   // Generate gauge data from metrics
   const generateGaugeData = () => {
     const metrics = mockData.metrics;
-    
+
     return [
       {
         id: 'automation',
@@ -191,7 +191,7 @@ const AnalyticsShowcase: React.FC<AnalyticsShowcaseProps> = ({
                 Comprehensive data visualization and performance monitoring
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <Button
                 variant="secondary"
@@ -203,7 +203,7 @@ const AnalyticsShowcase: React.FC<AnalyticsShowcaseProps> = ({
                 <Activity className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                 <span>Refresh Data</span>
               </Button>
-              
+
               <div className="flex items-center text-sm text-gray-500">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
                 <span>Live Demo</span>
@@ -232,7 +232,7 @@ const AnalyticsShowcase: React.FC<AnalyticsShowcaseProps> = ({
               </button>
             ))}
           </div>
-          
+
           {/* Active section description */}
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
@@ -301,11 +301,11 @@ const AnalyticsShowcase: React.FC<AnalyticsShowcaseProps> = ({
             <div>
               <h3 className="text-sm font-medium text-gray-900">Demo Data Notice</h3>
               <p className="text-sm text-gray-600 mt-1">
-                This demo uses simulated healthcare data for demonstration purposes. 
-                In production, all data would be sourced from secure healthcare APIs 
+                This demo uses simulated healthcare data for demonstration purposes.
+                In production, all data would be sourced from secure healthcare APIs
                 compliant with UAE healthcare regulations and GDPR requirements.
               </p>
-              
+
               <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-gray-500">
                 <div>
                   <strong>Data Sources:</strong>
@@ -315,7 +315,7 @@ const AnalyticsShowcase: React.FC<AnalyticsShowcaseProps> = ({
                     <li>• Healthcare CSV imports</li>
                   </ul>
                 </div>
-                
+
                 <div>
                   <strong>Key Features:</strong>
                   <ul className="mt-1 space-y-1">
@@ -324,7 +324,7 @@ const AnalyticsShowcase: React.FC<AnalyticsShowcaseProps> = ({
                     <li>• Mobile-responsive design</li>
                   </ul>
                 </div>
-                
+
                 <div>
                   <strong>Compliance:</strong>
                   <ul className="mt-1 space-y-1">

@@ -47,7 +47,7 @@ export const useRealTimeMetrics = (
   const handleMessage = useCallback((event: MessageEvent) => {
     try {
       const update: RealTimeUpdate = JSON.parse(event.data);
-      
+
       switch (update.type) {
         case 'metric_update':
           if (update.data.metrics) {
@@ -58,17 +58,17 @@ export const useRealTimeMetrics = (
           }
           setLastUpdate(new Date(update.timestamp));
           break;
-          
+
         case 'system_status':
           setSystemHealth(update.data);
           setLastUpdate(new Date(update.timestamp));
           break;
-          
+
         case 'alert':
           // Handle alerts - could trigger notifications
           console.log('Real-time alert:', update.data);
           break;
-          
+
         default:
           console.log('Unknown update type:', update.type);
       }
@@ -82,7 +82,7 @@ export const useRealTimeMetrics = (
     setIsConnected(true);
     setConnectionStatus('connected');
     reconnectAttemptsRef.current = 0;
-    
+
     // Start heartbeat
     heartbeatIntervalRef.current = setInterval(() => {
       sendHeartbeat();
@@ -92,18 +92,18 @@ export const useRealTimeMetrics = (
   const handleClose = useCallback((event: CloseEvent) => {
     console.log('WebSocket disconnected:', event.code, event.reason);
     setIsConnected(false);
-    
+
     // Clear heartbeat interval
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current);
       heartbeatIntervalRef.current = null;
     }
-    
+
     if (event.code !== 1000 && enabled && reconnectAttemptsRef.current < maxReconnectAttempts) {
       // Abnormal closure, attempt to reconnect
       setConnectionStatus('connecting');
       reconnectAttemptsRef.current += 1;
-      
+
       reconnectTimeoutRef.current = setTimeout(() => {
         connect();
       }, reconnectInterval);
@@ -129,7 +129,7 @@ export const useRealTimeMetrics = (
     try {
       setConnectionStatus('connecting');
       wsRef.current = new WebSocket(getWebSocketUrl());
-      
+
       wsRef.current.onopen = handleOpen;
       wsRef.current.onmessage = handleMessage;
       wsRef.current.onclose = handleClose;
@@ -145,17 +145,17 @@ export const useRealTimeMetrics = (
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-    
+
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current);
       heartbeatIntervalRef.current = null;
     }
-    
+
     if (wsRef.current) {
       wsRef.current.close(1000, 'User requested disconnect');
       wsRef.current = null;
     }
-    
+
     setIsConnected(false);
     setConnectionStatus('disconnected');
   }, []);
@@ -209,7 +209,7 @@ export const useRealTimeMetrics = (
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };

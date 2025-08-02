@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { clsx } from 'clsx';
-import { 
-  X, 
-  Maximize2, 
-  Minimize2, 
-  Download, 
-  Copy, 
+import {
+  X,
+  Maximize2,
+  Minimize2,
+  Download,
+  Copy,
   Search,
   Eye,
   Database,
@@ -97,7 +97,7 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
 
   const handleCopyResults = useCallback(async () => {
     if (!results) return;
-    
+
     try {
       await navigator.clipboard.writeText(JSON.stringify(results, null, 2));
       // Could add toast notification here
@@ -243,7 +243,7 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className={clsx(
         'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50',
         'animate-fade-in'
@@ -255,8 +255,8 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
         className={clsx(
           'bg-white rounded-lg shadow-2xl flex flex-col',
           'animate-fade-in-up',
-          isFullscreen 
-            ? 'w-full h-full rounded-none' 
+          isFullscreen
+            ? 'w-full h-full rounded-none'
             : 'w-full max-w-7xl h-[90vh] mx-4'
         )}
       >
@@ -352,7 +352,7 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
           <div className="text-sm text-gray-500">
-            Press <kbd className="px-2 py-1 bg-gray-200 rounded text-xs">Esc</kbd> to close, 
+            Press <kbd className="px-2 py-1 bg-gray-200 rounded text-xs">Esc</kbd> to close,
             <kbd className="px-2 py-1 bg-gray-200 rounded text-xs ml-1">F11</kbd> for fullscreen,
             <kbd className="px-2 py-1 bg-gray-200 rounded text-xs ml-1">1-5</kbd> to switch tabs
           </div>

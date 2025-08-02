@@ -9,8 +9,8 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   initialEntries?: string[]
 }
 
-const AllTheProviders = ({ 
-  children, 
+const AllTheProviders = ({
+  children,
   initialEntries = ['/']
 }: {
   children: React.ReactNode

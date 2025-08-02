@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  Member, 
-  MemberActivity, 
+import {
+  Member,
+  MemberActivity,
   AuthorizationHistory,
-  CostUtilization 
+  CostUtilization
 } from '../../types/healthcare';
 
 interface MemberProfileState {
@@ -28,7 +28,7 @@ export const useMemberProfile = (memberId?: string) => {
   // Mock API calls - replace with actual API integration
   const fetchMemberAPI = async (id: string): Promise<Member> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     // Mock member data
     return {
       id,
@@ -149,7 +149,7 @@ export const useMemberProfile = (memberId?: string) => {
 
   const fetchMemberActivitiesAPI = async (id: string): Promise<MemberActivity[]> => {
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     return [
       {
         id: '1',
@@ -221,7 +221,7 @@ export const useMemberProfile = (memberId?: string) => {
 
   const fetchAuthorizationHistoryAPI = async (id: string): Promise<AuthorizationHistory[]> => {
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     return [
       {
         id: '1',
@@ -283,14 +283,14 @@ export const useMemberProfile = (memberId?: string) => {
   // Load member profile
   const loadMemberProfile = useCallback(async (id: string) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+
     try {
       const [member, activities, authHistory] = await Promise.all([
         fetchMemberAPI(id),
         fetchMemberActivitiesAPI(id),
         fetchAuthorizationHistoryAPI(id)
       ]);
-      
+
       setState({
         member,
         activities,
@@ -310,15 +310,15 @@ export const useMemberProfile = (memberId?: string) => {
 
   // Update member information
   const updateMemberInfo = useCallback(async (
-    memberId: string, 
+    memberId: string,
     updates: Partial<Member>
   ) => {
     setState(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       // Mock API call
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       setState(prev => ({
         ...prev,
         member: prev.member ? { ...prev.member, ...updates } : null,
@@ -344,9 +344,9 @@ export const useMemberProfile = (memberId?: string) => {
   // Calculate member insights
   const getMemberInsights = useCallback(() => {
     if (!state.member) return null;
-    
+
     const { costUtilization, medicalHistory, riskScore } = state.member;
-    
+
     return {
       riskLevel: riskScore > 70 ? 'high' : riskScore > 40 ? 'medium' : 'low',
       totalYearToDateCosts: costUtilization.yearToDate.totalCosts,
@@ -358,7 +358,7 @@ export const useMemberProfile = (memberId?: string) => {
         const severityWeights = { mild: 1, moderate: 2, severe: 3 };
         return acc + (severityWeights[condition.severity] || 0);
       }, 0),
-      lastActivityDays: state.member.lastActivity ? 
+      lastActivityDays: state.member.lastActivity ?
         Math.floor((new Date().getTime() - new Date(state.member.lastActivity).getTime()) / (1000 * 60 * 60 * 24)) : 0
     };
   }, [state.member]);
@@ -366,20 +366,20 @@ export const useMemberProfile = (memberId?: string) => {
   // Get cost trends analysis
   const getCostTrends = useCallback(() => {
     if (!state.member?.costUtilization.monthlyTrends) return null;
-    
+
     const trends = state.member.costUtilization.monthlyTrends;
     const currentMonth = trends[trends.length - 1];
     const previousMonth = trends[trends.length - 2];
-    
+
     return {
       currentMonthCosts: currentMonth?.totalCosts || 0,
       previousMonthCosts: previousMonth?.totalCosts || 0,
-      costChange: currentMonth && previousMonth ? 
+      costChange: currentMonth && previousMonth ?
         ((currentMonth.totalCosts - previousMonth.totalCosts) / previousMonth.totalCosts) * 100 : 0,
       averageMonthlyCosts: trends.reduce((sum, month) => sum + month.totalCosts, 0) / trends.length,
-      highestMonth: trends.reduce((max, month) => 
+      highestMonth: trends.reduce((max, month) =>
         month.totalCosts > max.totalCosts ? month : max, trends[0]),
-      lowestMonth: trends.reduce((min, month) => 
+      lowestMonth: trends.reduce((min, month) =>
         month.totalCosts < min.totalCosts ? month : min, trends[0])
     };
   }, [state.member?.costUtilization.monthlyTrends]);
@@ -399,12 +399,12 @@ export const useMemberProfile = (memberId?: string) => {
     isLoading: state.isLoading,
     error: state.error,
     lastUpdated: state.lastUpdated,
-    
+
     // Actions
     loadMemberProfile,
     updateMemberInfo,
     refreshMemberData,
-    
+
     // Analytics
     getMemberInsights,
     getCostTrends

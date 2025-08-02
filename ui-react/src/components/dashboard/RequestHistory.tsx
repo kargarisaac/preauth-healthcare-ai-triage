@@ -293,7 +293,7 @@ export function RequestHistory({ className = '' }: RequestHistoryProps) {
             {hasActiveFilters && ` • ${searchSummary}`}
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <Button
             variant="secondary"
@@ -308,7 +308,7 @@ export function RequestHistory({ className = '' }: RequestHistoryProps) {
               </span>
             )}
           </Button>
-          
+
           <Button
             variant="secondary"
             onClick={() => exportRequests({ format: 'csv', includeColumns: [], includeFilters: true })}
@@ -316,7 +316,7 @@ export function RequestHistory({ className = '' }: RequestHistoryProps) {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          
+
           <Button
             variant="secondary"
             onClick={() => setShowColumnSettings(!showColumnSettings)}
@@ -355,7 +355,7 @@ export function RequestHistory({ className = '' }: RequestHistoryProps) {
                 className="mr-3 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
               />
               <div className="mr-3 w-8"></div> {/* Space for expand/collapse */}
-              
+
               {visibleColumns.map(column => (
                 <div
                   key={column.key}
@@ -427,7 +427,7 @@ export function RequestHistory({ className = '' }: RequestHistoryProps) {
                 <option value={100}>100 per page</option>
               </select>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Button
                 variant="secondary"
@@ -437,11 +437,11 @@ export function RequestHistory({ className = '' }: RequestHistoryProps) {
               >
                 Previous
               </Button>
-              
+
               <span className="text-sm text-gray-700">
                 Page {filters.pagination.page} of {totalPages}
               </span>
-              
+
               <Button
                 variant="secondary"
                 size="sm"

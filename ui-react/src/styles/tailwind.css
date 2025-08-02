@@ -7,7 +7,7 @@
   html {
     font-family: 'Inter', system-ui, sans-serif;
   }
-  
+
   /* Custom CSS variables for dynamic theming */
   :root {
     --color-primary: 255 107 53;
@@ -25,7 +25,7 @@
   * {
     @apply border-gray-200;
   }
-  
+
   body {
     @apply bg-gray-50 text-gray-900;
   }
@@ -36,164 +36,164 @@
   .btn {
     @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
+
   .btn-primary {
     @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500 shadow-soft hover:shadow-medium;
   }
-  
+
   .btn-secondary {
     @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500 shadow-soft hover:shadow-medium;
   }
-  
+
   .btn-tertiary {
     @apply bg-transparent text-primary-600 hover:bg-primary-50 focus:ring-primary-500;
   }
-  
+
   .btn-danger {
     @apply bg-error-500 text-white hover:bg-error-600 focus:ring-error-500 shadow-soft hover:shadow-medium;
   }
-  
+
   .btn-sm {
     @apply px-3 py-1.5 text-sm;
   }
-  
+
   .btn-md {
     @apply px-4 py-2 text-base;
   }
-  
+
   .btn-lg {
     @apply px-6 py-3 text-lg;
   }
-  
+
   /* Card Components */
   .card {
     @apply bg-white rounded-xl shadow-soft border border-gray-200;
   }
-  
+
   .card-header {
     @apply px-6 py-4 border-b border-gray-200;
   }
-  
+
   .card-body {
     @apply px-6 py-4;
   }
-  
+
   .card-footer {
     @apply px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl;
   }
-  
+
   /* Input Components */
   .input {
     @apply block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors;
   }
-  
+
   .input-error {
     @apply border-error-300 focus:border-error-500 focus:ring-error-500;
   }
-  
+
   /* Modal Components */
   .modal-overlay {
     @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50;
   }
-  
+
   .modal-content {
     @apply bg-white rounded-xl shadow-large max-w-md w-full max-h-screen overflow-y-auto;
   }
-  
+
   .modal-content-lg {
     @apply max-w-2xl;
   }
-  
+
   .modal-content-xl {
     @apply max-w-4xl;
   }
-  
+
   /* Navigation Components */
   .nav-link {
     @apply text-gray-600 hover:text-gray-900 transition-colors duration-200;
   }
-  
+
   .nav-link-active {
     @apply text-primary-600 font-medium;
   }
-  
+
   /* Dashboard Components */
   .metric-card {
     @apply bg-white rounded-xl p-6 shadow-soft border border-gray-200 hover:shadow-medium transition-shadow;
   }
-  
+
   .metric-icon {
     @apply w-12 h-12 rounded-lg flex items-center justify-center text-2xl;
   }
-  
+
   .metric-value {
     @apply text-3xl font-bold text-gray-900;
   }
-  
+
   .metric-label {
     @apply text-sm font-medium text-gray-600;
   }
-  
+
   .metric-change {
     @apply text-sm font-medium;
   }
-  
+
   .metric-change-positive {
     @apply text-success-600;
   }
-  
+
   .metric-change-negative {
     @apply text-error-600;
   }
-  
+
   /* Status Components */
   .status-badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
-  
+
   .status-approved {
     @apply bg-success-100 text-success-800;
   }
-  
+
   .status-pending {
     @apply bg-warning-100 text-warning-800;
   }
-  
+
   .status-denied {
     @apply bg-error-100 text-error-800;
   }
-  
+
   /* File Upload Components */
   .file-upload-area {
     @apply border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors cursor-pointer;
   }
-  
+
   .file-upload-active {
     @apply border-primary-500 bg-primary-50;
   }
-  
+
   /* Loading Components */
   .spinner {
     @apply animate-spin rounded-full border-2 border-gray-200 border-t-primary-500;
   }
-  
+
   /* Toast Components */
   .toast {
     @apply fixed top-4 right-4 bg-white rounded-lg shadow-large border p-4 z-50 max-w-sm transform transition-all duration-300;
   }
-  
+
   .toast-success {
     @apply border-l-4 border-l-success-500;
   }
-  
+
   .toast-error {
     @apply border-l-4 border-l-error-500;
   }
-  
+
   .toast-warning {
     @apply border-l-4 border-l-warning-500;
   }
-  
+
   .toast-info {
     @apply border-l-4 border-l-blue-500;
   }
@@ -204,42 +204,42 @@
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in-out;
   }
-  
+
   .animate-fade-in-up {
     animation: fadeInUp 0.6s ease-out;
   }
-  
+
   .animate-slide-in {
     animation: slideIn 0.3s ease-out;
   }
-  
+
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
   }
-  
+
   .animate-bounce-soft {
     animation: bounceSoft 1s ease-in-out infinite;
   }
-  
+
   .animate-pulse-slow {
     animation: pulseSlow 3s ease-in-out infinite;
   }
-  
+
   /* Text utilities */
   .text-balance {
     text-wrap: balance;
   }
-  
+
   /* Scrollbar utilities */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   /* Focus utilities */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;

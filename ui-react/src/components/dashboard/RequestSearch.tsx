@@ -98,7 +98,7 @@ const SaveSearchModal: React.FC<SaveSearchModalProps> = ({ isOpen, onClose, onSa
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
+
         <div>
           <label htmlFor="search-description" className="block text-sm font-medium text-gray-700 mb-2">
             Description (optional)
@@ -112,7 +112,7 @@ const SaveSearchModal: React.FC<SaveSearchModalProps> = ({ isOpen, onClose, onSa
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
+
         <div className="flex justify-end space-x-3">
           <Button variant="outline" onClick={onClose}>
             Cancel
@@ -154,7 +154,7 @@ const SavedSearchDropdown: React.FC<SavedSearchDropdownProps> = ({
         Saved Searches
         <ChevronDown className="w-4 h-4 ml-2" />
       </Button>
-      
+
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
@@ -273,7 +273,7 @@ export function RequestSearch({ className = '' }: RequestSearchProps) {
                   <History className="w-4 h-4 mr-2" />
                   History
                 </Button>
-                
+
                 {showHistory && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowHistory(false)} />
@@ -305,7 +305,7 @@ export function RequestSearch({ className = '' }: RequestSearchProps) {
                 )}
               </div>
             )}
-            
+
             {hasActiveFilters && (
               <Button
                 variant="outline"
@@ -318,14 +318,14 @@ export function RequestSearch({ className = '' }: RequestSearchProps) {
               </Button>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <SavedSearchDropdown
               savedSearches={savedSearches}
               onLoad={loadSavedSearch}
               onDelete={deleteSavedSearch}
             />
-            
+
             {hasActiveFilters && (
               <Button
                 variant="outline"
@@ -352,7 +352,7 @@ export function RequestSearch({ className = '' }: RequestSearchProps) {
               </button>
             )}
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             {quickFiltersWithCounts.map((filter) => (
               <QuickFilterBadge

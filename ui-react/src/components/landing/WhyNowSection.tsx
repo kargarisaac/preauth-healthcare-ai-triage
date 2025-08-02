@@ -12,20 +12,20 @@ const WhyNowSection: React.FC = () => {
             Automation works: US payers already run 12M+ AI-approved requests yearly.
             UAE rails and PDPL enforcement make clinical intelligence possible here, now.
           </p>
-          
+
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white bg-opacity-10 rounded-2xl p-6 backdrop-blur-sm">
               <div className="text-4xl mb-4">🇺🇸</div>
               <div className="text-2xl font-bold text-white mb-2">12M+</div>
               <div className="text-primary-100 text-sm">AI-approved requests yearly in US</div>
             </div>
-            
+
             <div className="bg-white bg-opacity-10 rounded-2xl p-6 backdrop-blur-sm">
               <div className="text-4xl mb-4">🇦🇪</div>
               <div className="text-2xl font-bold text-white mb-2">UAE Rails</div>
               <div className="text-primary-100 text-sm">Digital infrastructure ready</div>
             </div>
-            
+
             <div className="bg-white bg-opacity-10 rounded-2xl p-6 backdrop-blur-sm">
               <div className="text-4xl mb-4">⚖️</div>
               <div className="text-2xl font-bold text-white mb-2">PDPL</div>

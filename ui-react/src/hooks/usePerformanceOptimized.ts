@@ -8,16 +8,16 @@ export const useOptimizedState = <T>(initialState: T | (() => T)) => {
   const setOptimizedState = useCallback((newState: T | ((prev: T) => T)) => {
     setState(prev => {
       const nextState = typeof newState === 'function' ? (newState as (prev: T) => T)(prev) : newState;
-      
+
       // Deep comparison to prevent unnecessary re-renders
       if (JSON.stringify(nextState) === JSON.stringify(prev)) {
         return prev;
       }
-      
+
       return nextState;
     });
   }, []);
-  
+
   return [state, setOptimizedState] as const;
 };
 
@@ -42,10 +42,10 @@ export const useThrottledCallback = <T extends (...args: any[]) => any>(
 ) => {
   const lastCallRef = useRef(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   return useCallback((...args: Parameters<T>) => {
     const now = Date.now();
-    
+
     if (now - lastCallRef.current >= delay) {
       lastCallRef.current = now;
       return callback(...args);
@@ -53,7 +53,7 @@ export const useThrottledCallback = <T extends (...args: any[]) => any>(
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      
+
       timeoutRef.current = setTimeout(() => {
         lastCallRef.current = Date.now();
         callback(...args);
@@ -76,16 +76,16 @@ export const useAsyncData = <T>(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const requestId = useRef(0);
-  
+
   const execute = useCallback(async () => {
     const currentRequestId = ++requestId.current;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await asyncFn();
-      
+
       // Only update if this is still the latest request
       if (currentRequestId === requestId.current) {
         setData(result);
@@ -103,13 +103,13 @@ export const useAsyncData = <T>(
       }
     }
   }, [asyncFn, ...deps]);
-  
+
   useEffect(() => {
     if (options?.immediate !== false) {
       execute();
     }
   }, [execute]);
-  
+
   return {
     data,
     loading,
@@ -127,14 +127,14 @@ export const useIntersectionObserver = (
   const [hasIntersected, setHasIntersected] = useState(false);
   const targetRef = useRef<HTMLElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  
+
   const setTarget = useCallback((element: HTMLElement | null) => {
     if (targetRef.current && observerRef.current) {
       observerRef.current.unobserve(targetRef.current);
     }
-    
+
     targetRef.current = element;
-    
+
     if (element) {
       if (!observerRef.current) {
         observerRef.current = new IntersectionObserver(
@@ -151,11 +151,11 @@ export const useIntersectionObserver = (
           }
         );
       }
-      
+
       observerRef.current.observe(element);
     }
   }, [hasIntersected, options]);
-  
+
   useEffect(() => {
     return () => {
       if (observerRef.current) {
@@ -163,7 +163,7 @@ export const useIntersectionObserver = (
       }
     };
   }, []);
-  
+
   return {
     ref: setTarget,
     isIntersecting,
@@ -179,17 +179,17 @@ export const useVirtualList = <T>(
   overscan = 5
 ) => {
   const [scrollTop, setScrollTop] = useState(0);
-  
+
   const visibleRange = useMemo(() => {
     const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
     const endIndex = Math.min(
       items.length - 1,
       Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
     );
-    
+
     return { startIndex, endIndex };
   }, [scrollTop, containerHeight, itemHeight, overscan, items.length]);
-  
+
   const visibleItems = useMemo(() => {
     return items.slice(visibleRange.startIndex, visibleRange.endIndex + 1)
       .map((item, index) => ({
@@ -197,14 +197,14 @@ export const useVirtualList = <T>(
         index: visibleRange.startIndex + index
       }));
   }, [items, visibleRange]);
-  
+
   const totalHeight = items.length * itemHeight;
   const offsetY = visibleRange.startIndex * itemHeight;
-  
+
   const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(event.currentTarget.scrollTop);
   }, []);
-  
+
   return {
     visibleItems,
     totalHeight,

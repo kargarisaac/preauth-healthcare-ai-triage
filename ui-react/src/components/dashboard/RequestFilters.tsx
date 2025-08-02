@@ -32,11 +32,11 @@ interface FilterSectionProps {
   defaultExpanded?: boolean;
 }
 
-const FilterSection: React.FC<FilterSectionProps> = ({ 
-  title, 
-  icon: Icon, 
-  children, 
-  defaultExpanded = true 
+const FilterSection: React.FC<FilterSectionProps> = ({
+  title,
+  icon: Icon,
+  children,
+  defaultExpanded = true
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -147,7 +147,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange }) =>
           />
         </div>
       </div>
-      
+
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-2">Quick Select</label>
         <div className="flex flex-wrap gap-2">
@@ -203,7 +203,7 @@ const AmountRange: React.FC<AmountRangeProps> = ({ value, onChange }) => {
           />
         </div>
       </div>
-      
+
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-2">Quick Select</label>
         <div className="space-y-1">
@@ -295,8 +295,8 @@ export function RequestFilters({ className = '' }: RequestFiltersProps) {
   }, [updateSearchCriteria]);
 
   const handleDateRangeChange = useCallback((dateRange: { from?: string; to?: string }) => {
-    const cleanDateRange = Object.keys(dateRange).length > 0 && (dateRange.from || dateRange.to) 
-      ? dateRange 
+    const cleanDateRange = Object.keys(dateRange).length > 0 && (dateRange.from || dateRange.to)
+      ? dateRange
       : undefined;
     updateSearchCriteria({ dateRange: cleanDateRange });
   }, [updateSearchCriteria]);
@@ -331,7 +331,7 @@ export function RequestFilters({ className = '' }: RequestFiltersProps) {
           <Filter className="w-5 h-5 text-gray-600" />
           <h3 className="text-lg font-medium text-gray-900">Filters</h3>
         </div>
-        
+
         {hasFilters && (
           <Button
             variant="outline"

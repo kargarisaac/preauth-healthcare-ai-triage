@@ -96,36 +96,36 @@ export function generateMockRequestHistory(count: number = 100): RequestHistoryI
       memberName,
       dateOfBirth: randomDate(new Date(1950, 0, 1), new Date(2000, 11, 31)),
       emiratesId: `784-${String(Math.floor(Math.random() * 10000000000)).padStart(10, '0')}`,
-      
+
       providerId: `PRV-${String(Math.floor(Math.random() * 1000)).padStart(4, '0')}`,
       providerName,
       providerType: randomChoice(['Hospital', 'Clinic', 'Specialist', 'Laboratory', 'Pharmacy']),
       facility: randomChoice(FACILITIES),
-      
+
       type,
       status,
       priority,
       submissionDate,
       processedDate,
       expiryDate: randomDate(new Date(submissionDate), new Date(new Date(submissionDate).getTime() + 90 * 24 * 60 * 60 * 1000)),
-      
+
       diagnosis,
       diagnosisCodes: [randomChoice(DIAGNOSIS_CODES)],
       procedure,
       procedureCodes: [randomChoice(PROCEDURE_CODES)],
       serviceDescription: `${procedure} for ${diagnosis.toLowerCase()}`,
-      
+
       requestedAmount,
       approvedAmount,
       currency: 'AED',
-      
+
       format: randomChoice(['eClaimLink', 'Shafafiya', 'CSV', 'Manual'] as const),
       processingTime: Math.random() > 0.5 ? randomAmount(5, 300) : undefined,
       assignedTo: Math.random() > 0.4 ? randomChoice(REVIEWERS) : undefined,
       reviewedBy: processedDate ? randomChoice(REVIEWERS) : undefined,
-      
+
       documents: generateMockDocuments(randomAmount(0, 5)),
-      
+
       createdAt: submissionDate,
       updatedAt: processedDate || submissionDate,
       tags: randomChoices(TAGS, randomAmount(0, 3)),
@@ -172,7 +172,7 @@ function generateMockNotes(): string {
     'Patient has history of similar procedures - approved based on previous outcomes.',
     'Coordination of care required with multiple specialists.',
   ];
-  
+
   return randomChoice(notes);
 }
 
@@ -192,7 +192,7 @@ export function generateMockStatusHistory(requestId: string): RequestStatusHisto
       reason: index === 2 ? 'Medical necessity confirmed through clinical review' : undefined,
       notes: index === 1 ? 'Additional documentation reviewed and found satisfactory' : undefined,
     });
-    
+
     currentDate = new Date(currentDate.getTime() + randomAmount(1, 3) * 24 * 60 * 60 * 1000);
   });
 
@@ -255,7 +255,7 @@ export function setupMockData() {
     requests: generateMockRequestHistory(100),
     timestamp: Date.now(),
   };
-  
+
   localStorage.setItem('nazmito_mock_requests', JSON.stringify(mockData));
   console.log('Mock request data generated and stored in localStorage');
 }

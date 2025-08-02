@@ -1,31 +1,31 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  Member, 
-  SearchCriteria, 
-  SearchResult, 
+import {
+  Member,
+  SearchCriteria,
+  SearchResult,
   SearchSuggestion,
-  OfflineSearchCache 
+  OfflineSearchCache
 } from '../../types/healthcare';
 
 // Fuzzy search utility
 const fuzzyScore = (term: string, target: string): number => {
   if (!term || !target) return 0;
-  
+
   term = term.toLowerCase();
   target = target.toLowerCase();
-  
+
   if (target.includes(term)) return 100;
-  
+
   let score = 0;
   let termIndex = 0;
-  
+
   for (let i = 0; i < target.length && termIndex < term.length; i++) {
     if (target[i] === term[termIndex]) {
       score++;
       termIndex++;
     }
   }
-  
+
   return (score / term.length) * 100;
 };
 
@@ -43,11 +43,11 @@ export const useMemberSearch = () => {
       riskLevels: []
     }
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  
+
   // Local cache for offline capability
   const [offlineCache, setOfflineCache] = useState<OfflineSearchCache>({
     members: [],
@@ -55,7 +55,7 @@ export const useMemberSearch = () => {
     searchHistory: [],
     recentMembers: []
   });
-  
+
   // Search history management
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [recentSearches, setRecentSearches] = useState<SearchCriteria[]>([]);
@@ -64,7 +64,7 @@ export const useMemberSearch = () => {
   const searchMembersAPI = async (criteria: SearchCriteria, page = 1): Promise<SearchResult> => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // Mock data - replace with actual API call
     const mockMembers: Member[] = [
       {
@@ -158,7 +158,7 @@ export const useMemberSearch = () => {
 
     // Apply fuzzy search
     let filteredMembers = mockMembers;
-    
+
     if (criteria.query) {
       filteredMembers = mockMembers.filter(member => {
         const searchTerms = [
@@ -168,26 +168,26 @@ export const useMemberSearch = () => {
           member.contact.email,
           member.insurance.policyNumber
         ];
-        
-        return searchTerms.some(term => 
+
+        return searchTerms.some(term =>
           fuzzyScore(criteria.query!, term) > 50
         );
       });
     }
-    
+
     // Apply other filters
     if (criteria.emiratesId) {
-      filteredMembers = filteredMembers.filter(m => 
+      filteredMembers = filteredMembers.filter(m =>
         m.emiratesId.includes(criteria.emiratesId!)
       );
     }
-    
+
     if (criteria.provider) {
-      filteredMembers = filteredMembers.filter(m => 
+      filteredMembers = filteredMembers.filter(m =>
         m.insurance.provider.toLowerCase().includes(criteria.provider!.toLowerCase())
       );
     }
-    
+
     if (criteria.riskLevel) {
       const riskRanges = {
         low: [0, 40],
@@ -195,7 +195,7 @@ export const useMemberSearch = () => {
         high: [71, 100]
       };
       const [min, max] = riskRanges[criteria.riskLevel];
-      filteredMembers = filteredMembers.filter(m => 
+      filteredMembers = filteredMembers.filter(m =>
         m.riskScore >= min && m.riskScore <= max
       );
     }
@@ -217,21 +217,21 @@ export const useMemberSearch = () => {
 
   // Main search function
   const searchMembers = useCallback(async (
-    criteria: SearchCriteria, 
+    criteria: SearchCriteria,
     page = 1,
     useCache = false
   ) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       let result: SearchResult;
-      
+
       if (useCache && offlineCache.members.length > 0) {
         // Use offline cache
         const filteredMembers = offlineCache.members.filter(member => {
           if (!criteria.query) return true;
-          
+
           const searchTerms = [
             member.demographics.fullName,
             member.emiratesId,
@@ -239,12 +239,12 @@ export const useMemberSearch = () => {
             member.contact.email,
             member.insurance.policyNumber
           ];
-          
-          return searchTerms.some(term => 
+
+          return searchTerms.some(term =>
             fuzzyScore(criteria.query!, term) > 50
           );
         });
-        
+
         result = {
           members: filteredMembers,
           total: filteredMembers.length,
@@ -260,7 +260,7 @@ export const useMemberSearch = () => {
         };
       } else {
         result = await searchMembersAPI(criteria, page);
-        
+
         // Update offline cache
         setOfflineCache(prev => ({
           ...prev,
@@ -268,9 +268,9 @@ export const useMemberSearch = () => {
           lastSync: new Date().toISOString()
         }));
       }
-      
+
       setSearchResults(result);
-      
+
       // Update search history
       if (criteria.query && criteria.query.trim()) {
         setSearchHistory(prev => {
@@ -278,14 +278,14 @@ export const useMemberSearch = () => {
           return newHistory.slice(0, 10); // Keep latest 10
         });
       }
-      
+
       setRecentSearches(prev => {
-        const newSearches = [criteria, ...prev.filter(s => 
+        const newSearches = [criteria, ...prev.filter(s =>
           JSON.stringify(s) !== JSON.stringify(criteria)
         )];
         return newSearches.slice(0, 5); // Keep latest 5
       });
-      
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
@@ -296,7 +296,7 @@ export const useMemberSearch = () => {
   // Generate search suggestions
   const generateSuggestions = useCallback(async (query: string): Promise<SearchSuggestion[]> => {
     if (!query || query.length < 2) return [];
-    
+
     // Mock suggestions - replace with actual API
     const mockSuggestions: SearchSuggestion[] = [
       {
@@ -321,8 +321,8 @@ export const useMemberSearch = () => {
         memberCount: 156
       }
     ];
-    
-    return mockSuggestions.filter(s => 
+
+    return mockSuggestions.filter(s =>
       s.label.toLowerCase().includes(query.toLowerCase())
     );
   }, []);
@@ -333,14 +333,14 @@ export const useMemberSearch = () => {
       setSuggestions([]);
       return;
     }
-    
+
     const newSuggestions = await generateSuggestions(query);
     setSuggestions(newSuggestions);
   }, [generateSuggestions]);
 
   // Quick search by specific field
   const quickSearch = useCallback(async (
-    field: keyof SearchCriteria, 
+    field: keyof SearchCriteria,
     value: string
   ) => {
     const criteria: SearchCriteria = { [field]: value };
@@ -374,10 +374,10 @@ export const useMemberSearch = () => {
   // Load more results (pagination)
   const loadMore = useCallback(async (criteria: SearchCriteria) => {
     if (isLoading || !searchResults.hasMore) return;
-    
+
     const nextPage = searchResults.page + 1;
     setIsLoading(true);
-    
+
     try {
       const result = await searchMembersAPI(criteria, nextPage);
       setSearchResults(prev => ({
@@ -409,7 +409,7 @@ export const useMemberSearch = () => {
     recentSearches,
     offlineCache,
     searchStats,
-    
+
     // Actions
     searchMembers,
     quickSearch,
@@ -417,7 +417,7 @@ export const useMemberSearch = () => {
     getSuggestions,
     clearSearch,
     loadMore,
-    
+
     // Utilities
     fuzzyScore
   };

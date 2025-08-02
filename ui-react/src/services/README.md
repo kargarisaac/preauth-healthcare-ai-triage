@@ -13,10 +13,10 @@ The API service layer consists of three main components:
 ## Quick Start
 
 ```typescript
-import { 
-  apiService, 
-  fileProcessingService, 
-  healthService 
+import {
+  apiService,
+  fileProcessingService,
+  healthService
 } from '../services';
 
 // Basic API request
@@ -54,8 +54,8 @@ const response = await apiService.get<HealthResponse>('/api/health', {
 });
 
 // POST request with custom timeout
-const result = await apiService.post('/api/data', { 
-  name: 'test' 
+const result = await apiService.post('/api/data', {
+  name: 'test'
 }, {
   timeout: 15000,
   retry: true,
@@ -298,7 +298,7 @@ import { useFileProcessing, useHealthCheck } from '../hooks/api';
 function MyComponent() {
   const { processFile, progress, result } = useFileProcessing();
   const { health, startMonitoring } = useHealthCheck({ autoStart: true });
-  
+
   // Component logic...
 }
 ```
@@ -318,11 +318,11 @@ function MyComponent() {
 All services are fully typed with TypeScript:
 
 ```typescript
-import type { 
-  ProcessingResponse, 
-  CSVProcessResponse, 
+import type {
+  ProcessingResponse,
+  CSVProcessResponse,
   HealthResponse,
-  FileValidation 
+  FileValidation
 } from '../types/api';
 
 // Type-safe API calls

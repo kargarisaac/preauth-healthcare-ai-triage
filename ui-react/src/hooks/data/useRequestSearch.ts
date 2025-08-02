@@ -102,7 +102,7 @@ export function useRequestSearch() {
   const updateSearchCriteria = useCallback((newCriteria: Partial<RequestSearchCriteria>) => {
     setSearchCriteria(prev => {
       const updated = { ...prev, ...newCriteria };
-      
+
       // Remove undefined values
       Object.keys(updated).forEach(key => {
         if (updated[key as keyof RequestSearchCriteria] === undefined) {
@@ -126,7 +126,7 @@ export function useRequestSearch() {
     setActiveQuickFilters([]);
     setHighlightTerm('');
     setSearchResults([]);
-    
+
     if (searchInputRef.current) {
       searchInputRef.current.value = '';
     }
@@ -145,7 +145,7 @@ export function useRequestSearch() {
 
       // Update search criteria based on active quick filters
       const newCriteria: RequestSearchCriteria = { ...searchCriteria };
-      
+
       if (isActive) {
         // Remove filter criteria
         Object.keys(filter.criteria).forEach(key => {
@@ -173,7 +173,7 @@ export function useRequestSearch() {
   // Clear all quick filters
   const clearQuickFilters = useCallback(() => {
     setActiveQuickFilters([]);
-    
+
     // Remove quick filter criteria from search
     const newCriteria = { ...searchCriteria };
     DEFAULT_QUICK_FILTERS.forEach(filter => {
@@ -181,7 +181,7 @@ export function useRequestSearch() {
         delete newCriteria[key as keyof RequestSearchCriteria];
       });
     });
-    
+
     setSearchCriteria(newCriteria);
   }, [searchCriteria]);
 
@@ -215,7 +215,7 @@ export function useRequestSearch() {
     if (search) {
       setSearchCriteria(search.criteria);
       setSearchQuery(search.criteria.query || '');
-      
+
       // Update active quick filters
       const activeFilters: string[] = [];
       DEFAULT_QUICK_FILTERS.forEach(filter => {
@@ -279,12 +279,12 @@ export function useRequestSearch() {
     }
 
     setIsSearching(true);
-    
+
     // Cancel previous search
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     abortControllerRef.current = new AbortController();
 
     try {
@@ -307,7 +307,7 @@ export function useRequestSearch() {
 
       setSearchResults(filtered);
       setHighlightTerm(searchQuery);
-      
+
       return filtered;
 
     } catch (error) {
@@ -336,11 +336,11 @@ export function useRequestSearch() {
   // Build search summary text
   const searchSummary = useMemo(() => {
     const parts: string[] = [];
-    
+
     if (searchQuery) {
       parts.push(`"${searchQuery}"`);
     }
-    
+
     if (activeQuickFilters.length > 0) {
       const filterNames = activeQuickFilters.map(id => {
         const filter = DEFAULT_QUICK_FILTERS.find(f => f.id === id);
@@ -400,7 +400,7 @@ export function useRequestSearch() {
     // Utilities
     getHighlightedText: (text: string) => {
       if (!highlightTerm) return text;
-      
+
       const regex = new RegExp(`(${highlightTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
       return text.replace(regex, '<mark>$1</mark>');
     },

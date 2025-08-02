@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  User, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  CreditCard, 
-  AlertTriangle, 
+import {
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  CreditCard,
+  AlertTriangle,
   Activity,
   Clock,
   DollarSign,
@@ -45,11 +45,11 @@ export const MemberCard: React.FC<MemberCardProps> = ({
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    
+
     return age;
   };
 
@@ -98,7 +98,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   );
 
   return (
-    <Card 
+    <Card
       className={`p-4 hover:shadow-lg transition-shadow duration-200 cursor-pointer ${className}`}
       onClick={onClick}
     >
@@ -122,7 +122,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
               </div>
             </div>
           </div>
-          
+
           {/* Risk Badge */}
           <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${riskInfo.bgColor} ${riskInfo.color}`}>
             <div className={`w-2 h-2 rounded-full ${riskInfo.dotColor}`} />
@@ -140,17 +140,17 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 {member.emiratesId}
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-2 text-sm">
               <Phone className="h-4 w-4 text-gray-400" />
               <span className="text-gray-600">{member.contact.phone}</span>
             </div>
-            
+
             <div className="flex items-center space-x-2 text-sm">
               <Mail className="h-4 w-4 text-gray-400" />
               <span className="text-gray-600 truncate">{member.contact.email}</span>
             </div>
-            
+
             <div className="flex items-center space-x-2 text-sm">
               <MapPin className="h-4 w-4 text-gray-400" />
               <span className="text-gray-600">
@@ -172,12 +172,12 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 </span>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2 text-sm">
               <CreditCard className="h-4 w-4 text-gray-400" />
               <span className="text-gray-600">{member.insurance.policyNumber}</span>
             </div>
-            
+
             {activeConditions.length > 0 && (
               <div className="flex items-center space-x-2 text-sm">
                 <Heart className="h-4 w-4 text-gray-400" />
@@ -186,7 +186,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 </span>
               </div>
             )}
-            
+
             <div className="flex items-center space-x-2 text-sm">
               <Clock className="h-4 w-4 text-gray-400" />
               <span className="text-gray-600">
@@ -267,7 +267,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 • Expires {formatDate(member.insurance.expirationDate)}
               </span>
             </div>
-            
+
             {/* Alerts */}
             {(member.riskScore >= 70 || activeConditions.some(c => c.severity === 'severe')) && (
               <AlertTriangle className="h-5 w-5 text-yellow-500" />

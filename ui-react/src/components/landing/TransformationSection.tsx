@@ -10,7 +10,7 @@ const TransformationSection: React.FC = () => {
             From Bottleneck to Intelligence Engine
           </h2>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           {/* Before Card */}
           <div className="bg-white rounded-2xl p-8 shadow-soft border border-gray-200">
@@ -20,7 +20,7 @@ const TransformationSection: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold text-gray-900">Before Nazmito</h3>
             </div>
-            
+
             <ul className="space-y-3">
               <li className="flex items-start">
                 <div className="w-2 h-2 bg-red-400 rounded-full mt-2 mr-3 flex-shrink-0"></div>
@@ -44,14 +44,14 @@ const TransformationSection: React.FC = () => {
               </li>
             </ul>
           </div>
-          
+
           {/* Arrow */}
           <div className="flex justify-center">
             <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center shadow-glow transform hover:scale-110 transition-transform">
               <ArrowRight className="w-6 h-6 text-white" />
             </div>
           </div>
-          
+
           {/* After Card */}
           <div className="bg-white rounded-2xl p-8 shadow-soft border border-primary-200">
             <div className="text-center mb-6">
@@ -60,7 +60,7 @@ const TransformationSection: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold text-gray-900">After Nazmito</h3>
             </div>
-            
+
             <ul className="space-y-3">
               <li className="flex items-start">
                 <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
