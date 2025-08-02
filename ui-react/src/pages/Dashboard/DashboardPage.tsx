@@ -9,6 +9,7 @@ import ToastContainer from '@components/ui/ToastContainer';
 import FileUploadArea from '@components/dashboard/FileUploadArea';
 import FileUploadPage from './FileUploadPage';
 import RequestHistoryDemo from './RequestHistoryDemo';
+import logoImage from '@assets/logo.png';
 
 const DashboardOverview: React.FC = () => {
   const { metrics } = useApp();
@@ -154,7 +155,7 @@ const DashboardPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <Link to="/" className="flex items-center">
-              <img src="/assets/logo.png" alt="Nazmito" className="h-8 w-8" />
+              <img src={logoImage} alt="Nazmito" className="h-8 w-8" />
               <span className="ml-2 text-xl font-bold text-gray-900">Nazmito Platform</span>
             </Link>
             <div className="flex items-center space-x-6">

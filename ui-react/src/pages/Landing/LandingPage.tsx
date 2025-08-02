@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Button from '@components/ui/Button';
+import logoImage from '@assets/logo.png';
 
 // Import all landing sections
 import HeroSection from '@components/landing/HeroSection';
@@ -24,10 +25,10 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <img src="/assets/logo.png" alt="Nazmito" className="h-8 w-8" />
+              <img src={logoImage} alt="Nazmito" className="h-8 w-8" />
               <span className="ml-2 text-xl font-bold text-gray-900">Nazmito</span>
             </div>
-            
+
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-8">
               <a href="#how" className="nav-link text-gray-600 hover:text-gray-900 transition-colors">
@@ -49,7 +50,7 @@ const LandingPage: React.FC = () => {
                 <Button variant="primary">Dashboard</Button>
               </Link>
             </div>
-            
+
             {/* Mobile Menu Button */}
             <div className="lg:hidden">
               <Link to="/dashboard">
@@ -66,7 +67,7 @@ const LandingPage: React.FC = () => {
         <ProblemSection />
         <TransformationSection />
         <HowItWorksSection />
-        
+
         {/* Enhanced Value Proposition Section */}
         <section className="py-20 bg-white" id="value">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -146,18 +147,18 @@ const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-2">
               <div className="flex items-center mb-4">
-                <img src="/assets/logo.png" alt="Nazmito" className="h-8 w-8" />
+                <img src={logoImage} alt="Nazmito" className="h-8 w-8" />
                 <span className="ml-2 text-xl font-bold text-gray-900">Nazmito</span>
               </div>
               <p className="text-gray-600 mb-6 max-w-md">
-                AI-powered clinical intelligence platform transforming pre-authorization 
+                AI-powered clinical intelligence platform transforming pre-authorization
                 from reactive gatekeeping to proactive care management.
               </p>
               <div className="text-sm text-gray-500">
                 © 2025 Nazmito. All rights reserved.
               </div>
             </div>
-            
+
             <div>
               <h4 className="font-semibold text-gray-900 mb-4">Product</h4>
               <ul className="space-y-2">
@@ -167,7 +168,7 @@ const LandingPage: React.FC = () => {
                 <li><Link to="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">Dashboard</Link></li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold text-gray-900 mb-4">Support</h4>
               <ul className="space-y-2">
