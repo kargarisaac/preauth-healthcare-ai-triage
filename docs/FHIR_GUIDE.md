@@ -416,114 +416,213 @@ ServiceRequest resources provide clinical context for each service within a Clai
 
 ## Implementation Patterns
 
-### 1. Data Transformation Pipeline
+### 1. Unified Data Transformation Strategy
 
-**eClaimLink XML → FHIR Claim:**
+Nazmito implements a unified approach to FHIR transformation that works consistently across all input formats (XML, CSV, and future data sources).
+
+#### Multi-Source FHIR Mapping
+
+**Core Transformation Principle:**
+All data sources map to the same canonical FHIR Bundle structure, ensuring consistent downstream processing regardless of input format.
+
+**Unified Bundle Structure:**
+```json
+{
+  "resourceType": "Bundle",
+  "id": "bundle-{timestamp}-{source}",
+  "type": "collection",
+  "meta": {
+    "source": "XML|CSV|PDF",
+    "processing_time": "2025-08-01T10:30:00Z",
+    "data_quality_score": 0.95
+  },
+  "entry": [
+    {"resource": {"resourceType": "Claim", ...}},
+    {"resource": {"resourceType": "Observation", ...}},
+    {"resource": {"resourceType": "MedicationStatement", ...}}
+  ],
+  "extension": [
+    {"url": "http://nazmito.com/fhir/extensions/data-source", "valueString": "eClaimLink|Shafafiya|Claims-CSV"},
+    {"url": "http://nazmito.com/fhir/extensions/quality-score", "valueDecimal": 0.95}
+  ]
+}
+```
+
+#### Data Source Examples
+
+**XML Sources → FHIR Resources:**
+- **eClaimLink XML** → Claim + ServiceRequest resources
+- **Shafafiya XML** → Claim + Observation resources
+- **Clinical XML** → Multiple observation and condition resources
+
+**CSV Sources → FHIR Resources:**
+- **Claims CSV** → Claim + associated clinical resources
+- **Lab Results CSV** → Observation resources with clinical context
+- **Medication CSV** → MedicationStatement + interaction analysis
+
+**Resource Mapping Logic:**
 ```python
-def transform_eclaim_to_fhir(eclaim_xml):
-    claim = {
-        "resourceType": "Claim",
-        "id": extract_claim_id(eclaim_xml),
-        "status": map_status(eclaim_xml.status),
-        "use": "preauthorization",
-        "patient": transform_patient_reference(eclaim_xml.patient),
-        "item": [
-            transform_service_item(item)
-            for item in eclaim_xml.activities
-        ],
+def create_unified_bundle(data_source, processed_data):
+    """Create FHIR Bundle with consistent structure across all data sources."""
+    bundle = {
+        "resourceType": "Bundle",
+        "type": "collection",
+        "entry": [],
         "extension": [
-            create_disposition_extension(eclaim_xml.disposition),
-            create_authority_extension("DHA"),
-            create_quality_score_extension(calculate_quality(eclaim_xml))
+            create_data_source_extension(data_source),
+            create_quality_score_extension(processed_data.quality_score),
+            create_processing_metadata_extension(processed_data.metadata)
         ]
     }
-    return claim
+
+    # Add resources based on data content, not data source format
+    if processed_data.has_claims():
+        bundle["entry"].extend(create_claim_resources(processed_data.claims))
+    if processed_data.has_observations():
+        bundle["entry"].extend(create_observation_resources(processed_data.observations))
+    if processed_data.has_medications():
+        bundle["entry"].extend(create_medication_resources(processed_data.medications))
+
+    return bundle
 ```
+
+**Detailed Mapping Examples:** See format-specific implementation guides:
+- `/docs/xml_processing.md` - XML to FHIR transformation details
+- `/docs/csv_processing.md` - CSV to FHIR transformation details
+- `/docs/format_comparison.md` - Format comparison and FHIR mapping
+- `/docs/field_mappings.md` - Complete FHIR field mapping reference
 
 ### 2. Clinical Context Enrichment
 
-**Historical Data Integration:**
+**Multi-Source Clinical Intelligence:**
+Clinical context enrichment works consistently across all data sources, combining historical data from XML, CSV, and other sources to provide comprehensive clinical intelligence.
+
+**Unified Enrichment Strategy:**
 ```python
-def enrich_with_clinical_context(claim_fhir, patient_id):
-    # Fetch historical observations
-    observations = fetch_patient_observations(patient_id, lookback_months=12)
+def enrich_with_clinical_context(bundle, patient_id):
+    """Enrich FHIR Bundle with clinical intelligence from all available sources."""
 
-    # Fetch current medications
-    medications = fetch_patient_medications(patient_id, active_only=True)
+    # Aggregate clinical data from multiple sources
+    clinical_context = {
+        "observations": fetch_patient_observations(patient_id, all_sources=True),
+        "medications": fetch_patient_medications(patient_id, all_sources=True),
+        "conditions": fetch_patient_conditions(patient_id, all_sources=True),
+        "procedures": fetch_patient_procedures(patient_id, all_sources=True)
+    }
 
-    # Add clinical reasoning extension
+    # Add clinical reasoning extension to bundle
     clinical_ext = create_clinical_reasoning_extension(
-        observations=observations,
-        medications=medications,
-        current_services=claim_fhir["item"]
+        clinical_context=clinical_context,
+        current_request=extract_current_services(bundle)
     )
 
-    claim_fhir["extension"].append(clinical_ext)
-    return claim_fhir
+    bundle["extension"].append(clinical_ext)
+    return bundle
 ```
 
-### 3. Validation & Compliance
+**Clinical Intelligence Sources:**
+- **XML Historical Data**: Previous authorization requests and responses
+- **CSV Clinical Data**: Lab results, medication histories, administrative records
+- **Cross-Source Correlation**: Patient timelines combining data from multiple formats
 
-**FHIR Validation with UAE Extensions:**
+### 3. Unified Validation & Compliance
+
+**Cross-Format FHIR Validation:**
+Validation ensures FHIR compliance and UAE healthcare standards regardless of the original data source format.
+
+**Comprehensive Validation Framework:**
 ```python
-def validate_uae_fhir(resource):
-    # Standard FHIR validation
-    fhir_errors = validate_fhir_r4(resource)
+def validate_uae_fhir_bundle(bundle):
+    """Validate FHIR Bundle with UAE extensions across all data sources."""
+    validation_results = {
+        "fhir_compliance": [],
+        "uae_extensions": [],
+        "clinical_codes": [],
+        "data_quality": []
+    }
 
-    # UAE-specific validation
-    uae_errors = []
+    # Standard FHIR R4 validation
+    validation_results["fhir_compliance"] = validate_fhir_r4(bundle)
 
-    # Check required UAE extensions
-    if not has_extension(resource, "disposition-flag"):
-        uae_errors.append("Missing disposition flag")
+    # UAE-specific extension validation
+    required_extensions = ["data-source", "quality-score", "emirate-authority"]
+    for ext in required_extensions:
+        if not has_bundle_extension(bundle, ext):
+            validation_results["uae_extensions"].append(f"Missing required extension: {ext}")
 
-    # Validate ICD-10-AM codes
-    for item in resource.get("item", []):
-        code = item.get("productOrService", {}).get("coding", [{}])[0].get("code")
-        if not validate_icd10_am(code):
-            uae_errors.append(f"Invalid ICD-10-AM code: {code}")
+    # Clinical code validation (applies to all sources)
+    for entry in bundle.get("entry", []):
+        resource = entry.get("resource", {})
+        validation_results["clinical_codes"].extend(
+            validate_clinical_codes(resource, uae_standards=True)
+        )
 
-    return fhir_errors + uae_errors
+    # Data quality validation
+    quality_score = get_bundle_quality_score(bundle)
+    if quality_score < 0.7:
+        validation_results["data_quality"].append(
+            f"Low data quality score: {quality_score:.3f} (minimum: 0.7)"
+        )
+
+    return validation_results
 ```
+
+**Multi-Source Code Validation:**
+- **XML Sources**: Validate against eClaimLink/Shafafiya schemas + UAE codes
+- **CSV Sources**: Validate against healthcare field mappings + UAE codes
+- **Unified Standards**: ICD-10-AM, CPT codes, UAE-specific extensions
 
 ## Migration & Integration Strategy
 
-### Phase 1: Hybrid Implementation (Current)
-- FHIR canonical schema with UAE extensions
-- Bidirectional transformation from legacy formats
-- Maintain compatibility with existing systems
+### Phase 1: Multi-Format FHIR Foundation (Current)
+- Unified FHIR canonical schema supporting XML, CSV, and future formats
+- Consistent Bundle structure across all data sources
+- UAE extensions applied uniformly regardless of input format
+- Complete data preservation with format-agnostic processing
 
-### Phase 2: Native FHIR Adoption (6-12 months)
-- Payer API integration using FHIR endpoints
+### Phase 2: Enhanced Clinical Intelligence (3-6 months)
+- Cross-format clinical context enrichment
+- Historical data aggregation from multiple sources
+- Advanced quality scoring across all data types
+- Unified clinical decision support
+
+### Phase 3: Native FHIR Ecosystem (6-12 months)
+- Direct FHIR API integration with UAE payers
 - Real-time FHIR message exchange
-- Standardized FHIR profiles for UAE healthcare
+- Standardized UAE FHIR profiles
+- Multi-format data synchronization
 
-### Phase 3: Full FHIR Ecosystem (12-24 months)
+### Phase 4: Regional FHIR Hub (12-24 months)
 - EMR integration via FHIR APIs
 - Provider portal FHIR compliance
-- Regional FHIR registry for code sets
+- UAE healthcare FHIR registry
+- Cross-emirate data standardization
 
 ## Benefits Realized
 
-### 1. Interoperability
-- **Multi-System Integration**: Single canonical format supports all UAE payers
-- **International Compatibility**: Can integrate with global FHIR systems
-- **Future-Proofing**: Easy adaptation as UAE adopts FHIR standards
+### 1. Multi-Format Interoperability
+- **Unified Data Model**: Single FHIR canonical format supports XML, CSV, and future data sources
+- **Cross-System Integration**: Seamless integration across UAE payers regardless of their data format
+- **International Standards**: FHIR compliance enables global healthcare system integration
+- **Format Independence**: Clinical intelligence works consistently across all data sources
 
-### 2. Clinical Intelligence
-- **Rich Clinical Context**: FHIR's clinical resources enable sophisticated reasoning
-- **Historical Analysis**: Observation and MedicationStatement resources provide trends
-- **Guideline Integration**: Structured clinical data enables evidence-based decisions
+### 2. Enhanced Clinical Intelligence
+- **Cross-Format Clinical Context**: Aggregate clinical insights from XML, CSV, and other sources
+- **Comprehensive Patient Views**: Historical analysis combining data from multiple formats
+- **Unified Decision Support**: Clinical reasoning that leverages all available data sources
+- **Quality-Aware Processing**: Data quality scoring ensures reliable clinical intelligence
 
-### 3. Regulatory Compliance
-- **Audit Trails**: FHIR's provenance model supports compliance requirements
-- **Data Quality**: Structured validation ensures high-quality clinical data
-- **Privacy Controls**: FHIR security model aligns with PDPL requirements
+### 3. Regulatory & Compliance Excellence
+- **UAE Healthcare Standards**: Consistent compliance across eClaimLink, Shafafiya, and CSV data
+- **Comprehensive Audit Trails**: Full data lineage tracking regardless of input format
+- **PDPL Compliance**: Privacy controls applied uniformly across all data sources
+- **Quality Assurance**: Multi-dimensional quality scoring ensures regulatory standards
 
-### 4. Cost Optimization
-- **Comprehensive Analysis**: Clinical context enables better cost-benefit calculations
-- **Preventive Care**: Historical data identifies prevention opportunities
-- **Alternative Recommendations**: Clinical intelligence suggests cost-effective alternatives
+### 4. Operational Efficiency
+- **Streamlined Processing**: Single processing pipeline handles multiple data formats
+- **Cost-Effective Architecture**: Unified FHIR approach reduces system complexity
+- **Scalable Integration**: Easy addition of new data sources without architectural changes
+- **Performance Optimization**: Format-specific optimizations within unified framework
 
 ## Future Enhancements
 
@@ -539,4 +638,4 @@ def validate_uae_fhir(resource):
 3. **FHIR Questionnaire**: Structured clinical data collection
 4. **FHIR Measure**: Quality metrics and performance indicators
 
-This FHIR implementation strategy positions Nazmito as a bridge between UAE healthcare's current state and its FHIR-enabled future, while delivering immediate clinical intelligence value through enhanced decision support.
+This multi-format FHIR implementation strategy positions Nazmito as a comprehensive healthcare data platform that unifies diverse UAE healthcare data sources under a single, standards-compliant architecture while delivering immediate clinical intelligence value through enhanced decision support across all data formats.

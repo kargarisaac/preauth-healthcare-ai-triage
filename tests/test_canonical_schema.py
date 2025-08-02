@@ -1,644 +1,425 @@
-import json
-import sys
-from pathlib import Path
+"""
+Tests for canonical schema and XMLProcessor output structure.
 
-import jsonschema
+This module tests the canonical JSON structure produced by XMLProcessor
+for both eClaimLink and Shafafiya formats.
+"""
+
 import pytest
-from jsonschema import validate
-
-# Add the project root to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from pipelines.factory import XMLIngestorFactory  # noqa: E402
+from pathlib import Path
+from pipelines.xml_processor import XMLProcessor
 
 
 class TestCanonicalSchema:
-    """Test suite for the canonical schema and data transformations."""
+    """Test suite for canonical schema and data transformations."""
 
-    @classmethod
-    def setup_class(cls):
-        """Load schema and example files once for all tests."""
+    @pytest.fixture
+    def processor(self):
+        """XMLProcessor instance for testing."""
+        return XMLProcessor()
+
+    @pytest.fixture
+    def sample_xml_paths(self):
+        """Paths to sample XML files."""
         project_root = Path(__file__).parent.parent
-
-        # Load canonical schema
-        schema_path = project_root / "schemas" / "canonical_schema.json"
-        with open(schema_path, "r") as f:
-            cls.schema = json.load(f)
-
-        # Load example JSON
-        example_path = project_root / "canonical" / "examples" / "claim_example.json"
-        with open(example_path, "r") as f:
-            cls.example_claim = json.load(f)
-
-        # Paths to sample XML files
-        cls.sample_xml_paths = {
+        return {
             'eclaim_link': project_root / "samples" / "eclaim_link_request.xml",
-            'shafafiya': project_root / "samples" / "shafafiya_authorization.xml",
+            'shafafiya': project_root / "samples" / "shafafiya_prior_auth_request.xml",
         }
 
-    def test_schema_is_valid_json_schema(self):
-        """Test that the canonical schema itself is a valid JSON Schema."""
-        # This will raise an exception if the schema is invalid
-        jsonschema.Draft202012Validator.check_schema(self.schema)
+    def test_bundle_structure_validation(self, processor, temp_xml_file):
+        """Test that output has valid Bundle structure."""
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-    def test_example_validates_against_schema(self):
-        """Test that the example JSON validates against the canonical schema."""
-        # This will raise ValidationError if validation fails
-        validate(instance=self.example_claim, schema=self.schema)
+        xml_file = temp_xml_file(eclaim_xml, "test_bundle.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-    def test_required_fields_present(self):
-        """Test that all required fields are present in the example."""
-        required_fields = self.schema.get("required", [])
-        for field in required_fields:
-            assert field in self.example_claim, f"Required field '{field}' missing"
+        # Test Bundle structure
+        assert result['resourceType'] == 'Bundle'
+        assert result['type'] == 'collection'
+        assert 'id' in result
+        assert 'meta' in result
+        assert 'timestamp' in result
 
-    def test_resource_type_is_bundle(self):
-        """Test that the canonical schema supports FHIR Bundle resourceType."""
-        # The canonical schema should now support Bundle as the primary resourceType
-        # since we've moved to FHIR Bundle format for enhanced clinical extraction
-        schema_properties = self.schema.get("properties", {})
-        resource_type_prop = schema_properties.get("resourceType", {})
+        # Test meta structure
+        meta = result['meta']
+        assert 'source' in meta
+        assert 'lastUpdated' in meta
+        assert 'versionId' in meta
+        assert 'profile' in meta
+        assert isinstance(meta['profile'], list)
 
-        if "enum" in resource_type_prop:
-            valid_types = resource_type_prop["enum"]
-            assert "Bundle" in valid_types, "Schema should support Bundle resourceType"
-        elif "const" in resource_type_prop:
-            assert resource_type_prop["const"] in [
-                "Claim",
-                "Bundle",
-            ], "Schema should support Bundle or Claim"
+    def test_required_fields_present(self, processor, temp_xml_file):
+        """Test that all required fields are present in the output."""
+        # Test eClaimLink required fields
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <JustificationText>Patient justification</JustificationText>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-    def test_identifiers_structure(self):
-        """Test that identifiers have the correct structure."""
-        identifiers = self.example_claim.get("identifier", [])
-        assert len(identifiers) >= 1, "At least one identifier required"
+        xml_file = temp_xml_file(eclaim_xml, "test_required.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-        # Check for required identifier types
-        id_types = [id["type"]["coding"][0]["code"] for id in identifiers]
-        assert "transaction" in id_types, "Transaction identifier required"
+        # Required Bundle fields
+        required_bundle_fields = ['resourceType', 'id', 'meta', 'type', 'timestamp']
+        for field in required_bundle_fields:
+            assert field in result, f"Required Bundle field '{field}' missing"
 
-    def test_patient_reference_format(self):
-        """Test that patient reference follows the correct format."""
-        patient_ref = self.example_claim["patient"]["reference"]
-        assert patient_ref.startswith(
-            "Patient/"
-        ), "Patient reference must start with 'Patient/'"
+        # Required eClaimLink fields
+        required_eclaim_fields = [
+            'authorization_id',
+            'sender',
+            'receiver',
+            'services',
+            'raw_data',
+        ]
+        for field in required_eclaim_fields:
+            assert field in result, f"Required eClaimLink field '{field}' missing"
 
-    def test_service_items_structure(self):
-        """Test that service items have the correct structure."""
-        items = self.example_claim.get("item", [])
-        assert len(items) > 0, "At least one service item required"
-
-        for item in items:
-            # Check required fields
-            assert "sequence" in item, "Item sequence required"
-            assert "productOrService" in item, "Product or service code required"
-            assert "servicedDate" in item, "Service date required"
-            assert "quantity" in item, "Quantity required"
-            assert "unitPrice" in item, "Unit price required"
-
-            # Check coding structure
-            coding = item["productOrService"]["coding"][0]
-            assert "system" in coding, "Coding system required"
-            assert "code" in coding, "Service code required"
-
-    def test_billable_period_dates(self):
-        """Test that billable period has valid start and end dates."""
-        period = self.example_claim["billablePeriod"]
-        assert "start" in period, "Start date required"
-        assert "end" in period, "End date required"
-
-        # Verify end date is not before start date
-        from datetime import datetime
-
-        start = datetime.fromisoformat(period["start"].replace("Z", "+00:00"))
-        end = datetime.fromisoformat(period["end"].replace("Z", "+00:00"))
-        assert end >= start, "End date must be after or equal to start date"
-
-    def test_extensions_structure(self):
-        """Test that Nazmito extensions follow the correct structure."""
-        extensions = self.example_claim.get("extension", [])
-
-        # Check that schema version extension exists
-        schema_version_ext = next(
-            (
-                ext
-                for ext in extensions
-                if ext["url"]
-                == "https://nazmito.ae/fhir/StructureDefinition/schema-version"
-            ),
-            None,
-        )
-        assert schema_version_ext is not None, "Schema version extension required"
-        assert "valueString" in schema_version_ext, "Schema version value required"
-
-    def test_xml_to_canonical_transformation(self):
-        """Test transformation from XML to canonical FHIR Bundle format."""
-        factory = XMLIngestorFactory(schema_base_path='schemas/')
-
-        # Test both formats
-        for format_name, xml_path in self.sample_xml_paths.items():
+    def test_xml_to_canonical_transformation(self, processor, sample_xml_paths):
+        """Test transformation from XML to canonical Bundle format."""
+        for format_name, xml_path in sample_xml_paths.items():
             if not xml_path.exists():
                 pytest.skip(f"Sample XML file not found: {xml_path}")
 
-            # Transform to FHIR Bundle format
-            ingestor = factory.create_ingestor_for_file(
-                str(xml_path), enable_validation=False
-            )
+            if format_name == 'eclaim_link':
+                result = processor.process_eclaim_link(str(xml_path))
 
-            # Test legacy transformation (backward compatibility)
-            legacy_result = ingestor.process(str(xml_path))
-            assert isinstance(legacy_result, dict)
-            assert 'format_name' in legacy_result
-            assert 'services' in legacy_result
+                # Validate eClaimLink transformation
+                assert result['resourceType'] == 'Bundle'
+                assert result['meta']['source'] == 'eClaimLink'
+                assert 'services' in result
+                assert 'justification_text' in result
 
-            # Test FHIR Bundle transformation (new enhanced format)
-            fhir_ingestor = factory.create_ingestor(
-                format_name.replace('_', '').title(),  # 'eclaim_link' -> 'EclaimLink'
-                enable_validation=False,
-                output_format='fhir_bundle',
-            )
+            elif format_name == 'shafafiya':
+                result = processor.process_shafafiya(str(xml_path))
 
-            try:
-                bundle_result = fhir_ingestor.process(str(xml_path))
+                # Validate Shafafiya transformation
+                assert result['resourceType'] == 'Bundle'
+                assert result['meta']['source'] == 'Shafafiya'
+                assert 'activities' in result
+                assert 'authorization_result' in result
 
-                # Validate FHIR Bundle structure
-                assert bundle_result['resourceType'] == 'Bundle'
-                assert 'entry' in bundle_result
-                assert 'total' in bundle_result
-                assert len(bundle_result['entry']) == bundle_result['total']
+            # Common validations
+            assert isinstance(result, dict)
+            assert 'raw_data' in result
+            assert 'processing_timestamp' in result
+            assert 'source_file' in result
 
-                # Validate that Bundle contains resources
-                assert (
-                    bundle_result['total'] >= 1
-                ), "Bundle should contain at least one resource"
+    def test_data_preservation(self, processor, temp_xml_file):
+        """Test that all original data is preserved in raw_data."""
+        complex_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV_Complex@123</SenderID>
+        <ReceiverID>PAYER-999#Test</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-COMPLEX-DATA</TransactionID>
+        <AdditionalField>Custom Value</AdditionalField>
+    </Header>
+    <JustificationText>Complex justification with &lt;special&gt; characters</JustificationText>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
+            <CustomServiceField>Custom Service Data</CustomServiceField>
+            <RequestedAmount currency="AED">1234.56</RequestedAmount>
+        </ServiceRequest>
+    </ServiceRequests>
+    <CustomRootField>Custom Root Data</CustomRootField>
+</PriorAuthorizationRequest>'''
 
-                # Check that primary Claim resource exists
-                resource_types = [
-                    entry['resource']['resourceType']
-                    for entry in bundle_result['entry']
-                ]
-                assert (
-                    'Claim' in resource_types
-                ), "Bundle should contain a Claim resource"
+        xml_file = temp_xml_file(complex_xml, "test_preservation.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-            except Exception as e:
-                pytest.skip(
-                    f"FHIR Bundle validation skipped for {format_name}: {str(e)}"
-                )
+        # Verify raw data preservation
+        assert 'raw_data' in result
+        raw_request = result['raw_data']['PriorAuthorizationRequest']
 
-    def test_currency_codes(self):
-        """Test that all currency codes are valid 3-letter codes."""
-        items = self.example_claim.get("item", [])
-        for item in items:
-            if "unitPrice" in item:
-                currency = item["unitPrice"].get("currency", "")
-                assert len(currency) == 3, f"Currency must be 3 letters: {currency}"
-                assert currency.isupper(), f"Currency must be uppercase: {currency}"
+        # Check that custom fields are preserved
+        assert raw_request['Header']['AdditionalField'] == 'Custom Value'
+        assert raw_request['CustomRootField'] == 'Custom Root Data'
+        assert (
+            raw_request['ServiceRequests']['ServiceRequest']['CustomServiceField']
+            == 'Custom Service Data'
+        )
 
-    def test_diagnosis_codes_format(self):
-        """Test that diagnosis codes follow ICD-10 format."""
-        diagnoses = self.example_claim.get("diagnosis", [])
-        for diag in diagnoses:
-            coding = diag["diagnosisCodeableConcept"]["coding"][0]
-            code = coding.get("code", "")
+    def test_services_structure(self, processor, temp_xml_file):
+        """Test that services have the correct structure."""
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
+            <ct:ActivityDateTime>28/07/2025 09:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Service instructions</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">120.50</RequestedAmount>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-            # Basic ICD-10 format validation
-            assert len(code) >= 3, f"ICD-10 code too short: {code}"
-            assert code[0].isalpha(), f"ICD-10 must start with letter: {code}"
-            assert code[
-                1:3
-            ].isdigit(), f"ICD-10 must have digits at positions 2-3: {code}"
+        xml_file = temp_xml_file(eclaim_xml, "test_services.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-    def _create_canonical_from_normalized(self, normalized):
-        """Helper to create a canonical claim from normalized data."""
-        # This is a simplified transformation for testing
-        return {
-            "resourceType": "Claim",
-            "id": normalized.get("authorization_id", "test-001"),
-            "meta": {
-                "profile": [
-                    "https://nazmito.ae/fhir/StructureDefinition/PriorAuthorization"
-                ],
-                "source": "XML",
-                "lastUpdated": "2025-07-30T14:30:00Z",
-            },
-            "identifier": [
-                {
-                    "type": {"coding": [{"code": "transaction"}]},
-                    "value": normalized.get("authorization_id", "test-001"),
-                },
-                {
-                    "type": {"coding": [{"code": "sender"}]},
-                    "value": normalized.get("sender", "UNKNOWN"),
-                },
-                {
-                    "type": {"coding": [{"code": "receiver"}]},
-                    "value": normalized.get("receiver", "UNKNOWN"),
-                },
-            ],
-            "status": "active",
-            "type": {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/claim-type",
-                        "code": "professional",
-                    }
-                ]
-            },
-            "use": "preauthorization",
-            "patient": {"reference": "Patient/patient-001"},
-            "created": normalized.get("transaction_date", "2025-07-30T00:00:00Z"),
-            "provider": {
-                "reference": f"Organization/{normalized.get('sender', 'UNKNOWN')}"
-            },
-            "billablePeriod": {
-                "start": normalized.get("start", "2025-07-30T00:00:00Z"),
-                "end": normalized.get("end", "2025-07-30T23:59:59Z"),
-            },
-            "item": [
-                {
-                    "sequence": int(service.get("id", idx)),
-                    "productOrService": {
-                        "coding": [
-                            {
-                                "system": "http://www.ama-assn.org/go/cpt",
-                                "code": service.get(
-                                    "code", service.get("activity_code", "99999")
-                                ),
-                            }
-                        ]
-                    },
-                    "servicedDate": "2025-07-30",
-                    "quantity": {"value": float(service.get("quantity", 1))},
-                    "unitPrice": {
-                        "value": float(
-                            service.get("net", service.get("requested_amount_value", 0))
-                        ),
-                        "currency": "AED",
-                    },
-                }
-                for idx, service in enumerate(normalized.get("services", []), 1)
-            ],
-        }
+        services = result.get("services", [])
+        assert len(services) > 0, "At least one service required"
 
+        for service in services:
+            # Check required service fields
+            assert "sequence" in service, "Service sequence required"
+            assert "activity_code" in service, "Activity code required"
+            assert isinstance(service["sequence"], int), "Sequence must be integer"
 
-class TestFHIRBundleSchema:
-    """Test suite for FHIR Bundle schema validation and clinical resource extraction."""
+            # Check optional but expected fields
+            if "requested_amount_value" in service:
+                assert service["requested_amount_value"] is not None
+            if "requested_amount_currency" in service:
+                assert isinstance(service["requested_amount_currency"], str)
 
-    @classmethod
-    def setup_class(cls):
-        """Setup for FHIR Bundle testing."""
-        project_root = Path(__file__).parent.parent
+    def test_activities_structure_shafafiya(self, processor, temp_xml_file):
+        """Test that Shafafiya activities have correct structure."""
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-2025-000123</ID>
+        <Activity>
+            <ID>1</ID>
+            <Type>3</Type>
+            <Code>83036</Code>
+            <Description>Blood test</Description>
+            <Quantity>1</Quantity>
+            <UnitCost>120.00</UnitCost>
+            <Amount>120.00</Amount>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-        # Load canonical schema
-        schema_path = project_root / "schemas" / "canonical_schema.json"
-        with open(schema_path, "r") as f:
-            cls.schema = json.load(f)
+        xml_file = temp_xml_file(shafafiya_xml, "test_activities.xml")
+        result = processor.process_shafafiya(xml_file)
 
-        cls.factory = XMLIngestorFactory(schema_base_path='schemas/')
+        activities = result.get("activities", [])
+        assert len(activities) > 0, "At least one activity required"
 
-        # Sample file paths
-        cls.sample_files = {
-            'eclaim_link': project_root / "samples" / "eclaim_link_request.xml",
-            'shafafiya': project_root / "samples" / "shafafiya_authorization.xml",
-        }
+        for activity in activities:
+            # Check required activity fields
+            assert "id" in activity, "Activity ID required"
+            assert "code" in activity, "Activity code required"
 
-    def test_fhir_bundle_structure_validation(self):
-        """Test that generated FHIR Bundles have valid structure."""
-        for format_name, xml_path in self.sample_files.items():
-            if not xml_path.exists():
-                continue
+            # Check that raw activity data is preserved
+            assert (
+                "raw_activity_data" in activity
+            ), "Raw activity data must be preserved"
 
-            # Get appropriate format name for factory
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
+    def test_metadata_consistency(self, processor, temp_xml_file):
+        """Test that metadata is consistently generated."""
+        xml_content = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>META_TEST</SenderID>
+        <ReceiverID>PAYER999</ReceiverID>
+        <TransactionDateTime>01/01/2025 12:00</TransactionDateTime>
+        <TransactionID>META-001</TransactionID>
+    </Header>
+</PriorAuthorizationRequest>'''
 
-            bundle = ingestor.process(str(xml_path))
+        xml_file = temp_xml_file(xml_content, "test_metadata.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-            # Validate basic Bundle structure
-            assert bundle['resourceType'] == 'Bundle'
-            assert 'id' in bundle
-            assert 'meta' in bundle
-            assert 'type' in bundle
-            assert bundle['type'] == 'collection'
-            assert 'entry' in bundle
-            assert 'total' in bundle
-            assert isinstance(bundle['entry'], list)
-            assert bundle['total'] == len(bundle['entry'])
+        # Test timestamp generation
+        assert 'timestamp' in result
+        assert 'processing_timestamp' in result
 
-    def test_fhir_resource_extraction_completeness(self):
-        """Test that all expected FHIR resource types are extracted."""
-        expected_resources = [
-            'Claim',
-            'Condition',
-            'Observation',
-            'MedicationStatement',
-            'Procedure',
+        # Test Bundle ID generation
+        assert result['id'].startswith('eClaimLink-')
+
+        # Test meta structure
+        meta = result['meta']
+        assert meta['source'] == 'eClaimLink'
+        assert 'lastUpdated' in meta
+        assert meta['versionId'] == '1'
+        assert meta['profile'] == [
+            'https://nazmito.com/fhir/StructureDefinition/healthcare-bundle'
         ]
 
-        for format_name, xml_path in self.sample_files.items():
-            if not xml_path.exists():
-                continue
+    def test_format_specific_fields(self, processor, temp_xml_file):
+        """Test that format-specific fields are correctly mapped."""
+        # Test eClaimLink specific field mapping
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-FORMAT-TEST</TransactionID>
+    </Header>
+    <JustificationText>eClaimLink specific justification</JustificationText>
+</PriorAuthorizationRequest>'''
 
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
+        eclaim_file = temp_xml_file(eclaim_xml, "test_eclaim_fields.xml")
+        eclaim_result = processor.process_eclaim_link(eclaim_file)
 
-            bundle = ingestor.process(str(xml_path))
-            resource_types = [
-                entry['resource']['resourceType'] for entry in bundle['entry']
-            ]
+        # eClaimLink should have these specific fields
+        assert 'justification_text' in eclaim_result
+        assert 'services' in eclaim_result
+        assert (
+            eclaim_result['justification_text'] == 'eClaimLink specific justification'
+        )
 
-            # Should always have a Claim resource
-            assert (
-                'Claim' in resource_types
-            ), f"{format_name} should generate Claim resource"
+        # Test Shafafiya specific field mapping
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-FORMAT-TEST</ID>
+        <Comments>Shafafiya specific comments</Comments>
+        <Start>01/08/2025 00:00</Start>
+        <End>31/08/2025 23:59</End>
+    </Authorization>
+</Prior.Authorization>'''
 
-            # Count unique resource types
-            unique_types = set(resource_types)
-            assert (
-                len(unique_types) >= 1
-            ), f"{format_name} should generate multiple resource types"
+        shafafiya_file = temp_xml_file(shafafiya_xml, "test_shafafiya_fields.xml")
+        shafafiya_result = processor.process_shafafiya(shafafiya_file)
 
-    def test_clinical_intelligence_extensions(self):
-        """Test that clinical intelligence extensions are properly structured."""
-        for format_name, xml_path in self.sample_files.items():
-            if not xml_path.exists():
-                continue
+        # Shafafiya should have these specific fields
+        assert 'authorization_result' in shafafiya_result
+        assert 'authorization_start' in shafafiya_result
+        assert 'authorization_end' in shafafiya_result
+        assert 'comments' in shafafiya_result
+        assert 'activities' in shafafiya_result
+        assert shafafiya_result['authorization_result'] == 'Yes'
+        assert shafafiya_result['comments'] == 'Shafafiya specific comments'
 
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
+    def test_edge_cases_handling(self, processor, temp_xml_file):
+        """Test handling of edge cases and minimal data."""
+        # Test minimal eClaimLink XML
+        minimal_eclaim = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>MIN</SenderID>
+        <ReceiverID>PAYER</ReceiverID>
+        <TransactionDateTime>01/01/2025</TransactionDateTime>
+        <TransactionID>MIN-001</TransactionID>
+    </Header>
+</PriorAuthorizationRequest>'''
 
-            bundle = ingestor.process(str(xml_path))
+        minimal_file = temp_xml_file(minimal_eclaim, "test_minimal.xml")
+        result = processor.process_eclaim_link(minimal_file)
 
-            # Check for bundle-level extensions
-            if 'extension' in bundle:
-                extensions = bundle['extension']
-                assert isinstance(extensions, list)
+        # Should still produce valid Bundle structure
+        assert result['resourceType'] == 'Bundle'
+        assert result['authorization_id'] == 'MIN-001'
+        assert result['sender'] == 'MIN'
+        assert 'services' in result  # Should be empty list
+        assert isinstance(result['services'], list)
 
-                # Look for clinical intelligence extensions
-                nazmito_extensions = [
-                    ext
-                    for ext in extensions
-                    if 'nazmito.com/fhir' in ext.get('url', '')
-                ]
 
-                # Should have some clinical intelligence metadata
-                assert (
-                    len(nazmito_extensions) >= 0
-                ), "Should have clinical intelligence extensions"
+class TestOutputFormatConsistency:
+    """Test consistency of output format across different scenarios."""
 
-                # Validate extension structure
-                for ext in nazmito_extensions:
-                    assert 'url' in ext
-                    assert ext['url'].startswith(
-                        'https://nazmito.com/fhir/StructureDefinition/'
-                    )
+    @pytest.fixture
+    def processor(self):
+        return XMLProcessor()
 
-                    # Check for appropriate value types
-                    value_keys = [k for k in ext.keys() if k.startswith('value')]
-                    assert len(value_keys) >= 1, "Extension should have a value"
+    def test_consistent_bundle_structure(self, processor, temp_xml_file):
+        """Test that Bundle structure is consistent across formats."""
+        formats_and_xmls = {
+            'eClaimLink': '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>CONSISTENCY_TEST</SenderID>
+        <ReceiverID>PAYER999</ReceiverID>
+        <TransactionDateTime>01/01/2025 12:00</TransactionDateTime>
+        <TransactionID>CONSIST-ECLAIM</TransactionID>
+    </Header>
+</PriorAuthorizationRequest>''',
+            'Shafafiya': '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>CONSISTENCY_TEST</SenderID>
+        <ReceiverID>PAYER999</ReceiverID>
+        <TransactionDate>01/01/2025 12:00</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>CONSIST-SHAF</ID>
+    </Authorization>
+</Prior.Authorization>''',
+        }
 
-    def test_resource_relationships_and_references(self):
-        """Test that FHIR resources properly reference each other."""
-        for format_name, xml_path in self.sample_files.items():
-            if not xml_path.exists():
-                continue
+        results = {}
+        for format_name, xml_content in formats_and_xmls.items():
+            xml_file = temp_xml_file(xml_content, f"test_{format_name.lower()}.xml")
 
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
+            if format_name == 'eClaimLink':
+                result = processor.process_eclaim_link(xml_file)
+            else:
+                result = processor.process_shafafiya(xml_file)
 
-            bundle = ingestor.process(str(xml_path))
+            results[format_name] = result
 
-            # Extract resource IDs and types
-            resources = {}
-            for entry in bundle['entry']:
-                resource = entry['resource']
-                resources[resource['id']] = resource['resourceType']
+        # Test that all results have consistent Bundle structure
+        for format_name, result in results.items():
+            assert result['resourceType'] == 'Bundle'
+            assert result['type'] == 'collection'
+            assert 'id' in result
+            assert 'meta' in result
+            assert 'timestamp' in result
+            assert 'raw_data' in result
+            assert 'processing_timestamp' in result
+            assert 'source_file' in result
 
-            # Find the Claim resource (primary)
-            claim_resources = [
-                entry['resource']
-                for entry in bundle['entry']
-                if entry['resource']['resourceType'] == 'Claim'
-            ]
-
-            assert len(claim_resources) >= 1, "Should have at least one Claim resource"
-            claim = claim_resources[0]
-            claim_id = claim['id']
-
-            # Check that other resources reference the claim or patient appropriately
-            for entry in bundle['entry']:
-                resource = entry['resource']
-                resource_type = resource['resourceType']
-
-                if resource_type in ['Observation', 'MedicationStatement', 'Procedure']:
-                    # These resources should reference the patient
-                    if 'subject' in resource:
-                        subject_ref = resource['subject']['reference']
-                        assert subject_ref.startswith(
-                            'Patient/'
-                        ), f"{resource_type} should reference Patient"
-
-                    # May also reference the claim via basedOn
-                    if 'basedOn' in resource:
-                        based_on_refs = resource['basedOn']
-                        claim_refs = [
-                            ref
-                            for ref in based_on_refs
-                            if ref.get('reference', '').startswith('Claim/')
-                        ]
-                        # Not required but if present should be valid
-
-    def test_clinical_data_quality_scoring(self):
-        """Test clinical data quality and completeness scoring."""
-        for format_name, xml_path in self.sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
-
-            bundle = ingestor.process(str(xml_path))
-
-            # Calculate basic quality metrics
-            total_resources = bundle['total']
-            resource_types = [
-                entry['resource']['resourceType'] for entry in bundle['entry']
-            ]
-            unique_types = len(set(resource_types))
-
-            # Quality should correlate with resource diversity
-            assert total_resources >= 1, "Should have resources"
-            assert unique_types >= 1, "Should have diverse resource types"
-
-            # Check for clinical intelligence scoring in extensions
-            if 'extension' in bundle:
-                score_extensions = [
-                    ext
-                    for ext in bundle['extension']
-                    if any(
-                        score_type in ext.get('url', '')
-                        for score_type in [
-                            'clinical-context-score',
-                            'data-quality-score',
-                            'enrichment-score',
-                            'ai-confidence',
-                        ]
-                    )
-                ]
-
-                # Validate score ranges
-                for score_ext in score_extensions:
-                    if 'valueDecimal' in score_ext:
-                        score = score_ext['valueDecimal']
-                        assert (
-                            0.0 <= score <= 1.0
-                        ), f"Score {score} should be between 0 and 1"
-
-    def test_schema_version_evolution(self):
-        """Test that schema versioning is properly handled."""
-        for format_name, xml_path in self.sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
-
-            bundle = ingestor.process(str(xml_path))
-
-            # Check bundle meta for version info
-            assert 'meta' in bundle
-            meta = bundle['meta']
-
-            # Should have profile and source
-            if 'profile' in meta:
-                profiles = meta['profile']
-                assert isinstance(profiles, list)
-                assert len(profiles) >= 1
-
-                # Should reference Nazmito FHIR profiles
-                nazmito_profiles = [p for p in profiles if 'nazmito.com/fhir' in p]
-                assert len(nazmito_profiles) >= 1, "Should have Nazmito FHIR profile"
-
-            # Check for schema version extensions
-            if 'extension' in bundle:
-                version_extensions = [
-                    ext
-                    for ext in bundle['extension']
-                    if 'schema-version' in ext.get('url', '')
-                ]
-
-                for version_ext in version_extensions:
-                    if 'valueString' in version_ext:
-                        version = version_ext['valueString']
-                        assert version.startswith(
-                            'v'
-                        ), f"Version {version} should start with 'v'"
-
-    def test_uae_healthcare_compliance(self):
-        """Test compliance with UAE healthcare standards."""
-        for format_name, xml_path in self.sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
-
-            bundle = ingestor.process(str(xml_path))
-
-            # Check for UAE-specific extensions
-            if 'extension' in bundle:
-                uae_extensions = [
-                    ext
-                    for ext in bundle['extension']
-                    if 'emirate-authority' in ext.get('url', '')
-                ]
-
-                for uae_ext in uae_extensions:
-                    if 'valueString' in uae_ext:
-                        authority = uae_ext['valueString']
-                        valid_authorities = [
-                            'Dubai Health Authority',
-                            'Abu Dhabi Department of Health',
-                        ]
-                        assert (
-                            authority in valid_authorities
-                        ), f"Invalid UAE authority: {authority}"
-
-            # Check for proper currency codes (AED)
-            for entry in bundle['entry']:
-                resource = entry['resource']
-                if resource['resourceType'] == 'Claim' and 'item' in resource:
-                    for item in resource['item']:
-                        if 'unitPrice' in item and 'currency' in item['unitPrice']:
-                            currency = item['unitPrice']['currency']
-                            assert (
-                                currency == 'AED'
-                            ), f"UAE should use AED currency, got {currency}"
-
-    def test_backward_compatibility_with_legacy_schema(self):
-        """Test that the system maintains backward compatibility."""
-        for format_name, xml_path in self.sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-
-            # Test legacy format (should still work)
-            legacy_ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='legacy'
-            )
-
-            legacy_result = legacy_ingestor.process(str(xml_path))
-
-            # Should have legacy structure
-            assert 'format_name' in legacy_result
-            assert 'schema_version' in legacy_result
-            assert 'services' in legacy_result
-            assert 'resourceType' not in legacy_result  # Should NOT be FHIR
-
-            # Test FHIR Bundle format (new enhanced format)
-            fhir_ingestor = self.factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
-
-            fhir_result = fhir_ingestor.process(str(xml_path))
-
-            # Should have FHIR Bundle structure
-            assert fhir_result['resourceType'] == 'Bundle'
-            assert 'entry' in fhir_result
-            assert 'total' in fhir_result
+            # Meta should have consistent structure
+            meta = result['meta']
+            assert 'source' in meta
+            assert 'lastUpdated' in meta
+            assert 'versionId' in meta
+            assert 'profile' in meta
+            assert meta['source'] == format_name
 
 
 if __name__ == "__main__":

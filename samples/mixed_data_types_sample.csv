@@ -1,0 +1,16 @@
+record_type,patient_id,resource_id,date,code,system,display,value,unit,status,category,amount,currency,notes
+PATIENT,PAT001,patient-001,2025-01-15,,,Patient Demographics,John Smith,,active,,,,"Basic patient record"
+CLAIM,PAT001,claim-001,2025-07-28,preauth,claim-type,Pre-authorization,,,active,,450.00,AED,"Multiple services requested"
+SERVICE,PAT001,sr-001,2025-07-28,83036,CPT,Hemoglobin A1c,,,active,laboratory,125.00,AED,"HbA1c test for diabetes"
+OBSERVATION,PAT001,obs-001,2025-01-15,4548-4,LOINC,HbA1c test result,8.5,%,final,laboratory,,,Previous result shows poor control
+MEDICATION,PAT001,med-001,2025-01-01,6809,RxNorm,Metformin,500mg,mg,active,,25.50,AED,"Current diabetes medication"
+CONDITION,PAT001,cond-001,2025-01-01,E11.9,ICD-10,Type 2 diabetes,,,active,problem-list-item,,,"Primary diagnosis"
+PATIENT,PAT002,patient-002,2025-02-10,,,Patient Demographics,Sarah Hassan,,active,,,,"Second patient record"
+CLAIM,PAT002,claim-002,2025-07-29,preauth,claim-type,Pre-authorization,,,active,,335.00,AED,"Cardiac evaluation"
+SERVICE,PAT002,sr-002,2025-07-29,93016,CPT,ECG interpretation,,,active,diagnostic,195.00,AED,"Heart rhythm evaluation"
+SERVICE,PAT002,sr-003,2025-07-29,80061,CPT,Lipid panel,,,active,laboratory,140.00,AED,"Cholesterol screening"
+OBSERVATION,PAT002,obs-002,2025-06-20,33747-0,LOINC,Total cholesterol,6.8,mmol/L,final,laboratory,,,Elevated cholesterol level
+OBSERVATION,PAT002,obs-003,2025-06-20,8480-6,LOINC,Systolic BP,145,mmHg,final,vital-signs,,,Blood pressure reading
+MEDICATION,PAT002,med-002,2025-03-15,29046,RxNorm,Lisinopril,10mg,mg,active,,18.75,AED,"Hypertension medication"
+CONDITION,PAT002,cond-002,2025-02-10,I10,ICD-10,Essential hypertension,,,active,problem-list-item,,,"High blood pressure"
+CONDITION,PAT002,cond-003,2025-06-20,E78.5,ICD-10,Mixed hyperlipidemia,,,active,problem-list-item,,,"High cholesterol"

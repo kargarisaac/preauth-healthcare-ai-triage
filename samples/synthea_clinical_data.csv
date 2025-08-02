@@ -1,0 +1,37 @@
+patient_id,resource_type,fhir_id,date,code,code_system,display,value_quantity,value_unit,value_string,status,category,performer,requester,insurance_coverage,encounter_id,medication_strength,medication_frequency,diagnosis_code,diagnosis_system,procedure_code,procedure_system,cost_amount,cost_currency
+PAT001,Patient,patient-001,2025-01-15,,,Patient Demographics,,,John Michael Smith,active,,,,,,,,,,,,,
+PAT001,Claim,claim-001,2025-07-28,preauthorization,http://terminology.hl7.org/CodeSystem/claim-type,Pre-authorization Request,,,Prior Authorization,active,,,Provider-001,Coverage-001,,,,,,,,450.00,AED
+PAT001,ServiceRequest,sr-001,2025-07-28,83036,http://www.ama-assn.org/go/cpt,Hemoglobin A1c,,,HbA1c for diabetes monitoring,active,laboratory,Provider-001,Provider-001,Coverage-001,ENC001,,,,,,,,125.00,AED
+PAT001,Observation,obs-001,2025-01-15,4548-4,http://loinc.org,Hemoglobin A1c/Hemoglobin.total in Blood,8.5,%,,final,laboratory,Lab-001,Provider-001,,,,,E11.9,http://hl7.org/fhir/sid/icd-10,,,35.00,AED
+PAT001,MedicationStatement,med-001,2025-01-01,6809,http://www.nlm.nih.gov/research/umls/rxnorm,Metformin,,,Metformin 500mg twice daily,active,,Provider-001,Provider-001,,ENC001,500mg,BID,,,,,25.50,AED
+PAT001,Condition,cond-001,2025-01-01,E11.9,http://hl7.org/fhir/sid/icd-10,Type 2 diabetes mellitus without complications,,,Diabetes Type 2,active,problem-list-item,Provider-001,Provider-001,,ENC001,,,,,,,,
+PAT002,Patient,patient-002,2025-02-10,,,Patient Demographics,,,Sarah Ahmed Hassan,active,,,,,,,,,,,,,
+PAT002,Claim,claim-002,2025-07-29,preauthorization,http://terminology.hl7.org/CodeSystem/claim-type,Pre-authorization Request,,,Cardiology Authorization,active,,,Provider-002,Coverage-002,,,,,,,,695.00,AED
+PAT002,ServiceRequest,sr-002,2025-07-29,93016,http://www.ama-assn.org/go/cpt,Electrocardiogram interpretation,,,ECG for chest pain evaluation,active,diagnostic,Provider-002,Provider-002,Coverage-002,ENC002,,,,,,,,195.00,AED
+PAT002,ServiceRequest,sr-003,2025-07-29,80061,http://www.ama-assn.org/go/cpt,Lipid panel,,,Lipid screening,active,laboratory,Provider-002,Provider-002,Coverage-002,ENC002,,,,,,,,140.00,AED
+PAT002,Observation,obs-002,2025-06-20,33747-0,http://loinc.org,Total cholesterol in Serum or Plasma,6.8,mmol/L,,final,laboratory,Lab-002,Provider-002,,,,,,,,,35.00,AED
+PAT002,Observation,obs-003,2025-06-20,8480-6,http://loinc.org,Systolic blood pressure,145,mmHg,,final,vital-signs,Provider-002,Provider-002,,ENC002,,,,,,,20.00,AED
+PAT002,MedicationStatement,med-002,2025-03-15,29046,http://www.nlm.nih.gov/research/umls/rxnorm,Lisinopril,,,Lisinopril 10mg daily,active,,Provider-002,Provider-002,,ENC002,10mg,Daily,,,,,18.75,AED
+PAT002,Condition,cond-002,2025-02-10,I10,http://hl7.org/fhir/sid/icd-10,Essential hypertension,,,Hypertension,active,problem-list-item,Provider-002,Provider-002,,ENC002,,,,,,,,
+PAT002,Condition,cond-003,2025-06-20,E78.5,http://hl7.org/fhir/sid/icd-10,Mixed hyperlipidemia,,,High cholesterol,active,problem-list-item,Provider-002,Provider-002,,ENC002,,,,,,,,
+PAT003,Patient,patient-003,2025-03-22,,,Patient Demographics,,,Mohammed Ali Rashid,active,,,,,,,,,,,,,
+PAT003,Claim,claim-003,2025-07-30,preauthorization,http://terminology.hl7.org/CodeSystem/claim-type,Pre-authorization Request,,,Respiratory Assessment,active,,,Provider-003,Coverage-003,,,,,,,,485.00,AED
+PAT003,ServiceRequest,sr-004,2025-07-30,94760,http://www.ama-assn.org/go/cpt,Pulse oximetry,,,Oxygen saturation monitoring,active,diagnostic,Provider-003,Provider-003,Coverage-003,ENC003,,,,,,,,165.00,AED
+PAT003,ServiceRequest,sr-005,2025-07-30,71020,http://www.ama-assn.org/go/cpt,Chest X-ray,,,Chest imaging for respiratory symptoms,active,imaging,Provider-003,Provider-003,Coverage-003,ENC003,,,,,,,,320.00,AED
+PAT003,Observation,obs-004,2025-05-15,2710-2,http://loinc.org,Oxygen saturation in Arterial blood,94,%,,final,vital-signs,Provider-003,Provider-003,,ENC003,,,,,,,25.00,AED
+PAT003,MedicationStatement,med-003,2025-03-22,1998,http://www.nlm.nih.gov/research/umls/rxnorm,Albuterol,,,Albuterol inhaler as needed,active,,Provider-003,Provider-003,,ENC003,90mcg,PRN,,,,,42.30,AED
+PAT003,Condition,cond-004,2025-03-22,J45.9,http://hl7.org/fhir/sid/icd-10,Asthma; unspecified,,,Asthma,active,problem-list-item,Provider-003,Provider-003,,ENC003,,,,,,,,
+PAT004,Patient,patient-004,2025-04-18,,,Patient Demographics,,,Fatima Khalid Mohammed,active,,,,,,,,,,,,,
+PAT004,Claim,claim-004,2025-07-31,preauthorization,http://terminology.hl7.org/CodeSystem/claim-type,Pre-authorization Request,,,Gynecological Screening,active,,,Provider-004,Coverage-004,,,,,,,,365.00,AED
+PAT004,ServiceRequest,sr-006,2025-07-31,G0008,http://www.ama-assn.org/go/cpt,Pap smear,,,Cervical cancer screening,active,diagnostic,Provider-004,Provider-004,Coverage-004,ENC004,,,,,,,,115.00,AED
+PAT004,ServiceRequest,sr-007,2025-07-31,76700,http://www.ama-assn.org/go/cpt,Abdominal ultrasound,,,Pelvic ultrasound,active,imaging,Provider-004,Provider-004,Coverage-004,ENC004,,,,,,,,250.00,AED
+PAT004,Observation,obs-005,2025-04-18,8302-2,http://loinc.org,Body height,165,cm,,final,vital-signs,Provider-004,Provider-004,,ENC004,,,,,,,15.00,AED
+PAT004,Observation,obs-006,2025-04-18,29463-7,http://loinc.org,Body weight,62,kg,,final,vital-signs,Provider-004,Provider-004,,ENC004,,,,,,,15.00,AED
+PAT004,Condition,cond-005,2025-04-18,Z01.419,http://hl7.org/fhir/sid/icd-10,Encounter for gynecological examination,,,Routine gynecological care,active,encounter-diagnosis,Provider-004,Provider-004,,ENC004,,,,,,,,
+PAT005,Patient,patient-005,2025-05-25,,,Patient Demographics,,,Ahmed Hassan Ali,active,,,,,,,,,,,,,
+PAT005,Claim,claim-005,2025-08-01,preauthorization,http://terminology.hl7.org/CodeSystem/claim-type,Pre-authorization Request,,,Orthopedic Evaluation,active,,,Provider-005,Coverage-005,,,,,,,,415.00,AED
+PAT005,ServiceRequest,sr-008,2025-08-01,73060,http://www.ama-assn.org/go/cpt,Knee X-ray,,,Knee imaging for pain evaluation,active,imaging,Provider-005,Provider-005,Coverage-005,ENC005,,,,,,,,190.00,AED
+PAT005,ServiceRequest,sr-009,2025-08-01,99213,http://www.ama-assn.org/go/cpt,Office visit established patient,,,Orthopedic consultation,active,encounter,Provider-005,Provider-005,Coverage-005,ENC005,,,,,,,,85.00,AED
+PAT005,Observation,obs-007,2025-05-25,72133-2,http://loinc.org,Pain severity - 0-10 verbal numeric rating,7,score,,final,survey,Provider-005,Provider-005,,ENC005,,,,,,,20.00,AED
+PAT005,MedicationStatement,med-004,2025-05-25,1191,http://www.nlm.nih.gov/research/umls/rxnorm,Aspirin,,,Aspirin 325mg daily,active,,Provider-005,Provider-005,,ENC005,325mg,Daily,,,,,8.25,AED
+PAT005,Condition,cond-006,2025-05-25,M25.561,http://hl7.org/fhir/sid/icd-10,Pain in knee,,,Right knee pain,active,problem-list-item,Provider-005,Provider-005,,ENC005,,,,,,,,

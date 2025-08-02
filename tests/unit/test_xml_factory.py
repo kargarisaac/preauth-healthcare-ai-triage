@@ -1,156 +1,203 @@
 """
-Unit tests for XMLIngestorFactory functionality.
+Unit tests for XMLProcessor basic functionality.
 
-This module tests the factory pattern for automatic format detection
-and ingestor creation without processing actual files.
+This module tests basic XMLProcessor functionality and compares
+both processing methods to ensure consistent output structure.
 """
 
 import pytest
-from pipelines.factory import XMLIngestorFactory
-from pipelines.eclaim_link_ingestor import EClaimLinkIngestor
-from pipelines.shafafiya_ingestor import ShafafiyaIngestor
-from pipelines.exceptions import UnsupportedFormatError
+from pipelines.xml_processor import XMLProcessor
 
 
-class TestXMLIngestorFactory:
-    """Unit tests for XMLIngestorFactory."""
+class TestXMLProcessor:
+    """Unit tests for XMLProcessor."""
 
     @pytest.fixture
-    def factory(self):
-        """Create factory instance."""
-        return XMLIngestorFactory(schema_base_path='schemas/')
+    def processor(self):
+        """Create XMLProcessor instance."""
+        return XMLProcessor()
 
-    def test_factory_initialization(self, factory):
-        """Test factory initialization."""
-        assert factory.schema_base_path == 'schemas/'
-        assert factory.enable_validation is True
-        assert factory.logger is not None
+    def test_processor_initialization(self, processor):
+        """Test XMLProcessor initialization."""
+        assert processor is not None
+        assert hasattr(processor, 'process_eclaim_link')
+        assert hasattr(processor, 'process_shafafiya')
 
-    def test_get_supported_formats(self, factory):
-        """Test retrieval of supported formats."""
-        formats = factory.get_supported_formats()
-        assert len(formats) >= 2
-
-        format_names = [fmt['format_name'] for fmt in formats]
-        assert 'eClaimLink' in format_names
-        assert 'Shafafiya' in format_names
-
-    def test_create_eclaim_ingestor(self, factory):
-        """Test creation of eClaimLink ingestor."""
-        ingestor = factory.create_ingestor('eClaimLink')
-        assert isinstance(ingestor, EClaimLinkIngestor)
-        assert ingestor.FORMAT_NAME == 'eClaimLink'
-
-    def test_create_shafafiya_ingestor(self, factory):
-        """Test creation of Shafafiya ingestor."""
-        ingestor = factory.create_ingestor('Shafafiya')
-        assert isinstance(ingestor, ShafafiyaIngestor)
-        assert ingestor.FORMAT_NAME == 'Shafafiya'
-
-    def test_create_ingestor_with_fhir_output(self, factory):
-        """Test creation of ingestor with FHIR Bundle output."""
-        ingestor = factory.create_ingestor('eClaimLink', output_format='fhir_bundle')
-        assert ingestor.output_format == 'fhir_bundle'
-
-    def test_create_ingestor_with_custom_schema(self, factory):
-        """Test creation of ingestor with custom schema path."""
-        custom_schema = 'custom/schema.xsd'
-        ingestor = factory.create_ingestor('eClaimLink', schema_path=custom_schema)
-        assert ingestor.schema_path == custom_schema
-
-    def test_create_ingestor_with_validation_disabled(self, factory):
-        """Test creation of ingestor with validation disabled."""
-        ingestor = factory.create_ingestor('eClaimLink', enable_validation=False)
-        assert ingestor.enable_validation is False
-
-    def test_unsupported_format_error(self, factory):
-        """Test error for unsupported format."""
-        with pytest.raises(UnsupportedFormatError):
-            factory.create_ingestor('UnsupportedFormat')
-
-    def test_format_detection_mock_data(self, factory, mock_file_system):
-        """Test format detection with mock XML data."""
-        # Mock eClaimLink XML
+    def test_both_formats_produce_bundle_structure(self, processor, temp_xml_file):
+        """Test that both formats produce consistent Bundle structure."""
+        # Test eClaimLink format
         eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
-        <PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
-            <Header><SenderID>TEST</SenderID></Header>
-        </PriorAuthorizationRequest>'''
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-        mock_file_system.add_file('/test/eclaim.xml', eclaim_xml)
+        eclaim_file = temp_xml_file(eclaim_xml, "test_eclaim.xml")
+        eclaim_result = processor.process_eclaim_link(eclaim_file)
 
-        # Mock the file reading in factory
-        import tempfile
+        # Test Shafafiya format
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-2025-000123</ID>
+        <Activity>
+            <ID>1</ID>
+            <Code>83036</Code>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.xml', delete=False) as f:
-            f.write(eclaim_xml)
-            f.flush()
+        shafafiya_file = temp_xml_file(shafafiya_xml, "test_shafafiya.xml")
+        shafafiya_result = processor.process_shafafiya(shafafiya_file)
 
-            detected = factory.detect_format(f.name)
-            assert detected == 'eClaimLink'
+        # Both should have Bundle structure
+        assert eclaim_result['resourceType'] == 'Bundle'
+        assert shafafiya_result['resourceType'] == 'Bundle'
 
-    def test_ingestor_registry_operations(self, factory):
-        """Test ingestor registry operations."""
-        # Test getting registry info
-        formats = factory.get_supported_formats()
-        initial_count = len(formats)
+        # Both should have consistent metadata
+        assert 'meta' in eclaim_result
+        assert 'meta' in shafafiya_result
+        assert eclaim_result['type'] == 'collection'
+        assert shafafiya_result['type'] == 'collection'
 
-        # Registry should have default ingestors
-        assert initial_count >= 2
+        # Both should preserve raw data
+        assert 'raw_data' in eclaim_result
+        assert 'raw_data' in shafafiya_result
 
-    def test_schema_path_resolution(self, factory):
-        """Test schema path resolution logic."""
-        # Test with existing format
-        ingestor = factory.create_ingestor('eClaimLink')
-        expected_schema = 'schemas/CommonTypes_20191113.xsd'
-        # Schema path resolution logic is internal, test that it doesn't error
+    def test_format_specific_fields(self, processor, temp_xml_file):
+        """Test that format-specific fields are correctly mapped."""
+        # Test eClaimLink specific fields
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <JustificationText>Patient justification text</JustificationText>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-    def test_format_case_sensitivity(self, factory):
-        """Test format name case sensitivity."""
-        # Should work with exact case
-        ingestor1 = factory.create_ingestor('eClaimLink')
-        assert isinstance(ingestor1, EClaimLinkIngestor)
+        eclaim_file = temp_xml_file(eclaim_xml, "test_eclaim_fields.xml")
+        eclaim_result = processor.process_eclaim_link(eclaim_file)
 
-        ingestor2 = factory.create_ingestor('Shafafiya')
-        assert isinstance(ingestor2, ShafafiyaIngestor)
+        # eClaimLink should have justification_text and services
+        assert 'justification_text' in eclaim_result
+        assert 'services' in eclaim_result
+        assert eclaim_result['justification_text'] == 'Patient justification text'
 
-    def test_logger_configuration(self, factory):
-        """Test logger configuration."""
-        assert factory.logger is not None
-        assert factory.logger.name.endswith('XMLIngestorFactory')
+        # Test Shafafiya specific fields
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-2025-000123</ID>
+        <Comments>Authorization comments</Comments>
+        <Start>01/08/2025 00:00</Start>
+        <End>31/08/2025 23:59</End>
+        <Activity>
+            <ID>1</ID>
+            <Code>83036</Code>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-    def test_validation_settings_inheritance(self, factory):
-        """Test that validation settings are properly inherited."""
-        # Factory with validation enabled
-        factory_with_validation = XMLIngestorFactory(
-            schema_base_path='schemas/', enable_validation=True
-        )
-        ingestor = factory_with_validation.create_ingestor('eClaimLink')
-        assert ingestor.enable_validation is True
+        shafafiya_file = temp_xml_file(shafafiya_xml, "test_shafafiya_fields.xml")
+        shafafiya_result = processor.process_shafafiya(shafafiya_file)
 
-        # Factory with validation disabled
-        factory_no_validation = XMLIngestorFactory(
-            schema_base_path='schemas/', enable_validation=False
-        )
-        ingestor = factory_no_validation.create_ingestor('eClaimLink')
-        assert ingestor.enable_validation is False
+        # Shafafiya should have authorization-specific fields and activities
+        assert 'authorization_result' in shafafiya_result
+        assert 'authorization_start' in shafafiya_result
+        assert 'authorization_end' in shafafiya_result
+        assert 'comments' in shafafiya_result
+        assert 'activities' in shafafiya_result
+        assert shafafiya_result['authorization_result'] == 'Yes'
+        assert shafafiya_result['comments'] == 'Authorization comments'
 
-    def test_concurrent_ingestor_creation(self, factory):
-        """Test concurrent creation of multiple ingestors."""
-        # Should be able to create multiple ingestors simultaneously
-        ingestor1 = factory.create_ingestor('eClaimLink')
-        ingestor2 = factory.create_ingestor('Shafafiya')
-        ingestor3 = factory.create_ingestor('eClaimLink', output_format='fhir_bundle')
+    def test_error_handling_consistency(self, processor):
+        """Test that both methods handle errors consistently."""
+        # Both should raise FileNotFoundError for missing files
+        with pytest.raises(FileNotFoundError):
+            processor.process_eclaim_link("nonexistent_eclaim.xml")
 
-        assert isinstance(ingestor1, EClaimLinkIngestor)
-        assert isinstance(ingestor2, ShafafiyaIngestor)
-        assert isinstance(ingestor3, EClaimLinkIngestor)
-        assert ingestor3.output_format == 'fhir_bundle'
+        with pytest.raises(FileNotFoundError):
+            processor.process_shafafiya("nonexistent_shafafiya.xml")
 
-    def test_ingestor_configuration_isolation(self, factory):
-        """Test that ingestor configurations are isolated."""
-        ingestor1 = factory.create_ingestor('eClaimLink', enable_validation=True)
-        ingestor2 = factory.create_ingestor('eClaimLink', enable_validation=False)
+    def test_metadata_generation_consistency(self, processor, temp_xml_file):
+        """Test that metadata generation is consistent across formats."""
+        # Simple XML for each format
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>TEST123</SenderID>
+        <ReceiverID>PAYER999</ReceiverID>
+        <TransactionDateTime>01/01/2025 12:00</TransactionDateTime>
+        <TransactionID>TEST-001</TransactionID>
+    </Header>
+</PriorAuthorizationRequest>'''
 
-        # Each should have its own configuration
-        assert ingestor1.enable_validation is True
-        assert ingestor2.enable_validation is False
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>TEST123</SenderID>
+        <ReceiverID>PAYER999</ReceiverID>
+        <TransactionDate>01/01/2025 12:00</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>TEST-001</ID>
+    </Authorization>
+</Prior.Authorization>'''
+
+        eclaim_file = temp_xml_file(eclaim_xml, "test_meta_eclaim.xml")
+        shafafiya_file = temp_xml_file(shafafiya_xml, "test_meta_shafafiya.xml")
+
+        eclaim_result = processor.process_eclaim_link(eclaim_file)
+        shafafiya_result = processor.process_shafafiya(shafafiya_file)
+
+        # Both should have consistent metadata structure
+        for result in [eclaim_result, shafafiya_result]:
+            assert 'id' in result
+            assert 'timestamp' in result
+            assert 'processing_timestamp' in result
+            assert 'source_file' in result
+
+            meta = result['meta']
+            assert 'lastUpdated' in meta
+            assert 'versionId' in meta
+            assert 'profile' in meta
+            assert meta['profile'] == [
+                'https://nazmito.com/fhir/StructureDefinition/healthcare-bundle'
+            ]
+
+        # Source should be format-specific
+        assert eclaim_result['meta']['source'] == 'eClaimLink'
+        assert shafafiya_result['meta']['source'] == 'Shafafiya'

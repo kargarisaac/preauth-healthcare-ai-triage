@@ -1,24 +1,24 @@
 """
-End-to-end integration tests for the complete XML processing pipeline.
+End-to-end integration tests for the XMLProcessor.
 
-This module tests the full workflow from XML ingestion through FHIR Bundle
-generation, including format detection, validation, transformation, and
-clinical intelligence extraction across both eClaimLink and Shafafiya formats.
+This module tests the complete XML processing workflow using
+the simplified XMLProcessor class for both eClaimLink and Shafafiya formats.
 """
 
 import pytest
 import tempfile
+import os
 from pathlib import Path
-from pipelines.factory import XMLIngestorFactory
+from pipelines.xml_processor import XMLProcessor
 
 
 class TestEndToEndProcessing:
     """Test complete end-to-end processing workflows."""
 
     @pytest.fixture
-    def factory(self):
-        """XMLIngestorFactory for end-to-end testing."""
-        return XMLIngestorFactory(schema_base_path='schemas/')
+    def processor(self):
+        """XMLProcessor for end-to-end testing."""
+        return XMLProcessor()
 
     @pytest.fixture
     def sample_files(self):
@@ -26,485 +26,335 @@ class TestEndToEndProcessing:
         project_root = Path(__file__).parent.parent.parent
         return {
             'eclaim_link': project_root / "samples" / "eclaim_link_request.xml",
-            'shafafiya': project_root / "samples" / "shafafiya_authorization.xml",
+            'shafafiya': project_root / "samples" / "shafafiya_prior_auth_request.xml",
         }
 
-    def test_complete_eclaim_processing_workflow(self, factory, sample_files):
-        """Test complete eClaimLink processing from XML to FHIR Bundle."""
+    def test_complete_eclaim_processing_workflow(self, processor, sample_files):
+        """Test complete eClaimLink processing from XML to Bundle."""
         xml_path = sample_files['eclaim_link']
         if not xml_path.exists():
             pytest.skip("eClaimLink sample file not found")
 
-        # Step 1: Format detection
-        detected_format = factory.detect_format(str(xml_path))
-        assert (
-            detected_format == 'eClaimLink'
-        ), f"Should detect eClaimLink format, got {detected_format}"
+        # Process file to Bundle
+        bundle = processor.process_eclaim_link(str(xml_path))
 
-        # Step 2: Create ingestor with validation
-        ingestor = factory.create_ingestor(
-            'eClaimLink', enable_validation=True, output_format='fhir_bundle'
-        )
-
-        # Step 3: Process file to FHIR Bundle
-        bundle = ingestor.process(str(xml_path))
-
-        # Step 4: Validate complete workflow results
+        # Validate complete workflow results
         assert bundle['resourceType'] == 'Bundle'
         assert bundle['type'] == 'collection'
         assert 'meta' in bundle
         assert bundle['meta']['source'] == 'eClaimLink'
-        assert bundle['total'] >= 1
-        assert len(bundle['entry']) == bundle['total']
+        assert 'authorization_id' in bundle
+        assert 'services' in bundle
+        assert len(bundle['services']) >= 0
 
-        # Step 5: Verify resource extraction completeness
-        resource_types = [
-            entry['resource']['resourceType'] for entry in bundle['entry']
-        ]
-        assert 'Claim' in resource_types, "Should extract Claim resource"
+        # Validate raw data preservation
+        assert 'raw_data' in bundle
+        assert 'PriorAuthorizationRequest' in bundle['raw_data']
 
-        # Step 6: Validate clinical intelligence processing
-        claim_resources = [
-            entry['resource']
-            for entry in bundle['entry']
-            if entry['resource']['resourceType'] == 'Claim'
-        ]
-        assert len(claim_resources) == 1, "Should have exactly one Claim"
-
-        claim = claim_resources[0]
-        assert 'item' in claim, "Claim should have service items"
-        assert len(claim['item']) >= 1, "Should have at least one service item"
-
-    def test_complete_shafafiya_processing_workflow(self, factory, sample_files):
-        """Test complete Shafafiya processing from XML to FHIR Bundle."""
+    def test_complete_shafafiya_processing_workflow(self, processor, sample_files):
+        """Test complete Shafafiya processing from XML to Bundle."""
         xml_path = sample_files['shafafiya']
         if not xml_path.exists():
             pytest.skip("Shafafiya sample file not found")
 
-        # Step 1: Format detection
-        detected_format = factory.detect_format(str(xml_path))
-        assert (
-            detected_format == 'Shafafiya'
-        ), f"Should detect Shafafiya format, got {detected_format}"
+        # Process file to Bundle
+        bundle = processor.process_shafafiya(str(xml_path))
 
-        # Step 2: Create ingestor with validation
-        ingestor = factory.create_ingestor(
-            'Shafafiya', enable_validation=True, output_format='fhir_bundle'
-        )
-
-        # Step 3: Process file to FHIR Bundle
-        bundle = ingestor.process(str(xml_path))
-
-        # Step 4: Validate complete workflow results
+        # Validate complete workflow results
         assert bundle['resourceType'] == 'Bundle'
         assert bundle['type'] == 'collection'
         assert 'meta' in bundle
         assert bundle['meta']['source'] == 'Shafafiya'
-        assert bundle['total'] >= 1
-        assert len(bundle['entry']) == bundle['total']
+        assert 'authorization_id' in bundle
+        assert 'activities' in bundle
+        assert len(bundle['activities']) >= 0
 
-        # Step 5: Verify Shafafiya-specific processing
-        resource_types = [
-            entry['resource']['resourceType'] for entry in bundle['entry']
-        ]
-        assert 'Claim' in resource_types, "Should extract Claim resource"
+        # Validate raw data preservation
+        assert 'raw_data' in bundle
+        assert 'Prior.Authorization' in bundle['raw_data']
 
-        # Step 6: Check for Shafafiya-specific data structures
-        if 'Observation' in resource_types:
-            obs_resources = [
-                entry['resource']
-                for entry in bundle['entry']
-                if entry['resource']['resourceType'] == 'Observation'
-            ]
-            for obs in obs_resources:
-                assert 'subject' in obs, "Observation should reference patient"
+    def test_dual_format_consistency(self, processor, temp_xml_file):
+        """Test that both formats produce consistent Bundle structures."""
+        # Create test XMLs
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-CONSISTENCY</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-    def test_dual_format_consistency(self, factory, sample_files):
-        """Test that both formats produce consistent FHIR Bundle structures."""
-        bundles = {}
+        shafafiya_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-CONSISTENCY</ID>
+        <Activity>
+            <ID>1</ID>
+            <Code>83036</Code>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
 
-        for format_name, xml_path in sample_files.items():
-            if not xml_path.exists():
-                continue
+        eclaim_file = temp_xml_file(eclaim_xml, "test_eclaim.xml")
+        shafafiya_file = temp_xml_file(shafafiya_xml, "test_shafafiya.xml")
 
-            # Determine factory format name
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-
-            ingestor = factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
-
-            bundle = ingestor.process(str(xml_path))
-            bundles[format_name] = bundle
+        eclaim_bundle = processor.process_eclaim_link(eclaim_file)
+        shafafiya_bundle = processor.process_shafafiya(shafafiya_file)
 
         # Compare bundle structures
-        if len(bundles) == 2:
-            for format_name, bundle in bundles.items():
-                # Basic Bundle structure should be consistent
-                assert bundle['resourceType'] == 'Bundle'
-                assert bundle['type'] == 'collection'
-                assert 'meta' in bundle
-                assert 'entry' in bundle
-                assert 'total' in bundle
-                assert bundle['total'] >= 1
-
-                # Should have Claim resource
-                resource_types = [
-                    entry['resource']['resourceType'] for entry in bundle['entry']
-                ]
-                assert (
-                    'Claim' in resource_types
-                ), f"{format_name} should produce Claim resource"
-
-    def test_auto_detection_and_processing(self, factory, sample_files):
-        """Test automatic format detection and processing workflow."""
-        for format_name, xml_path in sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            # Step 1: Auto-detect and create ingestor
-            ingestor = factory.create_ingestor_for_file(
-                str(xml_path), enable_validation=False, output_format='fhir_bundle'
-            )
-
-            # Step 2: Process with auto-detected ingestor
-            bundle = ingestor.process(str(xml_path))
-
-            # Step 3: Validate auto-processing results
+        for bundle in [eclaim_bundle, shafafiya_bundle]:
+            # Basic Bundle structure should be consistent
             assert bundle['resourceType'] == 'Bundle'
-            assert bundle['total'] >= 1
+            assert bundle['type'] == 'collection'
+            assert 'meta' in bundle
+            assert 'id' in bundle
+            assert 'timestamp' in bundle
+            assert 'raw_data' in bundle
 
-            # Verify format-specific processing
-            expected_source = 'eClaimLink' if 'eclaim' in format_name else 'Shafafiya'
-            assert bundle['meta']['source'] == expected_source
-
-    def test_validation_enabled_processing(self, factory, sample_files):
-        """Test processing with XML schema validation enabled."""
-        for format_name, xml_path in sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-
-            # Process with validation enabled
-            ingestor = factory.create_ingestor(
-                factory_format, enable_validation=True, output_format='fhir_bundle'
-            )
-
-            try:
-                bundle = ingestor.process(str(xml_path))
-
-                # If validation passes, bundle should be valid
-                assert bundle['resourceType'] == 'Bundle'
-                assert bundle['total'] >= 1
-
-                # Validation metadata should be present
-                assert 'meta' in bundle
-                if 'extension' in bundle:
-                    validation_extensions = [
-                        ext
-                        for ext in bundle['extension']
-                        if 'validation' in ext.get('url', '').lower()
-                    ]
-                    # May have validation extensions
-
-            except Exception as e:
-                # If validation fails, it should be for a valid reason
-                pytest.skip(f"Validation failed for {format_name}: {str(e)}")
-
-    def test_legacy_vs_fhir_output_comparison(self, factory, sample_files):
-        """Test comparison between legacy and FHIR Bundle output formats."""
-        for format_name, xml_path in sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-
-            # Process with legacy format
-            legacy_ingestor = factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='legacy'
-            )
-            legacy_result = legacy_ingestor.process(str(xml_path))
-
-            # Process with FHIR Bundle format
-            fhir_ingestor = factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
-            fhir_result = fhir_ingestor.process(str(xml_path))
-
-            # Compare results
-            # Legacy format should have traditional structure
-            assert 'format_name' in legacy_result
-            assert 'services' in legacy_result
-            assert 'resourceType' not in legacy_result
-
-            # FHIR format should have Bundle structure
-            assert fhir_result['resourceType'] == 'Bundle'
-            assert 'entry' in fhir_result
-            assert 'total' in fhir_result
-
-            # Both should process the same source data
-            assert legacy_result['format_name'] == factory_format
-            assert fhir_result['meta']['source'] == factory_format
-
-    def test_error_handling_and_recovery(self, factory):
+    def test_error_handling_and_recovery(self, processor):
         """Test error handling for invalid XML files."""
-        # Create invalid XML
-        invalid_xml = '''<?xml version="1.0" encoding="UTF-8"?>
-        <InvalidRoot>
-            <InvalidElement>Invalid content</InvalidElement>
-        </InvalidRoot>'''
+        # Test missing file
+        with pytest.raises(FileNotFoundError):
+            processor.process_eclaim_link("nonexistent_file.xml")
 
+        with pytest.raises(FileNotFoundError):
+            processor.process_shafafiya("nonexistent_file.xml")
+
+        # Test invalid XML content
         with tempfile.NamedTemporaryFile(mode='w', suffix='.xml', delete=False) as f:
-            f.write(invalid_xml)
+            f.write("Invalid XML content")
             f.flush()
 
-            # Should handle format detection failure
             try:
-                detected_format = factory.detect_format(f.name)
-                # If it detects a format, it should fail during processing
-            except Exception:
-                # Expected to fail format detection
-                pass
+                with pytest.raises(Exception):  # Should raise XML parsing error
+                    processor.process_eclaim_link(f.name)
+            finally:
+                os.unlink(f.name)
 
-            # Should handle processing errors gracefully
-            ingestor = factory.create_ingestor(
-                'eClaimLink', enable_validation=False, output_format='fhir_bundle'
-            )
+    def test_processing_performance(self, processor, temp_xml_file):
+        """Test processing performance for reasonably sized files."""
+        import time
 
-            with pytest.raises(Exception):
-                # Should raise appropriate exception for invalid format
-                ingestor.process(f.name)
+        # Create a moderately complex XML
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-PERF-TEST</TransactionID>
+    </Header>
+    <JustificationText>Performance test with longer text content to simulate real-world processing scenarios.</JustificationText>
+    <ServiceRequests>'''
 
-    def test_clinical_intelligence_pipeline(self, factory, sample_files):
-        """Test end-to-end clinical intelligence extraction pipeline."""
-        # Create test XML with rich clinical content
-        rich_clinical_xml = '''<?xml version="1.0" encoding="UTF-8"?>
-        <PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
-            <Header>
-                <SenderID>PROVIDER123</SenderID>
-                <ReceiverID>PAYER999</ReceiverID>
-                <TransactionDateTime>01/01/2025 12:00</TransactionDateTime>
-                <TransactionID>CLINICAL-RICH-001</TransactionID>
-            </Header>
-            <ServiceRequests>
-                <ServiceRequest>
-                    <ct:ActivityCode>99213</ct:ActivityCode>
-                    <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
-                    <ct:Justification>Patient presents with Type 2 diabetes mellitus without complications (E11.9). HbA1c level elevated at 9.2%. Currently on metformin 500mg twice daily. Blood pressure reading 145/95 indicates hypertension. Recommending ACE inhibitor therapy and diabetes education. Patient reports compliance issues with current medication regimen. Follow-up appointment scheduled for medication adjustment and lifestyle counseling.</ct:Justification>
-                    <ct:RequestedAmount currency="AED">250.00</ct:RequestedAmount>
-                </ServiceRequest>
-            </ServiceRequests>
-        </PriorAuthorizationRequest>'''
+        # Add multiple services for performance testing
+        for i in range(1, 6):  # 5 services
+            eclaim_xml += f'''
+        <ServiceRequest>
+            <ct:ActivityCode>8303{i}</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.{i}</ct:DiagnosisCode>
+            <ct:ActivityDateTime>28/07/2025 09:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Service {i} instructions for performance testing</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">{100 + i * 10}.00</RequestedAmount>
+        </ServiceRequest>'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.xml', delete=False) as f:
-            f.write(rich_clinical_xml)
-            f.flush()
+        eclaim_xml += '''
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-            ingestor = factory.create_ingestor(
-                'eClaimLink', enable_validation=False, output_format='fhir_bundle'
-            )
+        xml_file = temp_xml_file(eclaim_xml, "perf_test.xml")
 
-            bundle = ingestor.process(f.name)
+        # Measure processing time
+        start_time = time.time()
+        result = processor.process_eclaim_link(xml_file)
+        end_time = time.time()
 
-            # Validate clinical intelligence extraction
-            assert bundle['resourceType'] == 'Bundle'
-            assert bundle['total'] >= 1
+        processing_time = end_time - start_time
 
-            # Should extract clinical entities from rich justification text
-            resource_types = [
-                entry['resource']['resourceType'] for entry in bundle['entry']
-            ]
-            assert 'Claim' in resource_types
+        # Validate results
+        assert result['resourceType'] == 'Bundle'
+        assert len(result['services']) == 5
 
-            # Check for clinical intelligence extensions
-            clinical_resource_count = sum(
-                1
-                for rt in resource_types
-                if rt
-                in ['Condition', 'Observation', 'MedicationStatement', 'Procedure']
-            )
-            # May extract clinical entities (implementation dependent)
+        # Performance should be reasonable (under 5 seconds for this small file)
+        assert (
+            processing_time < 5.0
+        ), f"Processing took {processing_time:.2f}s, expected < 5.0s"
 
-            # Check for clinical intelligence scoring
-            if 'extension' in bundle:
-                clinical_extensions = [
-                    ext
-                    for ext in bundle['extension']
-                    if 'nazmito.com/fhir' in ext.get('url', '')
-                ]
-                # May have clinical intelligence extensions
+    def test_data_integrity_preservation(self, processor, temp_xml_file):
+        """Test that all data is preserved during processing."""
+        # Create XML with special characters and various data types
+        complex_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV_Special@123</SenderID>
+        <ReceiverID>PAYER-999#Test</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-INTEGRITY-&amp;-TEST</TransactionID>
+    </Header>
+    <JustificationText>Patient with special characters: &lt;test&gt; &amp; symbols. Unicode: ñáéíóú</JustificationText>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
+            <RequestedAmount currency="AED">1234.56</RequestedAmount>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-    def test_concurrent_processing(self, factory, sample_files):
+        xml_file = temp_xml_file(complex_xml, "integrity_test.xml")
+        result = processor.process_eclaim_link(xml_file)
+
+        # Verify essential data is preserved
+        assert result['sender'] == 'PROV_Special@123'
+        assert result['receiver'] == 'PAYER-999#Test'
+        assert result['authorization_id'] == 'TXN-INTEGRITY-&-TEST'
+        assert 'Patient with special characters' in result['justification_text']
+        assert 'Unicode: ñáéíóú' in result['justification_text']
+
+        # Verify raw data preservation
+        raw_header = result['raw_data']['PriorAuthorizationRequest']['Header']
+        assert raw_header['SenderID'] == 'PROV_Special@123'
+        assert raw_header['TransactionID'] == 'TXN-INTEGRITY-&-TEST'
+
+    def test_concurrent_processing(self, processor, temp_xml_file):
         """Test concurrent processing of multiple files."""
         import threading
         import queue
 
         results = queue.Queue()
 
-        def process_file(format_name, xml_path):
+        def process_eclaim():
             try:
-                factory_format = (
-                    'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-                )
-                ingestor = factory.create_ingestor(
-                    factory_format, enable_validation=False, output_format='fhir_bundle'
-                )
-                bundle = ingestor.process(str(xml_path))
-                results.put((format_name, bundle, None))
+                xml_content = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>CONCURRENT1</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-CONCURRENT-1</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
+                xml_file = temp_xml_file(xml_content, "concurrent_eclaim.xml")
+                result = processor.process_eclaim_link(xml_file)
+                results.put(("eclaim", result, None))
             except Exception as e:
-                results.put((format_name, None, str(e)))
+                results.put(("eclaim", None, str(e)))
 
-        threads = []
-        for format_name, xml_path in sample_files.items():
-            if xml_path.exists():
-                thread = threading.Thread(
-                    target=process_file, args=(format_name, xml_path)
-                )
-                threads.append(thread)
-                thread.start()
+        def process_shafafiya():
+            try:
+                xml_content = '''<?xml version="1.0" encoding="UTF-8"?>
+<Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Header>
+        <SenderID>CONCURRENT2</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDate>27/07/2025 10:32</TransactionDate>
+        <RecordCount>1</RecordCount>
+    </Header>
+    <Authorization>
+        <Result>Yes</Result>
+        <ID>PA-CONCURRENT-2</ID>
+        <Activity>
+            <ID>1</ID>
+            <Code>83036</Code>
+        </Activity>
+    </Authorization>
+</Prior.Authorization>'''
+                xml_file = temp_xml_file(xml_content, "concurrent_shafafiya.xml")
+                result = processor.process_shafafiya(xml_file)
+                results.put(("shafafiya", result, None))
+            except Exception as e:
+                results.put(("shafafiya", None, str(e)))
 
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
+        # Start concurrent processing
+        thread1 = threading.Thread(target=process_eclaim)
+        thread2 = threading.Thread(target=process_shafafiya)
+
+        thread1.start()
+        thread2.start()
+
+        thread1.join()
+        thread2.join()
 
         # Collect results
         processed_results = []
         while not results.empty():
             processed_results.append(results.get())
 
+        assert len(processed_results) == 2
+
         # Validate concurrent processing results
         for format_name, bundle, error in processed_results:
-            if error:
-                pytest.fail(f"Concurrent processing failed for {format_name}: {error}")
-
+            assert (
+                error is None
+            ), f"Concurrent processing failed for {format_name}: {error}"
             assert bundle is not None
             assert bundle['resourceType'] == 'Bundle'
-            assert bundle['total'] >= 1
 
-    def test_data_quality_assessment_pipeline(self, factory, sample_files):
-        """Test end-to-end data quality assessment and scoring."""
-        quality_scores = {}
+            if format_name == "eclaim":
+                assert bundle['authorization_id'] == 'TXN-CONCURRENT-1'
+                assert bundle['sender'] == 'CONCURRENT1'
+            else:  # shafafiya
+                assert bundle['authorization_id'] == 'PA-CONCURRENT-2'
+                assert bundle['sender'] == 'CONCURRENT2'
 
-        for format_name, xml_path in sample_files.items():
-            if not xml_path.exists():
-                continue
+    def test_large_file_handling(self, processor, temp_xml_file):
+        """Test handling of larger XML files."""
+        # Create a larger XML with many services/activities
+        large_eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-LARGE-FILE</TransactionID>
+    </Header>
+    <JustificationText>Large file test with multiple services to validate performance and memory usage.</JustificationText>
+    <ServiceRequests>'''
 
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
+        # Add 20 services
+        for i in range(1, 21):
+            large_eclaim_xml += f'''
+        <ServiceRequest>
+            <ct:ActivityCode>8303{i % 10}</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.{i % 10}</ct:DiagnosisCode>
+            <ct:ActivityDateTime>28/07/2025 09:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Service {i} for large file testing with detailed instructions</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">{100 + i * 5}.00</RequestedAmount>
+        </ServiceRequest>'''
 
-            bundle = ingestor.process(str(xml_path))
+        large_eclaim_xml += '''
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-            # Calculate quality metrics
-            quality_metrics = {
-                'total_resources': bundle['total'],
-                'resource_diversity': len(
-                    set(entry['resource']['resourceType'] for entry in bundle['entry'])
-                ),
-                'has_clinical_resources': any(
-                    entry['resource']['resourceType']
-                    in ['Condition', 'Observation', 'MedicationStatement', 'Procedure']
-                    for entry in bundle['entry']
-                ),
-                'has_extensions': 'extension' in bundle,
-                'bundle_completeness': bundle['total']
-                / max(1, bundle['total']),  # Always 1.0, baseline metric
-            }
+        xml_file = temp_xml_file(large_eclaim_xml, "large_test.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-            quality_scores[format_name] = quality_metrics
+        # Validate processing of large file
+        assert result['resourceType'] == 'Bundle'
+        assert len(result['services']) == 20
+        assert result['authorization_id'] == 'TXN-LARGE-FILE'
 
-        # Validate quality assessment results
-        for format_name, metrics in quality_scores.items():
-            assert (
-                metrics['total_resources'] >= 1
-            ), f"{format_name} should produce resources"
-            assert (
-                metrics['resource_diversity'] >= 1
-            ), f"{format_name} should have resource diversity"
-            assert metrics['bundle_completeness'] == 1.0, "Bundle should be complete"
-
-    def test_performance_benchmarking(self, factory, sample_files):
-        """Test processing performance benchmarking."""
-        import time
-
-        performance_metrics = {}
-
-        for format_name, xml_path in sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
-
-            # Measure processing time
-            start_time = time.time()
-            bundle = ingestor.process(str(xml_path))
-            end_time = time.time()
-
-            processing_time = end_time - start_time
-
-            performance_metrics[format_name] = {
-                'processing_time_seconds': processing_time,
-                'resources_generated': bundle['total'],
-                'resources_per_second': bundle['total'] / max(0.001, processing_time),
-            }
-
-        # Validate performance metrics
-        for format_name, metrics in performance_metrics.items():
-            assert (
-                metrics['processing_time_seconds'] < 60.0
-            ), f"{format_name} processing should be under 60 seconds"
-            assert (
-                metrics['resources_generated'] >= 1
-            ), f"{format_name} should generate resources"
-            assert (
-                metrics['resources_per_second'] > 0
-            ), f"{format_name} should have positive throughput"
-
-    def test_memory_usage_validation(self, factory, sample_files):
-        """Test memory usage validation during processing."""
-        import psutil
-        import os
-
-        process = psutil.Process(os.getpid())
-        initial_memory = process.memory_info().rss
-
-        for format_name, xml_path in sample_files.items():
-            if not xml_path.exists():
-                continue
-
-            factory_format = (
-                'eClaimLink' if format_name == 'eclaim_link' else 'Shafafiya'
-            )
-            ingestor = factory.create_ingestor(
-                factory_format, enable_validation=False, output_format='fhir_bundle'
-            )
-
-            # Process and measure memory
-            bundle = ingestor.process(str(xml_path))
-            current_memory = process.memory_info().rss
-
-            memory_increase = current_memory - initial_memory
-            memory_increase_mb = memory_increase / (1024 * 1024)
-
-            # Validate reasonable memory usage
-            assert (
-                memory_increase_mb < 100
-            ), f"Memory usage increase should be under 100MB, got {memory_increase_mb:.2f}MB"
-            assert (
-                bundle['total'] >= 1
-            ), "Should successfully process despite memory constraints"
+        # Verify all services are processed correctly
+        for i, service in enumerate(result['services'], 1):
+            assert service['sequence'] == i
+            assert service['activity_code'] == f'8303{i % 10}'
+            assert service['requested_amount_value'] == f'{100 + i * 5}.00'

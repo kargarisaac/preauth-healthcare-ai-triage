@@ -62,29 +62,34 @@ make demo
 ```
 
 ### Access Points
-- **Streamlit UI**: http://localhost:8501 (Data audit and processing interface)
-- **FastAPI Docs**: http://localhost:8000/docs (REST API documentation)
-- **Kafka UI**: http://localhost:8080 (Event streaming dashboard)
+- **Professional Dashboard**: `ui/dashboard/dashboard.html` (XML processing and audit interface)
+- **Landing Page**: `ui/landing/index.html` (Marketing website and platform overview)
+- **FastAPI Docs**: http://localhost:8000/api/docs (REST API documentation)
+- **API Backend**: http://localhost:8000 (FastAPI server for XML processing)
 
 ### Quick Demo
 ```bash
-# Load sample data (XML, CSV, PDF)
-make ingest-sample
+# Start the FastAPI backend
+python api/run_server.py
 
-# View processed results in UI
-open http://localhost:8501
+# Open the professional dashboard (in another terminal)
+cd ui && python3 -m http.server 8080
+# Then visit: http://localhost:8080/dashboard/dashboard.html
 
-# Query via API
-curl http://localhost:8000/claim/PA-2025-000123
+# Process XML files via dashboard or API
+curl -X POST http://localhost:8000/api/process/sample/eclaim
 ```
 
 ## Architecture & Documentation
 
 ### Technical Documentation
 - **System Architecture**: [`docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md) - Complete technical design and data flow
-- **XML Processing Guide**: [`docs/xml_processing_guide.md`](/docs/xml_processing_guide.md) - Comprehensive XML ingestion architecture and API reference
-- **FHIR Strategy**: [`docs/FHIR_GUIDE.md`](/docs/FHIR_GUIDE.md) - UAE FHIR implementation and clinical enhancements  
-- **Development Roadmap**: [`docs/todo_list.md`](/docs/todo_list.md) - Sprint-based development timeline
+- **XML Processing Guide**: [`docs/xml_processing.md`](/docs/xml_processing.md) - Comprehensive XML ingestion architecture and API reference
+- **CSV Processing Guide**: [`docs/csv_processing.md`](/docs/csv_processing.md) - Healthcare CSV processing and FHIR mapping
+- **Format Comparison**: [`docs/format_comparison.md`](/docs/format_comparison.md) - eClaimLink vs Shafafiya analysis
+- **Field Mappings**: [`docs/field_mappings.md`](/docs/field_mappings.md) - Complete field transformation reference
+- **FHIR Strategy**: [`docs/FHIR_GUIDE.md`](/docs/FHIR_GUIDE.md) - UAE FHIR implementation and clinical enhancements
+- **Development Roadmap**: [`docs/roadmap.md`](/docs/roadmap.md) - Sprint-based development timeline
 
 ### Data Standards
 - **UAE Compliance**: eClaimLink (Dubai), Shafafiya (Abu Dhabi), ICD-10-AM, CPT codes
@@ -100,7 +105,7 @@ Our accelerated development approach delivers a complete platform in four 7-day 
 - **Sprint 3 (Days 15-21)**: Advanced AI with knowledge graphs and semantic search
 - **Sprint 4 (Days 22-28)**: LLM agents and explainable clinical decision support
 
-See [`docs/todo_list.md`](/docs/todo_list.md) for detailed daily breakdown and implementation plan.
+See [`docs/roadmap.md`](/docs/roadmap.md) for detailed daily breakdown and implementation plan.
 
 ## Competitive Advantage
 
@@ -162,7 +167,7 @@ See [`docs/todo_list.md`](/docs/todo_list.md) for detailed daily breakdown and i
 
 ### For Developers
 1. Follow the Quick Start guide above
-2. Review [`docs/todo_list.md`](/docs/todo_list.md) for development roadmap
+2. Review [`docs/roadmap.md`](/docs/roadmap.md) for development roadmap
 3. Check [`docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md) for technical deep-dive
 
 ### For Investors

@@ -1,157 +1,239 @@
 """
-Unit tests for eClaimLink ingestor functionality.
+Unit tests for XMLProcessor eClaimLink functionality.
 
-This module tests the eClaimLink ingestor in isolation,
-focusing on XML parsing, normalization, and error handling.
+This module tests the XMLProcessor eClaimLink processing method,
+focusing on XML parsing, field mapping, and output structure.
 """
 
 import pytest
-from pipelines.eclaim_link_ingestor import EClaimLinkIngestor
-from pipelines.exceptions import UnsupportedFormatError, DataNormalizationError
+from pipelines.xml_processor import XMLProcessor
 
 
-class TestEClaimLinkIngestor:
-    """Unit tests for eClaimLink ingestor."""
-
-    @pytest.fixture
-    def ingestor(self):
-        """Create eClaimLink ingestor instance."""
-        return EClaimLinkIngestor(enable_validation=False)
+class TestEClaimLinkProcessor:
+    """Unit tests for XMLProcessor eClaimLink processing."""
 
     @pytest.fixture
-    def fhir_bundle_ingestor(self):
-        """Create eClaimLink ingestor with FHIR Bundle output."""
-        return EClaimLinkIngestor(enable_validation=False, output_format='fhir_bundle')
+    def processor(self):
+        """Create XMLProcessor instance."""
+        return XMLProcessor()
 
-    def test_supported_root_elements(self, ingestor):
-        """Test that correct root elements are supported."""
-        supported = ingestor.get_supported_root_elements()
-        assert 'PriorAuthorizationRequest' in supported
-        assert len(supported) == 1
+    def test_basic_eclaim_processing(self, processor, temp_xml_file):
+        """Test basic eClaimLink XML processing."""
+        # Create simple test XML
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <JustificationText>Patient requires medical attention.</JustificationText>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
+            <ct:ActivityDateTime>28/07/2025 09:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Service instructions</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">120.00</RequestedAmount>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-    def test_format_info(self, ingestor):
-        """Test format information metadata."""
-        info = ingestor.get_format_info()
-        assert info['format_name'] == 'eClaimLink'
-        assert info['schema_version'] == '2019/11'
-        assert info['authority'] == 'Dubai Health Authority (DHA)'
-        assert info['system'] == 'eClaimLink'
+        xml_file = temp_xml_file(eclaim_xml, "test_eclaim.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-    def test_unsupported_root_element_error(self, ingestor):
-        """Test error handling for unsupported root elements."""
-        invalid_data = {'UnsupportedElement': {'data': 'test'}}
-
-        with pytest.raises(UnsupportedFormatError) as exc_info:
-            ingestor.normalize(invalid_data)
-
-        assert 'UnsupportedElement' in str(exc_info.value)
-        assert 'PriorAuthorizationRequest' in str(exc_info.value)
-
-    def test_legacy_output_format(self, ingestor, test_data_factory):
-        """Test legacy output format structure."""
-        xml_data = test_data_factory.create_eclaim_xml()
-
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
-
-        # Validate legacy structure
-        assert result['format_name'] == 'eClaimLink'
-        assert result['schema_version'] == '2019/11'
-        assert 'services' in result
-        assert 'resourceType' not in result
-        assert 'ingestion_metadata' in result
-
-    def test_fhir_bundle_output_format(self, fhir_bundle_ingestor, test_data_factory):
-        """Test FHIR Bundle output format structure."""
-        xml_data = test_data_factory.create_eclaim_xml(
-            justification="Patient with diabetes requiring HbA1c monitoring"
-        )
-
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = fhir_bundle_ingestor.normalize(parsed_data)
-
-        # Validate FHIR Bundle structure
+        # Test canonical JSON structure
         assert result['resourceType'] == 'Bundle'
-        assert result['type'] == 'collection'
-        assert 'entry' in result
-        assert 'total' in result
-        assert len(result['entry']) == result['total']
+        assert result['meta']['source'] == 'eClaimLink'
+        assert result['authorization_id'] == 'TXN-2025-000456'
+        assert result['sender'] == 'PROV12345'
+        assert result['receiver'] == 'PAYER67890'
+        assert result['justification_text'] == 'Patient requires medical attention.'
 
-    def test_business_rule_validation(self, ingestor, test_data_factory):
-        """Test business rule validation."""
-        # Create data with missing required fields
-        xml_data = test_data_factory.create_eclaim_xml()
-        import xmltodict
+    def test_services_extraction(self, processor, temp_xml_file):
+        """Test service extraction from eClaimLink XML."""
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.9</ct:DiagnosisCode>
+            <ct:ActivityDateTime>28/07/2025 09:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Service 1 instructions</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">120.00</RequestedAmount>
+        </ServiceRequest>
+        <ServiceRequest>
+            <ct:ActivityCode>83037</ct:ActivityCode>
+            <ct:DiagnosisCode>E11.8</ct:DiagnosisCode>
+            <ct:ActivityDateTime>29/07/2025 09:00</ct:ActivityDateTime>
+            <ct:ActivityInstructions>Service 2 instructions</ct:ActivityInstructions>
+            <RequestedAmount currency="AED">150.00</RequestedAmount>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
+        xml_file = temp_xml_file(eclaim_xml, "test_eclaim_services.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-        warnings = ingestor.validate_business_rules(result)
-        assert isinstance(warnings, list)
-
-    def test_service_request_normalization(self, ingestor, test_data_factory):
-        """Test service request normalization."""
-        services = [
-            test_data_factory.create_service_request(1),
-            test_data_factory.create_service_request(2),
-        ]
-        xml_data = test_data_factory.create_eclaim_xml(services=services)
-
-        import xmltodict
-
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
-
+        # Test services extraction
         assert len(result['services']) == 2
-        for i, service in enumerate(result['services'], 1):
-            assert service['id'] == i
-            assert 'activity_code' in service
-            assert 'diagnosis_code' in service
-            assert service['source_format'] == 'eClaimLink'
 
-    def test_minimal_data_handling(self, ingestor):
-        """Test handling of minimal required data."""
-        minimal_data = {
-            'PriorAuthorizationRequest': {
-                'Header': {
-                    'SenderID': 'TEST123',
-                    'ReceiverID': 'PAYER999',
-                    'TransactionDateTime': '01/01/2025 12:00',
-                    'TransactionID': 'MIN-001',
-                },
-                'ServiceRequests': {'ServiceRequest': {'ct:ActivityCode': '99213'}},
-            }
-        }
+        service1 = result['services'][0]
+        assert service1['sequence'] == 1
+        assert service1['activity_code'] == '83036'
+        assert service1['diagnosis_code'] == 'E11.9'
+        assert service1['requested_amount_value'] == '120.00'
+        assert service1['requested_amount_currency'] == 'AED'
 
-        result = ingestor.normalize(minimal_data)
-        assert result['format_name'] == 'eClaimLink'
-        assert len(result['services']) == 1
+        service2 = result['services'][1]
+        assert service2['sequence'] == 2
+        assert service2['activity_code'] == '83037'
+        assert service2['diagnosis_code'] == 'E11.8'
 
-    def test_missing_header_error(self, ingestor):
-        """Test error handling for missing header."""
-        invalid_data = {'PriorAuthorizationRequest': {'ServiceRequests': {}}}
+    def test_raw_data_preservation(self, processor, temp_xml_file):
+        """Test that raw XML data is preserved in output."""
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-        with pytest.raises(DataNormalizationError) as exc_info:
-            ingestor.normalize(invalid_data)
+        xml_file = temp_xml_file(eclaim_xml, "test_eclaim_raw.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-        assert 'Header' in str(exc_info.value)
-
-    def test_amount_extraction(self, ingestor, test_data_factory):
-        """Test amount extraction from service requests."""
-        service = test_data_factory.create_service_request(
-            1, RequestedAmount={'@currency': 'AED', '#text': '150.50'}
+        # Test raw data preservation
+        assert 'raw_data' in result
+        assert 'PriorAuthorizationRequest' in result['raw_data']
+        assert (
+            result['raw_data']['PriorAuthorizationRequest']['Header']['SenderID']
+            == 'PROV12345'
         )
-        xml_data = test_data_factory.create_eclaim_xml(services=[service])
 
-        import xmltodict
+    def test_amount_extraction_variations(self, processor, temp_xml_file):
+        """Test extraction of different amount formats."""
+        # Test with currency attribute
+        eclaim_xml_with_currency = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+            <RequestedAmount currency="AED">120.50</RequestedAmount>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
 
-        parsed_data = xmltodict.parse(xml_data)
-        result = ingestor.normalize(parsed_data)
+        xml_file = temp_xml_file(eclaim_xml_with_currency, "test_amount.xml")
+        result = processor.process_eclaim_link(xml_file)
 
-        service_result = result['services'][0]
-        assert service_result['requested_amount_currency'] == 'AED'
-        assert service_result['requested_amount_value'] == '150.50'
+        service = result['services'][0]
+        assert service['requested_amount_value'] == '120.50'
+        assert service['requested_amount_currency'] == 'AED'
+
+    def test_minimal_xml_handling(self, processor, temp_xml_file):
+        """Test handling of minimal XML structure."""
+        minimal_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>TEST123</SenderID>
+        <ReceiverID>PAYER999</ReceiverID>
+        <TransactionDateTime>01/01/2025 12:00</TransactionDateTime>
+        <TransactionID>MIN-001</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>99213</ct:ActivityCode>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
+
+        xml_file = temp_xml_file(minimal_xml, "test_minimal.xml")
+        result = processor.process_eclaim_link(xml_file)
+
+        assert result['resourceType'] == 'Bundle'
+        assert result['authorization_id'] == 'MIN-001'
+        assert result['sender'] == 'TEST123'
+        assert len(result['services']) == 1
+        assert result['services'][0]['activity_code'] == '99213'
+
+    def test_missing_file_error(self, processor):
+        """Test error handling for missing XML file."""
+        with pytest.raises(FileNotFoundError):
+            processor.process_eclaim_link("nonexistent_file.xml")
+
+    def test_bundle_metadata(self, processor, temp_xml_file):
+        """Test Bundle metadata generation."""
+        eclaim_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-2025-000456</TransactionID>
+    </Header>
+</PriorAuthorizationRequest>'''
+
+        xml_file = temp_xml_file(eclaim_xml, "test_metadata.xml")
+        result = processor.process_eclaim_link(xml_file)
+
+        # Test Bundle structure
+        assert result['resourceType'] == 'Bundle'
+        assert 'id' in result
+        assert result['id'].startswith('eClaimLink-')
+        assert result['type'] == 'collection'
+
+        # Test meta information
+        meta = result['meta']
+        assert meta['source'] == 'eClaimLink'
+        assert 'lastUpdated' in meta
+        assert 'versionId' in meta
+        assert meta['profile'] == [
+            'https://nazmito.com/fhir/StructureDefinition/healthcare-bundle'
+        ]
+
+    def test_single_service_vs_multiple_services(self, processor, temp_xml_file):
+        """Test handling of single service vs multiple services."""
+        # Test single service (not in list)
+        single_xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
+    <Header>
+        <SenderID>PROV12345</SenderID>
+        <ReceiverID>PAYER67890</ReceiverID>
+        <TransactionDateTime>27/07/2025 10:32</TransactionDateTime>
+        <TransactionID>TXN-SINGLE</TransactionID>
+    </Header>
+    <ServiceRequests>
+        <ServiceRequest>
+            <ct:ActivityCode>83036</ct:ActivityCode>
+            <RequestedAmount>100.00</RequestedAmount>
+        </ServiceRequest>
+    </ServiceRequests>
+</PriorAuthorizationRequest>'''
+
+        xml_file = temp_xml_file(single_xml, "test_single.xml")
+        result = processor.process_eclaim_link(xml_file)
+
+        assert len(result['services']) == 1
+        assert result['services'][0]['sequence'] == 1
+        assert result['services'][0]['requested_amount_value'] == '100.00'

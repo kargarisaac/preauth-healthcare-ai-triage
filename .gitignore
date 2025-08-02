@@ -1,2 +1,11 @@
 **__pycache__**
 .env
+*.log
+debug/
+logs/
+# Node dependencies
+ui-react/node_modules/
+# Vite build output
+ui-react/dist/
+# Cursor editor directory
+.cursor/

@@ -11,7 +11,9 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             },
-            "args": [],
+            "args": [
+                "samples/eclaim_link_request.xml"
+            ],
             "justMyCode": false,
             "stopOnEntry": false,
             "purpose": ["debug-test"],
@@ -72,9 +74,11 @@
                 "PYTHONPATH": "${workspaceFolder}",
                 "DEBUG_OUTPUT_FORMAT": "fhir_bundle"
             },
-            "args": [],
+            "args": [
+                "samples/eclaim_link_request.xml"
+            ],
             "justMyCode": false,
-            "stopOnEntry": true,
+            "stopOnEntry": false,
             "purpose": ["debug-test"],
             "presentation": {
                 "hidden": false,
