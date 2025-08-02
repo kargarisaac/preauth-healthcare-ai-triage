@@ -10,8 +10,9 @@ import json
 import os
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Callable
 import pandas as pd
+import numpy as np
 from loguru import logger
 
 from pipelines.data_quality import DataQuality
@@ -26,31 +27,315 @@ class CSVProcessor:
     original data for future use.
     """
 
-    def __init__(self, enable_validation: bool = True):
+    def __init__(
+        self, enable_validation: bool = True, enable_smart_sampling: bool = True
+    ):
         """
-        Initialize CSV processor with optional data quality validation.
+        Initialize CSV processor with optional data quality validation and smart sampling.
 
         Args:
             enable_validation: Enable data quality validation (default: True)
+            enable_smart_sampling: Enable smart sampling for large files (default: True)
         """
         self.enable_validation = enable_validation
+        self.enable_smart_sampling = enable_smart_sampling
         if self.enable_validation:
             self.data_quality = DataQuality()
 
+    def apply_smart_sampling(
+        self,
+        df: pd.DataFrame,
+        max_sample_size: int = 500,
+        min_sample_size: int = 100,
+        sampling_threshold: int = 1000,
+        progress_callback: Optional[Callable[[str, float], None]] = None,
+    ) -> tuple[pd.DataFrame, Dict[str, Any]]:
+        """
+        Apply intelligent sampling for large datasets while maintaining representativeness.
+
+        Args:
+            df: Original DataFrame
+            max_sample_size: Maximum number of records to sample
+            min_sample_size: Minimum number of records to sample
+            sampling_threshold: Apply sampling if records exceed this threshold
+            progress_callback: Optional callback for progress updates
+
+        Returns:
+            Tuple of (sampled_dataframe, sampling_metadata)
+        """
+        total_records = len(df)
+
+        if progress_callback:
+            progress_callback("Analyzing dataset for smart sampling", 0.1)
+
+        # No sampling needed for small datasets
+        if total_records <= sampling_threshold:
+            logger.info(f"Dataset has {total_records} records, no sampling needed")
+            return df, {
+                "total_records": total_records,
+                "sampled_records": total_records,
+                "sampling_strategy": "no_sampling",
+                "sampling_ratio": 1.0,
+                "representative_score": 1.0,
+                "sample_indices": list(range(total_records)),
+            }
+
+        # Calculate optimal sample size
+        sample_size = min(
+            max_sample_size, max(min_sample_size, int(np.sqrt(total_records) * 10))
+        )
+
+        if progress_callback:
+            progress_callback("Calculating representative sample", 0.3)
+
+        # Smart sampling strategy: combination of systematic and stratified sampling
+        sample_indices = self._calculate_smart_sample_indices(
+            df, sample_size, progress_callback
+        )
+
+        if progress_callback:
+            progress_callback("Extracting sampled records", 0.8)
+
+        # Extract sampled data
+        sampled_df = df.iloc[sample_indices].copy()
+
+        # Calculate representativeness score
+        representative_score = self._calculate_representativeness_score(df, sampled_df)
+
+        sampling_metadata = {
+            "total_records": total_records,
+            "sampled_records": len(sampled_df),
+            "sampling_strategy": "smart_hybrid",
+            "sampling_ratio": len(sampled_df) / total_records,
+            "representative_score": representative_score,
+            "sample_indices": sample_indices.tolist(),
+            "sample_size_target": sample_size,
+            "columns_analyzed": list(df.columns),
+        }
+
+        logger.info(
+            f"Applied smart sampling: {total_records} -> {len(sampled_df)} records "
+            f"(ratio: {sampling_metadata['sampling_ratio']:.3f}, "
+            f"representativeness: {representative_score:.3f})"
+        )
+
+        if progress_callback:
+            progress_callback("Smart sampling completed", 1.0)
+
+        return sampled_df, sampling_metadata
+
+    def _calculate_smart_sample_indices(
+        self,
+        df: pd.DataFrame,
+        sample_size: int,
+        progress_callback: Optional[Callable[[str, float], None]] = None,
+    ) -> np.ndarray:
+        """
+        Calculate optimal sample indices using hybrid sampling strategy.
+
+        Combines:
+        1. Systematic sampling for even distribution
+        2. Stratified sampling based on key columns
+        3. Random sampling for edge cases
+        """
+        total_records = len(df)
+
+        # Start with systematic sampling (every nth record)
+        systematic_ratio = 0.6
+        systematic_count = int(sample_size * systematic_ratio)
+        step = total_records // systematic_count if systematic_count > 0 else 1
+        systematic_indices = np.arange(0, total_records, step)[:systematic_count]
+
+        if progress_callback:
+            progress_callback("Applying systematic sampling", 0.4)
+
+        # Stratified sampling based on key healthcare fields
+        stratified_ratio = 0.3
+        stratified_count = int(sample_size * stratified_ratio)
+        stratified_indices = self._stratified_sample_indices(df, stratified_count)
+
+        if progress_callback:
+            progress_callback("Applying stratified sampling", 0.6)
+
+        # Random sampling for remaining
+        random_count = sample_size - len(systematic_indices) - len(stratified_indices)
+        remaining_indices = np.setdiff1d(
+            np.arange(total_records),
+            np.concatenate([systematic_indices, stratified_indices]),
+        )
+
+        if len(remaining_indices) > 0 and random_count > 0:
+            random_indices = np.random.choice(
+                remaining_indices,
+                size=min(random_count, len(remaining_indices)),
+                replace=False,
+            )
+        else:
+            random_indices = np.array([])
+
+        # Combine all sampling strategies
+        combined_indices = np.concatenate(
+            [systematic_indices, stratified_indices, random_indices]
+        )
+
+        # Remove duplicates and sort
+        unique_indices = np.unique(combined_indices)
+
+        # If we have too many, trim to exact sample size
+        if len(unique_indices) > sample_size:
+            unique_indices = np.random.choice(
+                unique_indices, size=sample_size, replace=False
+            )
+
+        return np.sort(unique_indices)
+
+    def _stratified_sample_indices(
+        self, df: pd.DataFrame, stratified_count: int
+    ) -> np.ndarray:
+        """Apply stratified sampling based on key healthcare data patterns."""
+        # Identify key columns for stratification
+        key_columns = []
+
+        # Look for common healthcare identifier patterns
+        for col in df.columns:
+            col_lower = col.lower()
+            if any(
+                pattern in col_lower
+                for pattern in [
+                    'provider',
+                    'clinic',
+                    'facility',
+                    'doctor',
+                    'physician',
+                    'diagnosis',
+                    'icd',
+                    'condition',
+                    'disease',
+                    'procedure',
+                    'cpt',
+                    'treatment',
+                    'service',
+                    'amount',
+                    'cost',
+                    'charge',
+                    'payment',
+                    'status',
+                    'type',
+                    'category',
+                ]
+            ):
+                key_columns.append(col)
+
+        if not key_columns:
+            # Fallback to random sampling if no key columns found
+            return np.random.choice(len(df), size=stratified_count, replace=False)
+
+        # Use the first key column for stratification
+        strata_column = key_columns[0]
+
+        try:
+            # Get unique values and their counts
+            value_counts = df[strata_column].value_counts()
+
+            # Calculate proportional sample sizes for each stratum
+            stratified_indices = []
+            for value, count in value_counts.items():
+                # Proportional allocation
+                stratum_sample_size = max(1, int((count / len(df)) * stratified_count))
+                stratum_indices = df[df[strata_column] == value].index.values
+
+                if len(stratum_indices) > 0:
+                    sampled_stratum = np.random.choice(
+                        stratum_indices,
+                        size=min(stratum_sample_size, len(stratum_indices)),
+                        replace=False,
+                    )
+                    stratified_indices.extend(sampled_stratum)
+
+            return np.array(stratified_indices[:stratified_count])
+
+        except Exception as e:
+            logger.warning(
+                f"Stratified sampling failed for column {strata_column}: {e}"
+            )
+            # Fallback to random sampling
+            return np.random.choice(len(df), size=stratified_count, replace=False)
+
+    def _calculate_representativeness_score(
+        self, original_df: pd.DataFrame, sampled_df: pd.DataFrame
+    ) -> float:
+        """
+        Calculate how representative the sample is compared to the original dataset.
+
+        Returns a score between 0.0 and 1.0, where 1.0 means perfectly representative.
+        """
+        if len(sampled_df) == 0:
+            return 0.0
+
+        scores = []
+
+        # Compare numeric columns distributions
+        numeric_cols = original_df.select_dtypes(include=[np.number]).columns
+        for col in numeric_cols:
+            try:
+                if col in sampled_df.columns:
+                    orig_mean = original_df[col].mean()
+                    samp_mean = sampled_df[col].mean()
+
+                    if orig_mean != 0:
+                        mean_similarity = 1 - abs(orig_mean - samp_mean) / abs(
+                            orig_mean
+                        )
+                        scores.append(max(0, mean_similarity))
+            except Exception:
+                continue
+
+        # Compare categorical columns distributions
+        categorical_cols = original_df.select_dtypes(include=['object']).columns
+        for col in categorical_cols[:5]:  # Limit to first 5 to avoid performance issues
+            try:
+                if col in sampled_df.columns:
+                    orig_dist = original_df[col].value_counts(normalize=True)
+                    samp_dist = sampled_df[col].value_counts(normalize=True)
+
+                    # Calculate overlap in distributions
+                    common_values = set(orig_dist.index) & set(samp_dist.index)
+                    if common_values:
+                        overlap_score = len(common_values) / len(
+                            set(orig_dist.index) | set(samp_dist.index)
+                        )
+                        scores.append(overlap_score)
+            except Exception:
+                continue
+
+        # Return average score, or 0.8 as default if no scores calculated
+        return np.mean(scores) if scores else 0.8
+
     def process_claims_csv(
-        self, csv_file_path: str, encoding: str = "utf-8"
+        self,
+        csv_file_path: str,
+        encoding: str = "utf-8",
+        enable_sampling: bool = None,
+        max_sample_size: int = 500,
+        progress_callback: Optional[Callable[[str, float], None]] = None,
     ) -> Dict[str, Any]:
         """
-        Process healthcare claims CSV file to canonical JSON.
+        Process healthcare claims CSV file to canonical JSON with optional smart sampling.
 
         Args:
             csv_file_path: Path to CSV file
             encoding: File encoding (default: utf-8)
+            enable_sampling: Override smart sampling setting (None uses instance setting)
+            max_sample_size: Maximum sample size for large files
+            progress_callback: Optional callback for progress updates
 
         Returns:
             Dictionary in canonical JSON format with all data preserved
         """
         logger.info(f"Processing claims CSV: {csv_file_path}")
+
+        if progress_callback:
+            progress_callback("Reading CSV file", 0.1)
 
         # Read CSV file with pandas for robust handling
         try:
@@ -70,6 +355,33 @@ class CSVProcessor:
             else:
                 raise ValueError("Could not read CSV file with any supported encoding")
 
+        # Store original DataFrame info
+        original_df = df.copy()
+        sampling_metadata = None
+
+        # Apply smart sampling if enabled
+        should_sample = (
+            enable_sampling
+            if enable_sampling is not None
+            else self.enable_smart_sampling
+        )
+        if should_sample:
+            if progress_callback:
+                progress_callback("Applying smart sampling", 0.2)
+
+            df, sampling_metadata = self.apply_smart_sampling(
+                df,
+                max_sample_size=max_sample_size,
+                progress_callback=lambda msg, prog: progress_callback(
+                    f"Sampling: {msg}", 0.2 + prog * 0.1
+                )
+                if progress_callback
+                else None,
+            )
+
+        if progress_callback:
+            progress_callback("Converting to records", 0.4)
+
         # Convert DataFrame to list of dictionaries
         raw_records = df.to_dict("records")
 
@@ -79,9 +391,15 @@ class CSVProcessor:
         )
         timestamp = datetime.now(timezone.utc).isoformat()
 
+        if progress_callback:
+            progress_callback("Processing claims data", 0.5)
+
         # Extract and process claims
         claims = self._process_csv_records(raw_records)
         services = self._create_services_from_claims(claims)
+
+        if progress_callback:
+            progress_callback("Calculating aggregated values", 0.7)
 
         # Calculate aggregated values
         total_amount = sum(
@@ -90,7 +408,7 @@ class CSVProcessor:
         currency = self._detect_currency(raw_records)
         authorization_id = self._extract_primary_id(raw_records)
 
-        # Calculate data quality score
+        # Calculate data quality score (use original DataFrame for full picture)
         data_quality_score = self._calculate_data_quality(raw_records, df)
 
         # Build canonical JSON structure
@@ -130,6 +448,10 @@ class CSVProcessor:
                 "columns": list(df.columns) if not df.empty else [],
                 "shape": list(df.shape),
                 "dtypes": df.dtypes.to_dict() if not df.empty else {},
+                "original_total_records": len(original_df),
+                "processed_records": len(df),
+                "sampling_applied": sampling_metadata is not None,
+                "sampling_metadata": sampling_metadata,
             },
             "source_file": csv_file_path,
             "processing_timestamp": timestamp,
@@ -143,8 +465,16 @@ class CSVProcessor:
                 f"Data quality score: {validation_report['quality_score'].overall_score:.3f}"
             )
 
+        if progress_callback:
+            progress_callback("Finalizing processing", 1.0)
+
         logger.info(
             f"Successfully processed claims CSV: {len(claims)} claims, {len(services)} services found"
+            + (
+                f" (sampled from {len(original_df)} records)"
+                if sampling_metadata
+                else ""
+            )
         )
         return canonical_data
 

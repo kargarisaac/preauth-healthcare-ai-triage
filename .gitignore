@@ -9,3 +9,4 @@ ui-react/node_modules/
 ui-react/dist/
 # Cursor editor directory
 .cursor/
+*debug*

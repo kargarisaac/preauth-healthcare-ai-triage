@@ -1,0 +1,311 @@
+/* LLM Validation and Analysis Styles */
+
+/* Custom animations for LLM components */
+@keyframes llm-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes confidence-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes thinking-dots {
+  0%, 20% {
+    color: rgba(0, 0, 0, 0.2);
+    text-shadow: 0.25em 0 0 rgba(0, 0, 0, 0.2),
+                 0.5em 0 0 rgba(0, 0, 0, 0.2);
+  }
+  40% {
+    color: rgba(0, 0, 0, 1);
+    text-shadow: 0.25em 0 0 rgba(0, 0, 0, 0.2),
+                 0.5em 0 0 rgba(0, 0, 0, 0.2);
+  }
+  60% {
+    text-shadow: 0.25em 0 0 rgba(0, 0, 0, 1),
+                 0.5em 0 0 rgba(0, 0, 0, 0.2);
+  }
+  80%, 100% {
+    text-shadow: 0.25em 0 0 rgba(0, 0, 0, 1),
+                 0.5em 0 0 rgba(0, 0, 0, 1);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* LLM Analysis Brain Icon Animation */
+.llm-brain-thinking {
+  animation: llm-pulse 2s ease-in-out infinite;
+}
+
+/* Confidence Progress Bar with Gradient */
+.confidence-progress {
+  background: linear-gradient(
+    45deg,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #10b981
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Real-time Connection Indicator */
+.realtime-indicator {
+  position: relative;
+}
+
+.realtime-indicator::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #3b82f6, transparent, #3b82f6);
+  border-radius: inherit;
+  z-index: -1;
+  animation: gradient-shift 2s linear infinite;
+}
+
+/* LLM Thinking Animation */
+.llm-thinking::after {
+  content: '...';
+  animation: thinking-dots 1.4s ease-in-out infinite;
+}
+
+/* Finding Type Colors */
+.finding-critical {
+  @apply bg-red-50 border-red-200 text-red-800;
+}
+
+.finding-warning {
+  @apply bg-yellow-50 border-yellow-200 text-yellow-800;
+}
+
+.finding-info {
+  @apply bg-blue-50 border-blue-200 text-blue-800;
+}
+
+.finding-success {
+  @apply bg-green-50 border-green-200 text-green-800;
+}
+
+/* Confidence Level Indicators */
+.confidence-high {
+  @apply text-green-600 bg-green-50 border-green-200;
+}
+
+.confidence-medium {
+  @apply text-yellow-600 bg-yellow-50 border-yellow-200;
+}
+
+.confidence-low {
+  @apply text-red-600 bg-red-50 border-red-200;
+}
+
+/* Progress Bar Animations */
+.progress-animated {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Card Hover Effects */
+.llm-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.llm-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1),
+              0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Expandable Content Animation */
+.expand-content {
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.expand-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.expand-content.expanded {
+  max-height: 1000px;
+  opacity: 1;
+}
+
+/* Tooltip Styles */
+.llm-tooltip {
+  @apply absolute z-50 px-3 py-2 text-sm bg-gray-900 text-white rounded-lg shadow-lg;
+  transform: translateX(-50%);
+}
+
+.llm-tooltip::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #1f2937;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .llm-card {
+    margin-bottom: 1rem;
+  }
+
+  .confidence-progress {
+    height: 0.75rem;
+  }
+
+  .llm-tooltip {
+    @apply text-xs px-2 py-1;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .finding-critical {
+    @apply bg-red-900 border-red-700 text-red-200;
+  }
+
+  .finding-warning {
+    @apply bg-yellow-900 border-yellow-700 text-yellow-200;
+  }
+
+  .finding-info {
+    @apply bg-blue-900 border-blue-700 text-blue-200;
+  }
+
+  .finding-success {
+    @apply bg-green-900 border-green-700 text-green-200;
+  }
+
+  .llm-card {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .llm-tooltip {
+    @apply bg-gray-800 text-gray-200;
+  }
+}
+
+/* Accessibility Improvements */
+.focus-visible:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .confidence-progress {
+    background: #000;
+  }
+
+  .llm-card {
+    @apply border-2 border-black;
+  }
+
+  .finding-critical {
+    @apply bg-white border-red-600 text-red-600;
+  }
+
+  .finding-warning {
+    @apply bg-white border-yellow-600 text-yellow-600;
+  }
+
+  .finding-info {
+    @apply bg-white border-blue-600 text-blue-600;
+  }
+
+  .finding-success {
+    @apply bg-white border-green-600 text-green-600;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .llm-card {
+    @apply shadow-none border border-gray-300;
+    break-inside: avoid;
+  }
+
+  .confidence-progress {
+    background: #333 !important;
+    animation: none !important;
+  }
+
+  .llm-brain-thinking {
+    animation: none !important;
+  }
+}
+
+/* Performance Optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Custom Scrollbars for Analysis Content */
+.analysis-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.analysis-scroll::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-lg;
+}
+
+.analysis-scroll::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-lg;
+}
+
+.analysis-scroll::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}

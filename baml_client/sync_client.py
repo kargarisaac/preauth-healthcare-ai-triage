@@ -92,19 +92,116 @@ class BamlSyncClient:
     def parse_stream(self):
         return self.__llm_stream_parser
 
-    def ExtractResume(
+    def AssessClinicalLogic(
         self,
-        resume: str,
+        data_sample: types.DataSample,
         baml_options: BamlCallOptions = {},
-    ) -> types.Resume:
+    ) -> types.LLMValidationResult:
         result = self.__options.merge_options(baml_options).call_function_sync(
-            function_name="ExtractResume",
+            function_name="AssessClinicalLogic",
             args={
-                "resume": resume,
+                "data_sample": data_sample,
             },
         )
         return typing.cast(
-            types.Resume, result.cast_to(types, types, stream_types, False, __runtime__)
+            types.LLMValidationResult,
+            result.cast_to(types, types, stream_types, False, __runtime__),
+        )
+
+    def ComprehensiveValidation(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> types.UIFriendlyReport:
+        result = self.__options.merge_options(baml_options).call_function_sync(
+            function_name="ComprehensiveValidation",
+            args={
+                "data_sample": data_sample,
+            },
+        )
+        return typing.cast(
+            types.UIFriendlyReport,
+            result.cast_to(types, types, stream_types, False, __runtime__),
+        )
+
+    def DetectDataAnomalies(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> types.LLMValidationResult:
+        result = self.__options.merge_options(baml_options).call_function_sync(
+            function_name="DetectDataAnomalies",
+            args={
+                "data_sample": data_sample,
+            },
+        )
+        return typing.cast(
+            types.LLMValidationResult,
+            result.cast_to(types, types, stream_types, False, __runtime__),
+        )
+
+    def GenerateQualityMetrics(
+        self,
+        validation_results: typing.List["types.LLMValidationResult"],
+        baml_options: BamlCallOptions = {},
+    ) -> types.QualityScore:
+        result = self.__options.merge_options(baml_options).call_function_sync(
+            function_name="GenerateQualityMetrics",
+            args={
+                "validation_results": validation_results,
+            },
+        )
+        return typing.cast(
+            types.QualityScore,
+            result.cast_to(types, types, stream_types, False, __runtime__),
+        )
+
+    def GenerateRecommendations(
+        self,
+        quality_report: types.DataQualityReport,
+        baml_options: BamlCallOptions = {},
+    ) -> typing.List["types.ActionableItem"]:
+        result = self.__options.merge_options(baml_options).call_function_sync(
+            function_name="GenerateRecommendations",
+            args={
+                "quality_report": quality_report,
+            },
+        )
+        return typing.cast(
+            typing.List["types.ActionableItem"],
+            result.cast_to(types, types, stream_types, False, __runtime__),
+        )
+
+    def ValidateCompliance(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> types.LLMValidationResult:
+        result = self.__options.merge_options(baml_options).call_function_sync(
+            function_name="ValidateCompliance",
+            args={
+                "data_sample": data_sample,
+            },
+        )
+        return typing.cast(
+            types.LLMValidationResult,
+            result.cast_to(types, types, stream_types, False, __runtime__),
+        )
+
+    def ValidateMedicalCodes(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> types.LLMValidationResult:
+        result = self.__options.merge_options(baml_options).call_function_sync(
+            function_name="ValidateMedicalCodes",
+            args={
+                "data_sample": data_sample,
+            },
+        )
+        return typing.cast(
+            types.LLMValidationResult,
+            result.cast_to(types, types, stream_types, False, __runtime__),
         )
 
 
@@ -114,25 +211,193 @@ class BamlStreamClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(
+    def AssessClinicalLogic(
         self,
-        resume: str,
+        data_sample: types.DataSample,
         baml_options: BamlCallOptions = {},
-    ) -> baml_py.BamlSyncStream[stream_types.Resume, types.Resume]:
+    ) -> baml_py.BamlSyncStream[
+        stream_types.LLMValidationResult, types.LLMValidationResult
+    ]:
         ctx, result = self.__options.merge_options(baml_options).create_sync_stream(
-            function_name="ExtractResume",
+            function_name="AssessClinicalLogic",
             args={
-                "resume": resume,
+                "data_sample": data_sample,
             },
         )
-        return baml_py.BamlSyncStream[stream_types.Resume, types.Resume](
+        return baml_py.BamlSyncStream[
+            stream_types.LLMValidationResult, types.LLMValidationResult
+        ](
             result,
             lambda x: typing.cast(
-                stream_types.Resume,
+                stream_types.LLMValidationResult,
                 x.cast_to(types, types, stream_types, True, __runtime__),
             ),
             lambda x: typing.cast(
-                types.Resume, x.cast_to(types, types, stream_types, False, __runtime__)
+                types.LLMValidationResult,
+                x.cast_to(types, types, stream_types, False, __runtime__),
+            ),
+            ctx,
+        )
+
+    def ComprehensiveValidation(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[stream_types.UIFriendlyReport, types.UIFriendlyReport]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(
+            function_name="ComprehensiveValidation",
+            args={
+                "data_sample": data_sample,
+            },
+        )
+        return baml_py.BamlSyncStream[
+            stream_types.UIFriendlyReport, types.UIFriendlyReport
+        ](
+            result,
+            lambda x: typing.cast(
+                stream_types.UIFriendlyReport,
+                x.cast_to(types, types, stream_types, True, __runtime__),
+            ),
+            lambda x: typing.cast(
+                types.UIFriendlyReport,
+                x.cast_to(types, types, stream_types, False, __runtime__),
+            ),
+            ctx,
+        )
+
+    def DetectDataAnomalies(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[
+        stream_types.LLMValidationResult, types.LLMValidationResult
+    ]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(
+            function_name="DetectDataAnomalies",
+            args={
+                "data_sample": data_sample,
+            },
+        )
+        return baml_py.BamlSyncStream[
+            stream_types.LLMValidationResult, types.LLMValidationResult
+        ](
+            result,
+            lambda x: typing.cast(
+                stream_types.LLMValidationResult,
+                x.cast_to(types, types, stream_types, True, __runtime__),
+            ),
+            lambda x: typing.cast(
+                types.LLMValidationResult,
+                x.cast_to(types, types, stream_types, False, __runtime__),
+            ),
+            ctx,
+        )
+
+    def GenerateQualityMetrics(
+        self,
+        validation_results: typing.List["types.LLMValidationResult"],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[stream_types.QualityScore, types.QualityScore]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(
+            function_name="GenerateQualityMetrics",
+            args={
+                "validation_results": validation_results,
+            },
+        )
+        return baml_py.BamlSyncStream[stream_types.QualityScore, types.QualityScore](
+            result,
+            lambda x: typing.cast(
+                stream_types.QualityScore,
+                x.cast_to(types, types, stream_types, True, __runtime__),
+            ),
+            lambda x: typing.cast(
+                types.QualityScore,
+                x.cast_to(types, types, stream_types, False, __runtime__),
+            ),
+            ctx,
+        )
+
+    def GenerateRecommendations(
+        self,
+        quality_report: types.DataQualityReport,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[
+        typing.List["stream_types.ActionableItem"], typing.List["types.ActionableItem"]
+    ]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(
+            function_name="GenerateRecommendations",
+            args={
+                "quality_report": quality_report,
+            },
+        )
+        return baml_py.BamlSyncStream[
+            typing.List["stream_types.ActionableItem"],
+            typing.List["types.ActionableItem"],
+        ](
+            result,
+            lambda x: typing.cast(
+                typing.List["stream_types.ActionableItem"],
+                x.cast_to(types, types, stream_types, True, __runtime__),
+            ),
+            lambda x: typing.cast(
+                typing.List["types.ActionableItem"],
+                x.cast_to(types, types, stream_types, False, __runtime__),
+            ),
+            ctx,
+        )
+
+    def ValidateCompliance(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[
+        stream_types.LLMValidationResult, types.LLMValidationResult
+    ]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(
+            function_name="ValidateCompliance",
+            args={
+                "data_sample": data_sample,
+            },
+        )
+        return baml_py.BamlSyncStream[
+            stream_types.LLMValidationResult, types.LLMValidationResult
+        ](
+            result,
+            lambda x: typing.cast(
+                stream_types.LLMValidationResult,
+                x.cast_to(types, types, stream_types, True, __runtime__),
+            ),
+            lambda x: typing.cast(
+                types.LLMValidationResult,
+                x.cast_to(types, types, stream_types, False, __runtime__),
+            ),
+            ctx,
+        )
+
+    def ValidateMedicalCodes(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[
+        stream_types.LLMValidationResult, types.LLMValidationResult
+    ]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(
+            function_name="ValidateMedicalCodes",
+            args={
+                "data_sample": data_sample,
+            },
+        )
+        return baml_py.BamlSyncStream[
+            stream_types.LLMValidationResult, types.LLMValidationResult
+        ](
+            result,
+            lambda x: typing.cast(
+                stream_types.LLMValidationResult,
+                x.cast_to(types, types, stream_types, True, __runtime__),
+            ),
+            lambda x: typing.cast(
+                types.LLMValidationResult,
+                x.cast_to(types, types, stream_types, False, __runtime__),
             ),
             ctx,
         )
@@ -144,15 +409,99 @@ class BamlHttpRequestClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(
+    def AssessClinicalLogic(
         self,
-        resume: str,
+        data_sample: types.DataSample,
         baml_options: BamlCallOptions = {},
     ) -> baml_py.baml_py.HTTPRequest:
         result = self.__options.merge_options(baml_options).create_http_request_sync(
-            function_name="ExtractResume",
+            function_name="AssessClinicalLogic",
             args={
-                "resume": resume,
+                "data_sample": data_sample,
+            },
+            mode="request",
+        )
+        return result
+
+    def ComprehensiveValidation(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="ComprehensiveValidation",
+            args={
+                "data_sample": data_sample,
+            },
+            mode="request",
+        )
+        return result
+
+    def DetectDataAnomalies(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="DetectDataAnomalies",
+            args={
+                "data_sample": data_sample,
+            },
+            mode="request",
+        )
+        return result
+
+    def GenerateQualityMetrics(
+        self,
+        validation_results: typing.List["types.LLMValidationResult"],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="GenerateQualityMetrics",
+            args={
+                "validation_results": validation_results,
+            },
+            mode="request",
+        )
+        return result
+
+    def GenerateRecommendations(
+        self,
+        quality_report: types.DataQualityReport,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="GenerateRecommendations",
+            args={
+                "quality_report": quality_report,
+            },
+            mode="request",
+        )
+        return result
+
+    def ValidateCompliance(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="ValidateCompliance",
+            args={
+                "data_sample": data_sample,
+            },
+            mode="request",
+        )
+        return result
+
+    def ValidateMedicalCodes(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="ValidateMedicalCodes",
+            args={
+                "data_sample": data_sample,
             },
             mode="request",
         )
@@ -165,15 +514,99 @@ class BamlHttpStreamRequestClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(
+    def AssessClinicalLogic(
         self,
-        resume: str,
+        data_sample: types.DataSample,
         baml_options: BamlCallOptions = {},
     ) -> baml_py.baml_py.HTTPRequest:
         result = self.__options.merge_options(baml_options).create_http_request_sync(
-            function_name="ExtractResume",
+            function_name="AssessClinicalLogic",
             args={
-                "resume": resume,
+                "data_sample": data_sample,
+            },
+            mode="stream",
+        )
+        return result
+
+    def ComprehensiveValidation(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="ComprehensiveValidation",
+            args={
+                "data_sample": data_sample,
+            },
+            mode="stream",
+        )
+        return result
+
+    def DetectDataAnomalies(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="DetectDataAnomalies",
+            args={
+                "data_sample": data_sample,
+            },
+            mode="stream",
+        )
+        return result
+
+    def GenerateQualityMetrics(
+        self,
+        validation_results: typing.List["types.LLMValidationResult"],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="GenerateQualityMetrics",
+            args={
+                "validation_results": validation_results,
+            },
+            mode="stream",
+        )
+        return result
+
+    def GenerateRecommendations(
+        self,
+        quality_report: types.DataQualityReport,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="GenerateRecommendations",
+            args={
+                "quality_report": quality_report,
+            },
+            mode="stream",
+        )
+        return result
+
+    def ValidateCompliance(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="ValidateCompliance",
+            args={
+                "data_sample": data_sample,
+            },
+            mode="stream",
+        )
+        return result
+
+    def ValidateMedicalCodes(
+        self,
+        data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(
+            function_name="ValidateMedicalCodes",
+            args={
+                "data_sample": data_sample,
             },
             mode="stream",
         )

@@ -85,6 +85,9 @@ Key endpoints:
 - Comprehensive logging with loguru
 - Complete error context for troubleshooting
 
+### Logging and Debugging
+- Never create any debug or log result of test anywhere outside of the @logs folder
+
 ## Documentation References
 - **System Architecture**: `docs/ARCHITECTURE.md`
 - **FHIR Implementation**: `docs/FHIR_GUIDE.md`
@@ -92,3 +95,6 @@ Key endpoints:
 - **CSV Processing**: `docs/csv_processing.md`
 - **Format Comparison**: `docs/format_comparison.md`
 - **Field Mappings**: `docs/field_mappings.md`
+
+## File Organization Guidelines
+- Always keep the documents related to one part or topic in one single file in @docs/

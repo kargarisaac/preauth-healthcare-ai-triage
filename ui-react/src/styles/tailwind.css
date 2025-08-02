@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import LLM Validation Styles */
+@import './llm-validation.css';
+
 @layer base {
   /* Font loading */
   html {

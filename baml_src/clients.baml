@@ -53,6 +53,29 @@ client<llm> OpenaiFallback {
   }
 }
 
+// Gemini 2.5 Flash client for fast parallel healthcare validation
+client<llm> GeminiFlash {
+  provider google-ai
+  retry_policy HealthcareRetry
+  options {
+    model "gemini-2.0-flash-exp"
+    api_key env.GOOGLE_AI_API_KEY
+    generationConfig {
+      temperature 0.1
+      maxOutputTokens 4096
+    }
+    finish_reason_allow_list ["stop"]
+  }
+}
+
+// Fast parallel validation client with fallback
+client<llm> ParallelValidator {
+  provider fallback
+  options {
+    strategy [GeminiFlash, CustomGPT4oMini, CustomHaiku]
+  }
+}
+
 // https://docs.boundaryml.com/docs/snippets/clients/retry
 retry_policy Constant {
   max_retries 3
@@ -71,5 +94,15 @@ retry_policy Exponential {
     delay_ms 300
     multiplier 1.5
     max_delay_ms 10000
+  }
+}
+
+retry_policy HealthcareRetry {
+  max_retries 3
+  strategy {
+    type exponential_backoff
+    delay_ms 500
+    multiplier 2.0
+    max_delay_ms 15000
   }
 }

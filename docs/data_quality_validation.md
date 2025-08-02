@@ -1,12 +1,24 @@
 # Data Quality Validation System
 
+Comprehensive guide to Nazmito's multi-layered data quality validation system combining rule-based checks with LLM-powered analysis for UAE healthcare data.
+
 ## Overview
 
-The Data Quality Validation System is a comprehensive rule-based framework that validates healthcare data against clinical and business standards, ensuring high-quality data flows through to enhanced decision-making processes. This system validates all 6 FHIR resources against UAE healthcare standards including ICD-10-AM, CPT codes, LOINC lab codes, RxNorm medication codes, and SNOMED-CT clinical terminology.
+The Data Quality Validation System provides both traditional rule-based validation and advanced LLM-enhanced analysis:
 
-## How Validation Works
+- **Traditional Rule-Based Validation**: Fast, deterministic checks for structural and format validation
+- **LLM-Enhanced Validation**: Intelligent analysis of clinical logic, compliance, and data anomalies
+- **Hybrid Scoring**: Combined confidence metrics from both validation approaches
+- **Real-Time Processing**: Parallel execution with live progress updates
+- **Smart Sampling**: Efficient processing of large datasets while maintaining accuracy
 
-The validation system uses **deterministic rule-based validation** with mathematical scoring - **no LLMs are involved**. This approach ensures reliability, explainability, and regulatory compliance required in healthcare systems.
+The system validates all FHIR resources against UAE healthcare standards including ICD-10-AM, CPT codes, LOINC lab codes, RxNorm medication codes, and SNOMED-CT clinical terminology.
+
+## Validation Approaches
+
+### Rule-Based Validation (Traditional)
+
+The core validation system uses **deterministic rule-based validation** with mathematical scoring. This approach ensures reliability, explainability, and regulatory compliance required in healthcare systems.
 
 ### Validation Architecture
 
@@ -259,35 +271,210 @@ sequenceDiagram
 }
 ```
 
-## Why No LLMs?
+## LLM-Enhanced Validation
 
-### Advantages of Rule-Based Approach
+### BAML Functions Overview
 
-| Aspect | Rule-Based | LLM-Based |
-|--------|------------|-----------|
-| **Consistency** | ✅ Deterministic | ❌ Stochastic |
-| **Speed** | ✅ <1ms | ❌ Seconds |
-| **Explainability** | ✅ Clear audit trail | ❌ Black box |
-| **Cost** | ✅ No API costs | ❌ Expensive at scale |
-| **Regulatory** | ✅ Audit-friendly | ❌ Hard to certify |
-| **Reliability** | ✅ No hallucinations | ❌ Can hallucinate |
+The system uses 5 specialized BAML functions for comprehensive LLM validation:
 
-### When LLMs Might Be Used (Future)
+#### 1. UAE Compliance Validation (`ValidateCompliance`)
+- **Purpose**: Ensures adherence to UAE healthcare regulations
+- **Checks**: DHA/DOH compliance, cross-emirate referrals, authorization requirements
+- **Model**: Gemini Flash (cost-effective, healthcare-optimized)
+
+#### 2. Clinical Logic Assessment (`AssessClinicalLogic`)
+- **Purpose**: Validates medical reasoning and treatment appropriateness
+- **Checks**: Diagnosis-treatment alignment, age-appropriate care, procedure consistency
+- **Model**: GPT-4o-mini (clinical reasoning capabilities)
+
+#### 3. Data Anomaly Detection (`DetectDataAnomalies`)
+- **Purpose**: Identifies patterns and outliers in healthcare data
+- **Checks**: Statistical outliers, temporal inconsistencies, duplicate patterns
+- **Model**: Round-robin (Gemini Flash, GPT-4o-mini)
+
+#### 4. Medical Code Validation (`ValidateMedicalCodes`)
+- **Purpose**: Validates medical coding accuracy and currency
+- **Checks**: Code validity, deprecation status, UAE-specific codes
+- **Model**: Fallback chain (Gemini Flash → GPT-4o-mini → Claude Haiku)
+
+#### 5. Comprehensive Validation (`ComprehensiveValidation`)
+- **Purpose**: Generates UI-friendly summary of all validation results
+- **Output**: Overall grade, actionable recommendations, prioritized issues
+- **Model**: Claude Sonnet (best reasoning for synthesis)
+
+### BAML Implementation
+
+```python
+from baml_client import b
+import asyncio
+
+# Prepare data sample
+data_sample = {
+    "resource_type": "HealthcareBundle",
+    "raw_data": json.dumps(healthcare_data),
+    "context": {
+        "source_system": "eClaimLink",
+        "emirate": "Dubai",
+        "provider_type": "Hospital",
+        "processing_date": "2025-08-02"
+    }
+}
+
+# Parallel LLM validation
+async def validate_with_llm(data_sample):
+    # Execute all validations in parallel
+    results = await asyncio.gather(
+        b.ValidateCompliance(data_sample),
+        b.AssessClinicalLogic(data_sample),
+        b.DetectDataAnomalies(data_sample),
+        b.ValidateMedicalCodes(data_sample)
+    )
+
+    # Generate comprehensive report
+    ui_report = await b.ComprehensiveValidation(data_sample)
+
+    return {
+        "compliance": results[0],
+        "clinical": results[1],
+        "anomalies": results[2],
+        "codes": results[3],
+        "summary": ui_report
+    }
+```
+
+## Smart Sampling for Large Datasets
+
+### Sampling Strategy
+
+For CSV files exceeding 1000 records, smart sampling ensures representative analysis:
+
+#### 1. Hybrid Sampling Approach
+- **60% Systematic Sampling**: Every nth record for even distribution
+- **30% Stratified Sampling**: Representative samples from key categories
+- **10% Random Sampling**: Pure randomness for edge case detection
+
+#### 2. Sample Size Calculation
+```python
+def calculate_sample_size(total_records):
+    """Calculate optimal sample size based on dataset size"""
+    base_size = int(math.sqrt(total_records) * 10)
+    return min(500, max(100, base_size))
+
+# Examples:
+# 1,000 records → 316 samples
+# 5,000 records → 500 samples (capped)
+# 10,000 records → 500 samples (capped)
+```
+
+#### 3. Implementation
+
+```python
+from pipelines.llm_data_sampler import LLMDataSampler
+
+# Initialize sampler
+sampler = LLMDataSampler()
+
+# Smart sampling for large datasets
+if len(csv_data) > 1000:
+    sample_data = sampler.create_smart_sample(
+        data=csv_data,
+        target_size=calculate_sample_size(len(csv_data)),
+        strategy='hybrid'
+    )
+
+    print(f"Sampled {len(sample_data)} from {len(csv_data)} records")
+    print(f"Representativeness: {sample_data.metadata.representative_score:.2%}")
+else:
+    sample_data = csv_data  # Use full dataset
+```
+
+## Hybrid Scoring System
+
+### Quality Score Components
+
+The system generates comprehensive quality metrics combining both validation approaches:
+
+```python
+class QualityScore:
+    overall_score: float          # 0.0 - 1.0 overall quality
+    compliance_score: float       # UAE healthcare compliance
+    clinical_logic_score: float   # Medical reasoning quality
+    data_completeness_score: float # Data completeness %
+    code_validity_score: float    # Medical code accuracy
+
+    # Issue counts by severity
+    total_issues: int
+    critical_issues: int          # Must fix (authorization missing)
+    error_issues: int            # Should fix (invalid codes)
+    warning_issues: int          # May fix (deprecated codes)
+    info_issues: int             # FYI (enhancement suggestions)
+```
+
+### Scoring Algorithm
+
+```python
+def calculate_hybrid_score(rule_based_result, llm_results):
+    """Combine rule-based and LLM validation scores"""
+
+    # Base score from rule-based validation (fast, reliable)
+    base_score = (
+        rule_based_result.completeness_score * 0.3 +
+        rule_based_result.validity_score * 0.4 +
+        rule_based_result.consistency_score * 0.3
+    )
+
+    # LLM confidence weighting (higher confidence = more influence)
+    llm_confidence = sum(result.confidence_score for result in llm_results) / len(llm_results)
+    llm_weight = min(0.7, llm_confidence)  # Cap LLM influence at 70%
+
+    # LLM average score
+    llm_score = sum(
+        1.0 if result.validation_passed else 0.5  # Partial credit for identified issues
+        for result in llm_results
+    ) / len(llm_results)
+
+    # Weighted combination
+    final_score = (
+        base_score * (1 - llm_weight) +
+        llm_score * llm_weight
+    )
+
+    return min(1.0, max(0.0, final_score))
+```
+
+## Rule-Based vs LLM-Enhanced Validation
+
+### Comparison
+
+| Aspect | Rule-Based | LLM-Enhanced |
+|--------|------------|-------------|
+| **Consistency** | ✅ Deterministic | ⚠️ High confidence with proper prompting |
+| **Speed** | ✅ <1ms | ⚠️ 2-5 seconds (parallel execution) |
+| **Explainability** | ✅ Clear audit trail | ✅ Detailed reasoning provided |
+| **Cost** | ✅ No API costs | ⚠️ Optimized with fast models |
+| **Regulatory** | ✅ Audit-friendly | ✅ Confidence scores + reasoning |
+| **Complex Analysis** | ❌ Limited to coded rules | ✅ Advanced pattern recognition |
+
+### When Each Approach Is Used
 
 ```mermaid
 flowchart LR
-    A[Current: Rule-Based<br/>Validation] --> B[Future: Hybrid<br/>Approach]
+    A[Healthcare Data] --> B{Data Type}
 
-    B --> C[Structured Data<br/>Rules Engine]
-    B --> D[Unstructured Text<br/>LLM Analysis]
+    B -->|Structured| C[Rule-Based Validation]
+    B -->|Complex Patterns| D[LLM-Enhanced Validation]
+    B -->|Large Datasets| E[Smart Sampling + Both]
 
-    C --> E[Code Validation<br/>Clinical Rules]
-    D --> F[Free-text Notes<br/>Justification Analysis]
+    C --> F[Format/Code Validation]
+    D --> G[Clinical Logic Analysis]
+    E --> H[Representative Analysis]
 
-    style A fill:#c8e6c9
-    style B fill:#fff3e0
-    style C fill:#e3f2fd
-    style D fill:#f3e5f5
+    F --> I[Combined Quality Score]
+    G --> I
+    H --> I
+
+    style A fill:#e1f5fe
+    style I fill:#c8e6c9
 ```
 
 ## Integration with Processors

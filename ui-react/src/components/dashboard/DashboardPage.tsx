@@ -8,11 +8,13 @@ import {
   Bell,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  Brain
 } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
+import { LLMDashboard } from './LLMDashboard';
 
 interface DashboardPageProps {
   className?: string;
@@ -33,6 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navigationItems = [
     { id: 'analytics', label: 'Analytics', icon: <BarChart3 className="h-5 w-5" /> },
+    { id: 'llm-analysis', label: 'LLM Analysis', icon: <Brain className="h-5 w-5" /> },
     { id: 'processing', label: 'Processing', icon: <FileText className="h-5 w-5" /> },
     { id: 'providers', label: 'Providers', icon: <Users className="h-5 w-5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> }
@@ -136,6 +139,7 @@ const TopBar: React.FC<{
   const getSectionTitle = () => {
     switch (activeSection) {
       case 'analytics': return 'Analytics Dashboard';
+      case 'llm-analysis': return 'LLM Analysis Dashboard';
       case 'processing': return 'Processing Center';
       case 'providers': return 'Provider Management';
       case 'settings': return 'System Settings';
@@ -302,6 +306,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <div className="p-6">
             {activeSection === 'analytics' ? (
               <AnalyticsDashboard />
+            ) : activeSection === 'llm-analysis' ? (
+              <LLMDashboard />
             ) : (
               <EmptyState section={activeSection} />
             )}
