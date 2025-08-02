@@ -1,6 +1,7 @@
 repos:
   - repo: https://github.com/psf/black
     rev: 23.11.0
+    exclude: ^baml_client/.*
     hooks:
       - id: black
         language_version: python3.11
@@ -8,12 +9,14 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.8
+    exclude: ^baml_client/.*
     hooks:
       - id: ruff
         args: ["--fix"]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
+    exclude: ^baml_client/.*
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer

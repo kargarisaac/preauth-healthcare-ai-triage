@@ -221,7 +221,7 @@ class ParallelLLMValidator:
 
                 # Add processing time to the result
                 processing_time_ms = int((time.time() - start_time) * 1000)
-                if hasattr(result, 'processing_time_ms'):
+                if hasattr(result, "processing_time_ms"):
                     result.processing_time_ms = processing_time_ms
 
                 self.successful_requests += 1
