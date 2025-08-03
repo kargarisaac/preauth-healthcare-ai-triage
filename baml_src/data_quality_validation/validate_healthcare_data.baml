@@ -4,29 +4,8 @@
 // multi-function validation approach into 2 focused functions for better
 // performance and cost-effectiveness.
 
-// Streamlined data structures for validation
-class ValidationResult {
-  overall_quality_score float @description("Overall data quality score 0.0-1.0")
-  confidence_score float @description("LLM confidence in analysis 0.0-1.0")
-
-  validation_passed bool @description("Whether data passes basic quality checks")
-
-  // Issue summary (instead of complex nested structures)
-  critical_issues int @description("Number of critical issues found")
-  warning_issues int @description("Number of warning issues found")
-  info_issues int @description("Number of informational findings")
-
-  // Top issues for actionable feedback
-  top_issues string[] @description("Top 3-5 most important issues to address")
-  recommendations string[] @description("Specific actionable recommendations")
-
-  // Processing metadata
-  processing_time_ms int @description("Processing time in milliseconds")
-  model_used string @description("LLM model used for validation")
-
-  // Optional detailed reasoning for transparency
-  reasoning string? @description("Brief explanation of validation approach")
-}
+// LLM input structure
+// DataContext
 
 // Single comprehensive validation function replacing 5 specialized functions
 function ValidateHealthcareData(data_sample: DataSample) -> ValidationResult {
@@ -92,47 +71,6 @@ function ValidateHealthcareData(data_sample: DataSample) -> ValidationResult {
   "#
 }
 
-// UI-friendly report generation function
-function GenerateQualityReport(validation_result: ValidationResult) -> UIFriendlyReport {
-  client GPT4oMini
-  prompt #"
-    You are a healthcare data analyst creating user-friendly reports for insurance processors.
-
-    Based on the following validation results, create a comprehensive but accessible report:
-
-    Validation Results: {{ validation_result }}
-
-    Generate a report that includes:
-
-    **1. Executive Summary:**
-    - Overall data fitness for processing (Excellent/Good/Fair/Poor)
-    - Key compliance status with UAE regulations
-    - Major findings that require immediate attention
-
-    **2. Quality Assessment:**
-    - Letter grade (A-F) based on quality score
-    - Breakdown of issue types and counts
-    - Confidence level in the analysis
-
-    **3. Actionable Recommendations:**
-    - Prioritized list of improvements
-    - Specific steps to address critical issues
-    - Process improvements for future submissions
-
-    **4. Compliance Status:**
-    - DHA/DOH regulatory compliance summary
-    - Required documentation status
-    - Authorization and approval requirements
-
-    The report should be:
-    - Clear and actionable for non-technical users
-    - Focused on business impact and next steps
-    - Compliant with UAE healthcare standards
-    - Professional but accessible language
-
-    {{ ctx.output_format }}
-  "#
-}
 
 // Test cases for the streamlined validation functions
 test validation_excellent_quality {
@@ -198,25 +136,6 @@ test validation_multiple_issues {
         provider_type "Hospital"
         patient_category "Visitor"
       }
-    }
-  }
-}
-
-test quality_report_generation {
-  functions [GenerateQualityReport]
-  args {
-    validation_result {
-      overall_quality_score 0.85
-      confidence_score 0.92
-      validation_passed true
-      critical_issues 0
-      warning_issues 2
-      info_issues 3
-      top_issues ["Date format should be standardized", "Provider license verification recommended"]
-      recommendations ["Standardize all dates to ISO 8601 format", "Verify provider licensing status"]
-      processing_time_ms 1200
-      model_used "gpt-4o-mini"
-      reasoning "High-quality data with minor formatting inconsistencies"
     }
   }
 }

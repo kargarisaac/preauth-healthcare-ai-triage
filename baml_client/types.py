@@ -15,57 +15,30 @@ import typing_extensions
 from enum import Enum
 
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
+import baml_py
 
 CheckT = typing_extensions.TypeVar('CheckT')
 CheckName = typing_extensions.TypeVar('CheckName', bound=str)
-
 
 class Check(BaseModel):
     name: str
     expression: str
     status: str
-
-
 class Checked(BaseModel, typing.Generic[CheckT, CheckName]):
     value: CheckT
     checks: typing.Dict[CheckName, Check]
 
-
 def get_checks(checks: typing.Dict[CheckName, Check]) -> typing.List[Check]:
     return list(checks.values())
 
-
 def all_succeeded(checks: typing.Dict[CheckName, Check]) -> bool:
     return all(check.status == "succeeded" for check in get_checks(checks))
-
-
 # #########################################################################
-# Generated enums (4)
+# Generated enums (2)
 # #########################################################################
-
-
-class CodingSystem(str, Enum):
-    ICD_10_AM = "ICD_10_AM"
-    CPT = "CPT"
-    SNOMED_CT = "SNOMED_CT"
-    LOINC = "LOINC"
-    DHA_LOCAL = "DHA_LOCAL"
-    DOH_LOCAL = "DOH_LOCAL"
-    UNKNOWN = "UNKNOWN"
-
-
-class UAEHealthcareEntity(str, Enum):
-    DHA = "DHA"
-    DOH_AD = "DOH_AD"
-    MOHAP = "MOHAP"
-    SEHA = "SEHA"
-    DHA_INSURANCE = "DHA_INSURANCE"
-    PRIVATE_INSURANCE = "PRIVATE_INSURANCE"
-    UNKNOWN = "UNKNOWN"
-
 
 class ValidationSeverity(str, Enum):
     INFO = "INFO"
@@ -73,18 +46,15 @@ class ValidationSeverity(str, Enum):
     ERROR = "ERROR"
     CRITICAL = "CRITICAL"
 
-
 class ValidationType(str, Enum):
     COMPLIANCE = "COMPLIANCE"
     CLINICAL = "CLINICAL"
     DATA_QUALITY = "DATA_QUALITY"
     CODE_VALIDATION = "CODE_VALIDATION"
 
-
 # #########################################################################
-# Generated classes (53)
+# Generated classes (7)
 # #########################################################################
-
 
 class ActionableItem(BaseModel):
     priority: str
@@ -96,219 +66,6 @@ class ActionableItem(BaseModel):
     affected_fields: typing.Optional[typing.List[str]] = None
     regulation_reference: typing.Optional[str] = None
 
-
-class Address(BaseModel):
-    use: typing.Optional[str] = None
-    type: typing.Optional[str] = None
-    text: typing.Optional[str] = None
-    line: typing.Optional[typing.List[str]] = None
-    city: typing.Optional[str] = None
-    district: typing.Optional[str] = None
-    state: typing.Optional[str] = None
-    postalCode: typing.Optional[str] = None
-    country: typing.Optional[str] = None
-    period: typing.Optional["Period"] = None
-
-
-class Annotation(BaseModel):
-    author_reference: typing.Optional["Reference"] = None
-    author_string: typing.Optional[str] = None
-    time: typing.Optional[str] = None
-    text: str
-
-
-class Attachment(BaseModel):
-    contentType: typing.Optional[str] = None
-    language: typing.Optional[str] = None
-    data: typing.Optional[str] = None
-    url: typing.Optional[str] = None
-    size: typing.Optional[int] = None
-    hash: typing.Optional[str] = None
-    title: typing.Optional[str] = None
-    creation: typing.Optional[str] = None
-
-
-class BundleEntry(BaseModel):
-    id: typing.Optional[str] = None
-    resource: "FHIRResource"
-    fullUrl: typing.Optional[str] = None
-    search: typing.Optional["EntrySearch"] = None
-    request: typing.Optional["EntryRequest"] = None
-    response: typing.Optional["EntryResponse"] = None
-
-
-class BundleIdentifier(BaseModel):
-    use: typing.Optional[str] = None
-    type: typing.Optional["CodeableConcept"] = None
-    system: typing.Optional[str] = None
-    value: str
-    period: typing.Optional["Period"] = None
-
-
-class BundleMeta(BaseModel):
-    lastUpdated: typing.Optional[str] = None
-    profile: typing.Optional[typing.List[str]] = None
-    source: typing.Optional[str] = None
-    tag: typing.Optional[typing.List["Coding"]] = None
-
-
-class ClaimCareTeam(BaseModel):
-    sequence: int
-    provider: "Reference"
-    responsible: typing.Optional[bool] = None
-    role: typing.Optional["CodeableConcept"] = None
-    qualification: typing.Optional["CodeableConcept"] = None
-
-
-class ClaimDiagnosis(BaseModel):
-    sequence: int
-    diagnosis_codeable_concept: typing.Optional["CodeableConcept"] = None
-    diagnosis_reference: typing.Optional["Reference"] = None
-    type: typing.Optional[typing.List["CodeableConcept"]] = None
-    on_admission: typing.Optional["CodeableConcept"] = None
-    package_code: typing.Optional["CodeableConcept"] = None
-
-
-class ClaimInsurance(BaseModel):
-    sequence: int
-    focal: bool
-    identifier: typing.Optional["Identifier"] = None
-    coverage: "Reference"
-    business_arrangement: typing.Optional[str] = None
-    pre_auth_ref: typing.Optional[typing.List[str]] = None
-    claim_response: typing.Optional["Reference"] = None
-
-
-class ClaimItem(BaseModel):
-    sequence: int
-    care_team_sequence: typing.Optional[typing.List[int]] = None
-    diagnosis_sequence: typing.Optional[typing.List[int]] = None
-    procedure_sequence: typing.Optional[typing.List[int]] = None
-    information_sequence: typing.Optional[typing.List[int]] = None
-    revenue: typing.Optional["CodeableConcept"] = None
-    category: typing.Optional["CodeableConcept"] = None
-    product_or_service: "CodeableConcept"
-    modifier: typing.Optional[typing.List["CodeableConcept"]] = None
-    program_code: typing.Optional[typing.List["CodeableConcept"]] = None
-    serviced_date: typing.Optional[str] = None
-    serviced_period: typing.Optional["Period"] = None
-    location_codeable_concept: typing.Optional["CodeableConcept"] = None
-    location_address: typing.Optional["Address"] = None
-    location_reference: typing.Optional["Reference"] = None
-    quantity: typing.Optional["Quantity"] = None
-    unit_price: typing.Optional["MoneyAmount"] = None
-    factor: typing.Optional[float] = None
-    net: typing.Optional["MoneyAmount"] = None
-    udi: typing.Optional[typing.List["Reference"]] = None
-    body_site: typing.Optional[typing.List["CodeableConcept"]] = None
-    sub_site: typing.Optional[typing.List["CodeableConcept"]] = None
-    encounter: typing.Optional[typing.List["Reference"]] = None
-    detail: typing.Optional[typing.List["ClaimItemDetail"]] = None
-
-
-class ClaimItemDetail(BaseModel):
-    sequence: int
-    revenue: typing.Optional["CodeableConcept"] = None
-    category: typing.Optional["CodeableConcept"] = None
-    product_or_service: "CodeableConcept"
-    modifier: typing.Optional[typing.List["CodeableConcept"]] = None
-    program_code: typing.Optional[typing.List["CodeableConcept"]] = None
-    quantity: typing.Optional["Quantity"] = None
-    unit_price: typing.Optional["MoneyAmount"] = None
-    factor: typing.Optional[float] = None
-    net: typing.Optional["MoneyAmount"] = None
-    udi: typing.Optional[typing.List["Reference"]] = None
-    sub_detail: typing.Optional[typing.List["ClaimItemSubDetail"]] = None
-
-
-class ClaimItemSubDetail(BaseModel):
-    sequence: int
-    revenue: typing.Optional["CodeableConcept"] = None
-    category: typing.Optional["CodeableConcept"] = None
-    product_or_service: "CodeableConcept"
-    modifier: typing.Optional[typing.List["CodeableConcept"]] = None
-    program_code: typing.Optional[typing.List["CodeableConcept"]] = None
-    quantity: typing.Optional["Quantity"] = None
-    unit_price: typing.Optional["MoneyAmount"] = None
-    factor: typing.Optional[float] = None
-    net: typing.Optional["MoneyAmount"] = None
-    udi: typing.Optional[typing.List["Reference"]] = None
-
-
-class ClaimPayee(BaseModel):
-    type: "CodeableConcept"
-    party: typing.Optional["Reference"] = None
-
-
-class ClaimProcedure(BaseModel):
-    sequence: int
-    type: typing.Optional[typing.List["CodeableConcept"]] = None
-    date: typing.Optional[str] = None
-    procedure_codeable_concept: typing.Optional["CodeableConcept"] = None
-    procedure_reference: typing.Optional["Reference"] = None
-    udi: typing.Optional[typing.List["Reference"]] = None
-
-
-class ClaimRelated(BaseModel):
-    claim: typing.Optional["Reference"] = None
-    relationship: typing.Optional["CodeableConcept"] = None
-    reference: typing.Optional["Identifier"] = None
-
-
-class ClaimResource(BaseModel):
-    resourceType: str
-    id: typing.Optional[str] = None
-    status: str
-    type: "CodeableConcept"
-    use: str
-    patient: "Reference"
-    created: str
-    insurer: "Reference"
-    provider: "Reference"
-    priority: typing.Optional["CodeableConcept"] = None
-    fundsReserve: typing.Optional["CodeableConcept"] = None
-    authorization_id: typing.Optional[str] = None
-    emirate: typing.Optional[str] = None
-    related: typing.Optional[typing.List["ClaimRelated"]] = None
-    payee: typing.Optional["ClaimPayee"] = None
-    referral: typing.Optional["Reference"] = None
-    facility: typing.Optional["Reference"] = None
-    careTeam: typing.Optional[typing.List["ClaimCareTeam"]] = None
-    supportingInfo: typing.Optional[typing.List["ClaimSupportingInfo"]] = None
-    diagnosis: typing.Optional[typing.List["ClaimDiagnosis"]] = None
-    procedure: typing.Optional[typing.List["ClaimProcedure"]] = None
-    insurance: typing.List["ClaimInsurance"]
-    item: typing.Optional[typing.List["ClaimItem"]] = None
-    total: typing.Optional["MoneyAmount"] = None
-
-
-class ClaimSupportingInfo(BaseModel):
-    sequence: int
-    category: "CodeableConcept"
-    code: typing.Optional["CodeableConcept"] = None
-    timing_date: typing.Optional[str] = None
-    timing_period: typing.Optional["Period"] = None
-    value_boolean: typing.Optional[bool] = None
-    value_string: typing.Optional[str] = None
-    value_quantity: typing.Optional["Quantity"] = None
-    value_attachment: typing.Optional["Attachment"] = None
-    value_reference: typing.Optional["Reference"] = None
-    reason: typing.Optional["Coding"] = None
-
-
-class CodeableConcept(BaseModel):
-    coding: typing.Optional[typing.List["Coding"]] = None
-    text: typing.Optional[str] = None
-
-
-class Coding(BaseModel):
-    system: typing.Optional[str] = None
-    version: typing.Optional[str] = None
-    code: typing.Optional[str] = None
-    display: typing.Optional[str] = None
-    userSelected: typing.Optional[bool] = None
-
-
 class DataContext(BaseModel):
     source_system: typing.Optional[str] = None
     emirate: typing.Optional[str] = None
@@ -317,228 +74,10 @@ class DataContext(BaseModel):
     processing_date: typing.Optional[str] = None
     claim_type: typing.Optional[str] = None
 
-
-class DataQualityReport(BaseModel):
-    bundle_id: typing.Optional[str] = None
-    assessed_at: str
-    quality_score: "QualityScore"
-    validation_issues: typing.List["ValidationIssue"]
-    summary: "DataQualitySummary"
-    recommendations: typing.Optional[typing.List[str]] = None
-    total_resources: int
-    resources_assessed: int
-    assessment_duration_ms: typing.Optional[int] = None
-
-
-class DataQualitySummary(BaseModel):
-    total_records: int
-    valid_records: int
-    invalid_records: int
-    required_fields_missing: int
-    invalid_formats: int
-    inconsistent_references: int
-    missing_authorization_ids: int
-    invalid_emirates: int
-    unlicensed_providers: int
-    invalid_icd_codes: int
-    invalid_cpt_codes: int
-    deprecated_codes: int
-
-
 class DataSample(BaseModel):
     resource_type: str
     raw_data: str
     context: typing.Optional["DataContext"] = None
-
-
-class EntryRequest(BaseModel):
-    method: str
-    url: str
-    ifNoneMatch: typing.Optional[str] = None
-    ifModifiedSince: typing.Optional[str] = None
-    ifMatch: typing.Optional[str] = None
-    ifNoneExist: typing.Optional[str] = None
-
-
-class EntryResponse(BaseModel):
-    status: str
-    location: typing.Optional[str] = None
-    etag: typing.Optional[str] = None
-    lastModified: typing.Optional[str] = None
-    outcome: typing.Optional["OperationOutcome"] = None
-
-
-class EntrySearch(BaseModel):
-    mode: typing.Optional[str] = None
-    score: typing.Optional[float] = None
-
-
-class FHIRResource(BaseModel):
-    resourceType: str
-    id: typing.Optional[str] = None
-    meta: typing.Optional["ResourceMeta"] = None
-    implicitRules: typing.Optional[str] = None
-    language: typing.Optional[str] = None
-    data: typing.Dict[str, str]
-
-
-class HealthcareBundle(BaseModel):
-    resourceType: str
-    id: typing.Optional[str] = None
-    meta: typing.Optional["BundleMeta"] = None
-    identifier: typing.Optional["BundleIdentifier"] = None
-    type: str
-    timestamp: typing.Optional[str] = None
-    total: typing.Optional[int] = None
-    authorization_id: typing.Optional[str] = None
-    sender: typing.Optional[UAEHealthcareEntity] = None
-    receiver: typing.Optional[UAEHealthcareEntity] = None
-    entry: typing.List["BundleEntry"]
-    raw_data: typing.Optional[typing.Dict[str, str]] = None
-    processing_metadata: typing.Optional["ProcessingMetadata"] = None
-
-
-class Identifier(BaseModel):
-    use: typing.Optional[str] = None
-    type: typing.Optional["CodeableConcept"] = None
-    system: typing.Optional[str] = None
-    value: str
-    period: typing.Optional["Period"] = None
-    assigner: typing.Optional["Reference"] = None
-
-
-class LLMValidationResult(BaseModel):
-    validation_passed: bool
-    confidence_score: float
-    issues: typing.List["ValidationIssue"]
-    quality_metrics: typing.Dict[str, float]
-    processing_time_ms: typing.Optional[int] = None
-    model_used: typing.Optional[str] = None
-
-
-class MedicalCode(BaseModel):
-    code: str
-    system: CodingSystem
-    display: typing.Optional[str] = None
-    version: typing.Optional[str] = None
-
-
-class MoneyAmount(BaseModel):
-    value: float
-    currency: str
-
-
-class ObservationComponent(BaseModel):
-    code: "CodeableConcept"
-    value_quantity: typing.Optional["Quantity"] = None
-    value_codeable_concept: typing.Optional["CodeableConcept"] = None
-    value_string: typing.Optional[str] = None
-    value_boolean: typing.Optional[bool] = None
-    value_integer: typing.Optional[int] = None
-    value_range: typing.Optional["Range"] = None
-    value_ratio: typing.Optional["Ratio"] = None
-    value_sampled_data: typing.Optional["SampledData"] = None
-    value_time: typing.Optional[str] = None
-    value_date_time: typing.Optional[str] = None
-    value_period: typing.Optional["Period"] = None
-    data_absent_reason: typing.Optional["CodeableConcept"] = None
-    interpretation: typing.Optional[typing.List["CodeableConcept"]] = None
-    reference_range: typing.Optional[typing.List["ObservationReferenceRange"]] = None
-
-
-class ObservationReferenceRange(BaseModel):
-    low: typing.Optional["Quantity"] = None
-    high: typing.Optional["Quantity"] = None
-    type: typing.Optional["CodeableConcept"] = None
-    applies_to: typing.Optional[typing.List["CodeableConcept"]] = None
-    age: typing.Optional["Range"] = None
-    text: typing.Optional[str] = None
-
-
-class ObservationResource(BaseModel):
-    resourceType: str
-    id: typing.Optional[str] = None
-    status: str
-    category: typing.Optional[typing.List["CodeableConcept"]] = None
-    code: "CodeableConcept"
-    subject: "Reference"
-    encounter: typing.Optional["Reference"] = None
-    effective_date_time: typing.Optional[str] = None
-    effective_period: typing.Optional["Period"] = None
-    issued: typing.Optional[str] = None
-    performer: typing.Optional[typing.List["Reference"]] = None
-    value_quantity: typing.Optional["Quantity"] = None
-    value_codeable_concept: typing.Optional["CodeableConcept"] = None
-    value_string: typing.Optional[str] = None
-    value_boolean: typing.Optional[bool] = None
-    value_integer: typing.Optional[int] = None
-    value_range: typing.Optional["Range"] = None
-    value_ratio: typing.Optional["Ratio"] = None
-    value_sampled_data: typing.Optional["SampledData"] = None
-    value_time: typing.Optional[str] = None
-    value_date_time: typing.Optional[str] = None
-    value_period: typing.Optional["Period"] = None
-    data_absent_reason: typing.Optional["CodeableConcept"] = None
-    interpretation: typing.Optional[typing.List["CodeableConcept"]] = None
-    note: typing.Optional[typing.List["Annotation"]] = None
-    body_site: typing.Optional["CodeableConcept"] = None
-    method: typing.Optional["CodeableConcept"] = None
-    specimen: typing.Optional["Reference"] = None
-    device: typing.Optional["Reference"] = None
-    reference_range: typing.Optional[typing.List["ObservationReferenceRange"]] = None
-    has_member: typing.Optional[typing.List["Reference"]] = None
-    derived_from: typing.Optional[typing.List["Reference"]] = None
-    component: typing.Optional[typing.List["ObservationComponent"]] = None
-
-
-class OperationOutcome(BaseModel):
-    resourceType: str
-    issue: typing.List["OutcomeIssue"]
-
-
-class OutcomeIssue(BaseModel):
-    severity: str
-    code: str
-    details: typing.Optional["CodeableConcept"] = None
-    diagnostics: typing.Optional[str] = None
-    location: typing.Optional[typing.List[str]] = None
-    expression: typing.Optional[typing.List[str]] = None
-
-
-class Period(BaseModel):
-    start: typing.Optional[str] = None
-    end: typing.Optional[str] = None
-
-
-class ProcessingError(BaseModel):
-    code: str
-    message: str
-    field: typing.Optional[str] = None
-    value: typing.Optional[str] = None
-    severity: str
-
-
-class ProcessingMetadata(BaseModel):
-    processed_at: str
-    processor_version: typing.Optional[str] = None
-    source_format: str
-    source_system: typing.Optional[str] = None
-    warnings: typing.Optional[typing.List["ProcessingWarning"]] = None
-    errors: typing.Optional[typing.List["ProcessingError"]] = None
-    completeness_score: typing.Optional[float] = None
-    validity_score: typing.Optional[float] = None
-    consistency_score: typing.Optional[float] = None
-    total_records: typing.Optional[int] = None
-    processed_records: typing.Optional[int] = None
-    failed_records: typing.Optional[int] = None
-
-
-class ProcessingWarning(BaseModel):
-    code: str
-    message: str
-    field: typing.Optional[str] = None
-    severity: str
-
 
 class QualityScore(BaseModel):
     overall_score: float
@@ -552,70 +91,6 @@ class QualityScore(BaseModel):
     warning_issues: int
     info_issues: int
 
-
-class Quantity(BaseModel):
-    value: typing.Optional[float] = None
-    comparator: typing.Optional[str] = None
-    unit: typing.Optional[str] = None
-    system: typing.Optional[str] = None
-    code: typing.Optional[str] = None
-
-
-class Range(BaseModel):
-    low: typing.Optional["Quantity"] = None
-    high: typing.Optional["Quantity"] = None
-
-
-class Ratio(BaseModel):
-    numerator: typing.Optional["Quantity"] = None
-    denominator: typing.Optional["Quantity"] = None
-
-
-class Reference(BaseModel):
-    reference: typing.Optional[str] = None
-    type: typing.Optional[str] = None
-    identifier: typing.Optional["Identifier"] = None
-    display: typing.Optional[str] = None
-
-
-class ResourceMeta(BaseModel):
-    versionId: typing.Optional[str] = None
-    lastUpdated: typing.Optional[str] = None
-    source: typing.Optional[str] = None
-    profile: typing.Optional[typing.List[str]] = None
-    security: typing.Optional[typing.List["Coding"]] = None
-    tag: typing.Optional[typing.List["Coding"]] = None
-
-
-class SampledData(BaseModel):
-    origin: "Quantity"
-    period: float
-    factor: typing.Optional[float] = None
-    lower_limit: typing.Optional[float] = None
-    upper_limit: typing.Optional[float] = None
-    dimensions: int
-    data: typing.Optional[str] = None
-
-
-class ServiceActivity(BaseModel):
-    id: str
-    type: str
-    code: "MedicalCode"
-    description: typing.Optional[str] = None
-    status: str
-    patient_reference: str
-    performer_reference: typing.Optional[str] = None
-    encounter_reference: typing.Optional[str] = None
-    performed_date: typing.Optional[str] = None
-    performed_period: typing.Optional["Period"] = None
-    location: typing.Optional[str] = None
-    outcome: typing.Optional["CodeableConcept"] = None
-    notes: typing.Optional[str] = None
-    emirate: typing.Optional[str] = None
-    facility_license: typing.Optional[str] = None
-    provider_license: typing.Optional[str] = None
-
-
 class UIFriendlyReport(BaseModel):
     status: str
     summary: str
@@ -623,7 +98,6 @@ class UIFriendlyReport(BaseModel):
     issues_by_severity: typing.Dict[str, typing.List["ValidationIssue"]]
     actionable_items: typing.List["ActionableItem"]
     next_steps: typing.Optional[typing.List[str]] = None
-
 
 class ValidationIssue(BaseModel):
     id: str
@@ -640,7 +114,6 @@ class ValidationIssue(BaseModel):
     regulation_reference: typing.Optional[str] = None
     emirate_specific: typing.Optional[bool] = None
 
-
 class ValidationResult(BaseModel):
     overall_quality_score: float
     confidence_score: float
@@ -653,7 +126,6 @@ class ValidationResult(BaseModel):
     processing_time_ms: int
     model_used: str
     reasoning: typing.Optional[str] = None
-
 
 # #########################################################################
 # Generated type aliases (0)
