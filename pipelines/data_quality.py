@@ -3,16 +3,29 @@ Data Quality Rules & Validation Engine for UAE Healthcare.
 
 This module provides comprehensive data quality validation for healthcare data
 processed through Nazmito's XML and CSV pipelines, ensuring all FHIR resources
-meet clinical, business, and regulatory standards.
+meet clinical, business, and regulatory standards. Enhanced with LLM validation
+for intelligent quality assessment.
 """
 
 import json
 import re
+import asyncio
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from enum import Enum
 from loguru import logger
+
+# Import LLM validation components
+try:
+    from pipelines.llm_validator import ParallelLLMValidator
+    from pipelines.llm_data_sampler import SmartDataSampler, SamplingStrategy
+    from baml_client.types import ValidationType
+
+    LLM_VALIDATION_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"LLM validation components not available: {e}")
+    LLM_VALIDATION_AVAILABLE = False
 
 
 class ValidationSeverity(Enum):
@@ -38,7 +51,7 @@ class ValidationIssue:
 
 @dataclass
 class QualityScore:
-    """Data quality score breakdown."""
+    """Data quality score breakdown with LLM enhancement."""
 
     overall_score: float
     code_validity: float
@@ -46,6 +59,11 @@ class QualityScore:
     clinical_consistency: float
     format_compliance: float
     issues_count: Dict[str, int]  # Count by severity
+    # LLM-enhanced scores
+    llm_validation_score: Optional[float] = None
+    llm_confidence_score: Optional[float] = None
+    hybrid_score: Optional[float] = None  # Combined rule-based + LLM
+    llm_available: bool = False
 
 
 class MedicalCodeValidator:
@@ -436,17 +454,41 @@ class DataQuality:
 
     Validates all 6 FHIR resources against clinical and business rules,
     providing quality scores and actionable feedback for data improvement.
+    Enhanced with parallel LLM validation for intelligent assessment.
     """
 
-    def __init__(self):
-        """Initialize data quality engine with validators."""
+    def __init__(self, enable_llm_validation: bool = True, max_concurrent_llm: int = 3):
+        """
+        Initialize data quality engine with validators.
+
+        Args:
+            enable_llm_validation: Enable LLM-based validation (default: True)
+            max_concurrent_llm: Maximum concurrent LLM requests (default: 3)
+        """
         self.code_validator = MedicalCodeValidator()
         self.clinical_validator = ClinicalLogicValidator()
         self.validation_timestamp = datetime.now(timezone.utc).isoformat()
 
+        # LLM validation setup
+        self.enable_llm_validation = enable_llm_validation and LLM_VALIDATION_AVAILABLE
+        if self.enable_llm_validation:
+            self.llm_validator = ParallelLLMValidator(
+                max_concurrent_requests=max_concurrent_llm
+            )
+            self.data_sampler = SmartDataSampler(max_sample_size=50)
+            logger.info("LLM validation enabled for enhanced data quality assessment")
+        else:
+            self.llm_validator = None
+            self.data_sampler = None
+            if enable_llm_validation and not LLM_VALIDATION_AVAILABLE:
+                logger.warning(
+                    "LLM validation requested but not available - falling back to rule-based validation"
+                )
+
     def validate_fhir_bundle(self, fhir_bundle: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validate complete FHIR bundle against all quality rules.
+        Synchronous version - for async with LLM validation, use validate_fhir_bundle_async.
 
         Args:
             fhir_bundle: FHIR Bundle dictionary from XML/CSV processor
@@ -476,7 +518,7 @@ class DataQuality:
         format_issues = self._validate_format_compliance(fhir_bundle)
         validation_issues.extend(format_issues)
 
-        # 5. Calculate quality scores
+        # 5. Calculate quality scores (rule-based only)
         quality_score = self._calculate_quality_score(fhir_bundle, validation_issues)
 
         # Build comprehensive validation report
@@ -502,11 +544,118 @@ class DataQuality:
             )
             == 0,
             "recommendations": self._generate_recommendations(validation_issues),
+            "llm_validation_enabled": False,
+            "validation_method": "rule_based_only",
         }
 
         logger.info(
             f"Data quality validation completed. Score: {quality_score.overall_score:.3f}"
         )
+        return validation_report
+
+    async def validate_fhir_bundle_async(
+        self, fhir_bundle: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Async validate complete FHIR bundle with LLM enhancement.
+        Combines rule-based validation with LLM intelligent assessment.
+
+        Args:
+            fhir_bundle: FHIR Bundle dictionary from XML/CSV processor
+
+        Returns:
+            Enhanced validation report with hybrid scoring and LLM insights
+        """
+        logger.info(
+            f"Starting enhanced data quality validation for bundle: {fhir_bundle.get('id', 'unknown')}"
+        )
+
+        # Start with rule-based validation
+        validation_issues = []
+
+        # 1. Validate medical codes
+        code_validation_results = self._validate_medical_codes(fhir_bundle)
+        validation_issues.extend(code_validation_results["issues"])
+
+        # 2. Validate clinical logic
+        clinical_issues = self._validate_clinical_logic(fhir_bundle)
+        validation_issues.extend(clinical_issues)
+
+        # 3. Validate data completeness
+        completeness_issues = self._validate_completeness(fhir_bundle)
+        validation_issues.extend(completeness_issues)
+
+        # 4. Validate format compliance
+        format_issues = self._validate_format_compliance(fhir_bundle)
+        validation_issues.extend(format_issues)
+
+        # 5. Calculate rule-based quality scores
+        rule_based_score = self._calculate_quality_score(fhir_bundle, validation_issues)
+
+        # 6. LLM validation (if enabled)
+        llm_validation_result = None
+        if self.enable_llm_validation:
+            try:
+                llm_validation_result = await self._run_llm_validation(fhir_bundle)
+            except Exception as e:
+                logger.warning(f"LLM validation failed: {e}")
+
+        # 7. Calculate hybrid scores
+        enhanced_score = self._calculate_hybrid_score(
+            rule_based_score, llm_validation_result
+        )
+
+        # 8. Merge validation issues
+        all_issues = validation_issues.copy()
+        if llm_validation_result:
+            llm_issues = self._convert_llm_issues_to_validation_issues(
+                llm_validation_result
+            )
+            all_issues.extend(llm_issues)
+
+        # Build enhanced validation report
+        validation_report = {
+            "validation_timestamp": self.validation_timestamp,
+            "bundle_id": fhir_bundle.get("id"),
+            "source": fhir_bundle.get("meta", {}).get("source"),
+            "quality_score": enhanced_score,
+            "validation_issues": [
+                {
+                    "severity": issue.severity.value,
+                    "code": issue.code,
+                    "message": issue.message,
+                    "field_path": issue.field_path,
+                    "suggested_fix": issue.suggested_fix,
+                    "resource_type": issue.resource_type,
+                }
+                for issue in all_issues
+            ],
+            "code_validation_summary": code_validation_results["summary"],
+            "clinical_validation_passed": len(
+                [i for i in clinical_issues if i.severity == ValidationSeverity.ERROR]
+            )
+            == 0,
+            "recommendations": self._generate_enhanced_recommendations(
+                all_issues, llm_validation_result
+            ),
+            "llm_validation_enabled": self.enable_llm_validation,
+            "llm_validation_result": self._format_llm_validation_summary(
+                llm_validation_result
+            )
+            if llm_validation_result
+            else None,
+            "validation_method": "hybrid_rule_based_and_llm"
+            if llm_validation_result
+            else "rule_based_only",
+        }
+
+        score_info = f"Rule-based: {rule_based_score.overall_score:.3f}"
+        if enhanced_score.hybrid_score:
+            score_info += f", Hybrid: {enhanced_score.hybrid_score:.3f}"
+        if enhanced_score.llm_validation_score:
+            score_info += f", LLM: {enhanced_score.llm_validation_score:.3f}"
+
+        logger.info(f"Enhanced data quality validation completed. Scores: {score_info}")
         return validation_report
 
     def _validate_medical_codes(self, fhir_bundle: Dict[str, Any]) -> Dict[str, Any]:
@@ -748,7 +897,177 @@ class DataQuality:
             clinical_consistency=round(clinical_consistency, 3),
             format_compliance=round(format_compliance, 3),
             issues_count=issues_count,
+            llm_available=self.enable_llm_validation,
         )
+
+    async def _run_llm_validation(self, fhir_bundle: Dict[str, Any]):
+        """Run LLM validation on the FHIR bundle."""
+        if not self.enable_llm_validation:
+            return None
+
+        # Create data sample for LLM validation
+        try:
+            # Convert raw data to DataFrame for sampling
+            raw_data = fhir_bundle.get("raw_data", {})
+            csv_data = raw_data.get("csv_data", [])
+
+            if not csv_data:
+                logger.warning("No CSV data found for LLM validation")
+                return None
+
+            import pandas as pd
+
+            df = pd.DataFrame(csv_data)
+
+            # Create intelligent sample
+            data_sample = self.data_sampler.create_sample(
+                df, strategy=SamplingStrategy.HEALTHCARE_AWARE
+            )
+
+            # Run parallel LLM validation
+            batch_result = await self.llm_validator.validate_healthcare_data(
+                data_sample,
+                validation_tasks=[
+                    ValidationType.DATA_QUALITY,
+                    ValidationType.CODE_VALIDATION,
+                    ValidationType.CLINICAL,
+                ],
+            )
+
+            return batch_result
+
+        except Exception as e:
+            logger.error(f"Error during LLM validation: {e}")
+            return None
+
+    def _calculate_hybrid_score(
+        self, rule_based_score: QualityScore, llm_result
+    ) -> QualityScore:
+        """Calculate hybrid score combining rule-based and LLM validation."""
+        # Start with rule-based score
+        hybrid_score_data = {
+            "overall_score": rule_based_score.overall_score,
+            "code_validity": rule_based_score.code_validity,
+            "completeness": rule_based_score.completeness,
+            "clinical_consistency": rule_based_score.clinical_consistency,
+            "format_compliance": rule_based_score.format_compliance,
+            "issues_count": rule_based_score.issues_count,
+            "llm_available": rule_based_score.llm_available,
+        }
+
+        if llm_result and llm_result.successful_tasks > 0:
+            # Add LLM scores
+            hybrid_score_data["llm_validation_score"] = llm_result.aggregated_score
+
+            # Calculate average confidence from successful tasks
+            successful_results = [r for r in llm_result.validation_results if r.success]
+            if successful_results:
+                avg_confidence = sum(
+                    r.confidence_score for r in successful_results
+                ) / len(successful_results)
+                hybrid_score_data["llm_confidence_score"] = round(avg_confidence, 3)
+
+            # Calculate hybrid score (weighted combination)
+            rule_weight = 0.6  # Rule-based validation weight
+            llm_weight = 0.4  # LLM validation weight
+
+            # Adjust weights based on LLM confidence
+            if hybrid_score_data.get("llm_confidence_score", 0) > 0.8:
+                llm_weight = 0.5
+                rule_weight = 0.5
+            elif hybrid_score_data.get("llm_confidence_score", 0) < 0.6:
+                llm_weight = 0.3
+                rule_weight = 0.7
+
+            hybrid_overall_score = (
+                rule_weight * rule_based_score.overall_score
+                + llm_weight * llm_result.aggregated_score
+            )
+
+            hybrid_score_data["hybrid_score"] = round(hybrid_overall_score, 3)
+            # Update overall score to use hybrid
+            hybrid_score_data["overall_score"] = hybrid_score_data["hybrid_score"]
+
+        return QualityScore(**hybrid_score_data)
+
+    def _convert_llm_issues_to_validation_issues(
+        self, llm_result
+    ) -> List[ValidationIssue]:
+        """Convert LLM validation results to ValidationIssue objects."""
+        validation_issues = []
+
+        for result in llm_result.validation_results:
+            if not result.success:
+                continue
+
+            for issue in result.issues_found:
+                # Map LLM severity to ValidationSeverity
+                severity_map = {
+                    "error": ValidationSeverity.ERROR,
+                    "warning": ValidationSeverity.WARNING,
+                    "info": ValidationSeverity.INFO,
+                    "critical": ValidationSeverity.CRITICAL,
+                }
+
+                severity = severity_map.get(
+                    issue.get("severity", "info"), ValidationSeverity.INFO
+                )
+
+                validation_issue = ValidationIssue(
+                    severity=severity,
+                    code=f"LLM_{result.task_type.value.upper()}_{len(validation_issues)+1:03d}",
+                    message=issue.get("description", "LLM validation issue"),
+                    field_path=issue.get("field", "unknown"),
+                    suggested_fix=issue.get("suggested_fix"),
+                    resource_type="LLM_Analysis",
+                )
+                validation_issues.append(validation_issue)
+
+        return validation_issues
+
+    def _generate_enhanced_recommendations(
+        self, issues: List[ValidationIssue], llm_result
+    ) -> List[str]:
+        """Generate enhanced recommendations including LLM insights."""
+        # Start with rule-based recommendations
+        recommendations = self._generate_recommendations(issues)
+
+        # Add LLM recommendations
+        if llm_result:
+            llm_recommendations = []
+            for result in llm_result.validation_results:
+                if result.success:
+                    llm_recommendations.extend(result.recommendations)
+
+            # Deduplicate and add LLM recommendations
+            unique_llm_recs = list(set(llm_recommendations))
+            recommendations.extend([f"LLM Insight: {rec}" for rec in unique_llm_recs])
+
+        return recommendations
+
+    def _format_llm_validation_summary(self, llm_result) -> Dict[str, Any]:
+        """Format LLM validation results for the report."""
+        if not llm_result:
+            return None
+
+        return {
+            "total_tasks": llm_result.total_tasks,
+            "successful_tasks": llm_result.successful_tasks,
+            "failed_tasks": llm_result.failed_tasks,
+            "aggregated_score": llm_result.aggregated_score,
+            "execution_time": llm_result.total_execution_time,
+            "task_results": [
+                {
+                    "task_type": result.task_type.value,
+                    "success": result.success,
+                    "score": result.validation_score,
+                    "confidence": result.confidence_score,
+                    "issues_count": len(result.issues_found),
+                    "recommendations_count": len(result.recommendations),
+                }
+                for result in llm_result.validation_results
+            ],
+        }
 
     def _generate_recommendations(self, issues: List[ValidationIssue]) -> List[str]:
         """Generate actionable recommendations based on validation issues."""
@@ -798,121 +1117,210 @@ class DataQuality:
 
 if __name__ == "__main__":
     """
-    Debug and testing section for data quality validation.
+    Debug and testing section for enhanced data quality validation.
 
-    Tests validation engine with sample FHIR bundle data.
+    Tests validation engine with sample FHIR bundle data and LLM integration.
     """
+    import pandas as pd
+    import numpy as np
 
     # Setup logging
-    logger.add("debug_data_quality.log")
+    logger.add("debug_data_quality_enhanced.log")
 
     print("=" * 80)
-    print("Data Quality Validation Engine - Debug Mode")
+    print("Enhanced Data Quality Validation Engine - Debug Mode")
     print("=" * 80)
 
-    # Initialize validation engine
-    data_quality = DataQuality()
+    async def test_enhanced_validation():
+        """Test enhanced validation with LLM integration."""
 
-    # Sample FHIR bundle for testing
-    sample_bundle = {
-        "resourceType": "Bundle",
-        "id": "test-bundle-001",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "meta": {
-            "source": "Test",
-            "lastUpdated": datetime.now(timezone.utc).isoformat(),
-        },
-        "claims": [
+        # Initialize validation engine with LLM support
+        data_quality = DataQuality(enable_llm_validation=True)
+
+        print(f"   LLM validation enabled: {data_quality.enable_llm_validation}")
+
+        # Create sample CSV data for testing
+        np.random.seed(42)
+        csv_sample_data = [
             {
-                "sequence": 1,
-                "claim_id": "C001",
-                "patient_id": "P123",
-                "diagnosis_code": "E11.9",  # Valid diabetes code
-                "procedure_code": "99213",  # Valid office visit
-                "amount": 150.0,
-            },
-            {
-                "sequence": 2,
-                "claim_id": "C002",
-                "patient_id": "P123",
-                "diagnosis_code": "X99.9",  # Invalid code
-                "procedure_code": "12345",  # Invalid code
-                "amount": 75.0,
-            },
-        ],
-        "services": [
-            {
-                "sequence": 1,
-                "activity_code": "83036",  # Valid HbA1c test
-                "diagnosis_code": "E11.9",
+                "patient_id": f"P{i:04d}",
+                "diagnosis_code": np.random.choice(["E11.9", "M54.5", "I10", "X99.9"]),
+                "procedure_code": np.random.choice(
+                    ["99213", "99214", "83036", "12345"]
+                ),
+                "amount": np.random.uniform(50, 500),
+                "service_date": f"2024-{i%12+1:02d}-{i%28+1:02d}",
+                "provider_id": f"PROV{i%10:03d}",
             }
-        ],
-    }
-
-    try:
-        print("\n🔧 Step 1: Validate Sample FHIR Bundle")
-        print("-" * 50)
-
-        validation_result = data_quality.validate_fhir_bundle(sample_bundle)
-
-        print("✅ Validation completed successfully")
-        print(
-            f"   Overall Quality Score: {validation_result['quality_score'].overall_score}"
-        )
-        print(f"   Code Validity: {validation_result['quality_score'].code_validity}")
-        print(f"   Completeness: {validation_result['quality_score'].completeness}")
-        print(
-            f"   Clinical Consistency: {validation_result['quality_score'].clinical_consistency}"
-        )
-        print(
-            f"   Format Compliance: {validation_result['quality_score'].format_compliance}"
-        )
-
-        print("\n📊 Issues Found:")
-        issues_by_severity = validation_result['quality_score'].issues_count
-        for severity, count in issues_by_severity.items():
-            if count > 0:
-                print(f"   {severity.upper()}: {count}")
-
-        print("\n💡 Recommendations:")
-        for rec in validation_result['recommendations']:
-            print(f"   • {rec}")
-
-        # Save detailed results
-        with open("debug_data_quality_results.json", "w", encoding="utf-8") as f:
-            json.dump(validation_result, f, indent=2, ensure_ascii=False, default=str)
-        print("\n   Detailed results saved to: debug_data_quality_results.json")
-
-        print("\n🔧 Step 2: Test Individual Code Validation")
-        print("-" * 50)
-
-        # Test individual code validators
-        code_validator = MedicalCodeValidator()
-
-        test_codes = [
-            ("ICD-10", "E11.9", code_validator.validate_icd10_code),
-            ("ICD-10", "X99.9", code_validator.validate_icd10_code),
-            ("CPT", "99213", code_validator.validate_cpt_code),
-            ("CPT", "12345", code_validator.validate_cpt_code),
-            ("LOINC", "4548-4", code_validator.validate_loinc_code),
-            ("RxNorm", "860975", code_validator.validate_rxnorm_code),
+            for i in range(100)
         ]
 
-        for code_system, code, validator_func in test_codes:
-            result = validator_func(code)
-            status = "✅" if result["valid"] else "❌"
-            print(
-                f"   {status} {code_system} {code}: {result.get('description', result.get('error'))}"
-            )
+        # Sample FHIR bundle for testing with CSV data
+        sample_bundle = {
+            "resourceType": "Bundle",
+            "id": "test-bundle-enhanced-001",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "meta": {
+                "source": "Enhanced-Test",
+                "lastUpdated": datetime.now(timezone.utc).isoformat(),
+            },
+            "claims": [
+                {
+                    "sequence": 1,
+                    "claim_id": "C001",
+                    "patient_id": "P123",
+                    "diagnosis_code": "E11.9",  # Valid diabetes code
+                    "procedure_code": "99213",  # Valid office visit
+                    "amount": 150.0,
+                },
+                {
+                    "sequence": 2,
+                    "claim_id": "C002",
+                    "patient_id": "P123",
+                    "diagnosis_code": "X99.9",  # Invalid code
+                    "procedure_code": "12345",  # Invalid code
+                    "amount": 75.0,
+                },
+            ],
+            "services": [
+                {
+                    "sequence": 1,
+                    "activity_code": "83036",  # Valid HbA1c test
+                    "diagnosis_code": "E11.9",
+                }
+            ],
+            "raw_data": {
+                "csv_data": csv_sample_data,
+                "columns": list(csv_sample_data[0].keys()) if csv_sample_data else [],
+                "shape": [
+                    len(csv_sample_data),
+                    len(csv_sample_data[0].keys()) if csv_sample_data else 0,
+                ],
+            },
+        }
 
+        try:
+            print("\n🔧 Step 1: Rule-Based Validation")
+            print("-" * 50)
+
+            validation_result = data_quality.validate_fhir_bundle(sample_bundle)
+
+            print("✅ Rule-based validation completed")
+            print(
+                f"   Overall Quality Score: {validation_result['quality_score'].overall_score}"
+            )
+            print(
+                f"   Code Validity: {validation_result['quality_score'].code_validity}"
+            )
+            print(f"   Completeness: {validation_result['quality_score'].completeness}")
+            print(f"   Validation Method: {validation_result['validation_method']}")
+
+            print("\n🔧 Step 2: Enhanced Validation with LLM")
+            print("-" * 50)
+
+            if data_quality.enable_llm_validation:
+                enhanced_result = await data_quality.validate_fhir_bundle_async(
+                    sample_bundle
+                )
+
+                print("✅ Enhanced validation completed")
+                enhanced_score = enhanced_result['quality_score']
+                print(f"   Rule-based Score: {enhanced_score.overall_score}")
+
+                if enhanced_score.llm_validation_score:
+                    print(
+                        f"   LLM Validation Score: {enhanced_score.llm_validation_score}"
+                    )
+                if enhanced_score.hybrid_score:
+                    print(f"   Hybrid Score: {enhanced_score.hybrid_score}")
+                if enhanced_score.llm_confidence_score:
+                    print(f"   LLM Confidence: {enhanced_score.llm_confidence_score}")
+
+                print(f"   Validation Method: {enhanced_result['validation_method']}")
+
+                # Show LLM validation summary
+                if enhanced_result.get('llm_validation_result'):
+                    llm_summary = enhanced_result['llm_validation_result']
+                    print(
+                        f"   LLM Tasks: {llm_summary['successful_tasks']}/{llm_summary['total_tasks']} successful"
+                    )
+                    print(
+                        f"   LLM Execution Time: {llm_summary['execution_time']:.2f}s"
+                    )
+
+                # Save enhanced results
+                with open(
+                    "debug_enhanced_validation_results.json", "w", encoding="utf-8"
+                ) as f:
+                    json.dump(
+                        enhanced_result, f, indent=2, ensure_ascii=False, default=str
+                    )
+                print(
+                    "\n   Enhanced results saved to: debug_enhanced_validation_results.json"
+                )
+
+            else:
+                print("   LLM validation not available - using rule-based only")
+
+            print("\n🔧 Step 3: Test Individual Components")
+            print("-" * 50)
+
+            # Test data sampling
+            if data_quality.data_sampler:
+                df = pd.DataFrame(csv_sample_data)
+                sample = data_quality.data_sampler.create_sample(df)
+                print(f"   ✅ Data sampling: {len(sample.sample_data)} records sampled")
+                print(
+                    f"      Sample quality: {sample.quality_indicators['completeness_score']:.3f}"
+                )
+
+            # Test code validators
+            code_validator = MedicalCodeValidator()
+            test_codes = [
+                ("ICD-10", "E11.9", code_validator.validate_icd10_code),
+                ("ICD-10", "X99.9", code_validator.validate_icd10_code),
+                ("CPT", "99213", code_validator.validate_cpt_code),
+                ("CPT", "12345", code_validator.validate_cpt_code),
+            ]
+
+            for code_system, code, validator_func in test_codes:
+                result = validator_func(code)
+                status = "✅" if result["valid"] else "❌"
+                print(
+                    f"   {status} {code_system} {code}: {result.get('description', result.get('error'))}"
+                )
+
+            print("\n🔧 Step 4: Performance Metrics")
+            print("-" * 50)
+
+            if data_quality.llm_validator:
+                metrics = data_quality.llm_validator.get_performance_metrics()
+                print(f"   LLM Requests: {metrics['total_requests']}")
+                print(f"   Success Rate: {metrics['success_rate']:.1%}")
+                print(
+                    f"   Avg Response Time: {metrics.get('average_request_time', 0):.2f}s"
+                )
+
+        except Exception as e:
+            print("\n❌ Error during enhanced validation:")
+            print(f"   {type(e).__name__}: {str(e)}")
+            import traceback
+
+            print("\n📋 Full traceback:")
+            traceback.print_exc()
+
+    # Run async test
+    try:
+        asyncio.run(test_enhanced_validation())
+        print(
+            "\n🎉 Enhanced data quality validation debug session completed successfully!"
+        )
     except Exception as e:
-        print("\n❌ Error during validation:")
+        print("\n❌ Error during async testing:")
         print(f"   {type(e).__name__}: {str(e)}")
         import traceback
 
         print("\n📋 Full traceback:")
         traceback.print_exc()
-        exit(1)
 
-    print("\n🎉 Data quality validation debug session completed successfully!")
     print("=" * 80)

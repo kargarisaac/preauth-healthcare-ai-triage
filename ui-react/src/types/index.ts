@@ -4,3 +4,4 @@ export * from './healthcare';
 export * from './ui';
 export * from './requests';
 export * from './analytics';
+export * from './llm';

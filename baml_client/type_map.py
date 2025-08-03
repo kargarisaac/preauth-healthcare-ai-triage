@@ -15,6 +15,31 @@ from . import stream_types
 
 
 type_map = {
-    "types.Resume": types.Resume,
-    "stream_types.Resume": stream_types.Resume,
+
+    "types.ActionableItem": types.ActionableItem,
+    "stream_types.ActionableItem": stream_types.ActionableItem,
+
+    "types.DataContext": types.DataContext,
+    "stream_types.DataContext": stream_types.DataContext,
+
+    "types.DataSample": types.DataSample,
+    "stream_types.DataSample": stream_types.DataSample,
+
+    "types.QualityScore": types.QualityScore,
+    "stream_types.QualityScore": stream_types.QualityScore,
+
+    "types.UIFriendlyReport": types.UIFriendlyReport,
+    "stream_types.UIFriendlyReport": stream_types.UIFriendlyReport,
+
+    "types.ValidationIssue": types.ValidationIssue,
+    "stream_types.ValidationIssue": stream_types.ValidationIssue,
+
+    "types.ValidationResult": types.ValidationResult,
+    "stream_types.ValidationResult": stream_types.ValidationResult,
+
+
+    "types.ValidationSeverity": types.ValidationSeverity,
+
+    "types.ValidationType": types.ValidationType,
+
 }

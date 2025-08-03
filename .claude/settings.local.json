@@ -15,7 +15,15 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "Bash(npm run type-check:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "mcp__baml-docs__fetch_docs",
+      "mcp__baml-docs__list_doc_sources",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "Bash(uv add:*)",
+      "Bash(ruff check:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

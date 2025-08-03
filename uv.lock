@@ -51,6 +51,18 @@ wheels = [
 ]
 
 [[package]]
+name = "baml-cli"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "baml-py" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/56/7e/cb2cf7f8aa35496f9fe62ece35350b494d3db6a407802ade453d84f45418/baml_cli-0.1.0.tar.gz", hash = "sha256:ebc3c325f167282918d397e0597dadf2323f463be7be1249b8664a6d2c48166c", size = 1251, upload_time = "2024-05-03T21:17:04.076Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bb/d1/bc2ec74ccd7c9315a062cf1310283ba824c3c1dc332652cfd785b6a14aeb/baml_cli-0.1.0-py3-none-any.whl", hash = "sha256:3e0630a10bf940c539e57fc37daf70ea6c097a7feda423f01822a936c2439cdb", size = 1579, upload_time = "2024-05-03T21:17:02.399Z" },
+]
+
+[[package]]
 name = "baml-py"
 version = "0.203.1"
 source = { registry = "https://pypi.org/simple" }
@@ -167,6 +179,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/44/96/392abd49b094d30b91d9fbda6a69519e95802250b777841cf3bda8fe136c/charset_normalizer-3.4.2-cp313-cp313-win32.whl", hash = "sha256:aaeeb6a479c7667fbe1099af9617c83aaca22182d6cf8c53966491a0f1b7ffb7", size = 98064, upload_time = "2025-05-02T08:33:17.06Z" },
     { url = "https://files.pythonhosted.org/packages/e9/b0/0200da600134e001d91851ddc797809e2fe0ea72de90e09bec5a2fbdaccb/charset_normalizer-3.4.2-cp313-cp313-win_amd64.whl", hash = "sha256:aa6af9e7d59f9c12b33ae4e9450619cf2488e2bbe9b44030905877f0b2324980", size = 105641, upload_time = "2025-05-02T08:33:18.753Z" },
     { url = "https://files.pythonhosted.org/packages/20/94/c5790835a017658cbfabd07f3bfb549140c3ac458cfc196323996b10095a/charset_normalizer-3.4.2-py3-none-any.whl", hash = "sha256:7f56930ab0abd1c45cd15be65cc741c28b1c9a34876ce8c17a2fa107810c0af0", size = 52626, upload_time = "2025-05-02T08:34:40.053Z" },
+]
+
+[[package]]
+name = "claude-code-sdk"
+version = "0.0.19"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f3/e9/0443cd7ada6a01730481b71956bd6bfea6cc348503e59a1dd7cbc05e3331/claude_code_sdk-0.0.19.tar.gz", hash = "sha256:9e23441a35928572a66c59d17fcd02d07478844d30611307b0b4460f2df6ef72", size = 23144, upload_time = "2025-08-01T05:35:48.914Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/2d/e4826ae5d361b772218491e21a5dc6b8b98e66737e255bf2891c76b0305d/claude_code_sdk-0.0.19-py3-none-any.whl", hash = "sha256:b451a6ba0199e52de7d0253d7ca074f0aa0e3bde7866a4f7174d49e721bd6a58", size = 17247, upload_time = "2025-08-01T05:35:47.683Z" },
 ]
 
 [[package]]
@@ -776,8 +800,10 @@ name = "nazmito"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "baml-cli" },
     { name = "baml-py" },
     { name = "chardet" },
+    { name = "claude-code-sdk" },
     { name = "fastapi" },
     { name = "fastparquet" },
     { name = "fuzzywuzzy" },
@@ -801,8 +827,10 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "baml-py", specifier = ">=0.203.1" },
+    { name = "baml-cli", specifier = ">=0.1.0" },
+    { name = "baml-py", specifier = "==0.203.1" },
     { name = "chardet", specifier = ">=5.0.0" },
+    { name = "claude-code-sdk", specifier = ">=0.0.19" },
     { name = "fastapi", specifier = ">=0.104.0" },
     { name = "fastparquet", specifier = ">=0.8.0" },
     { name = "fuzzywuzzy", specifier = ">=0.18.0" },

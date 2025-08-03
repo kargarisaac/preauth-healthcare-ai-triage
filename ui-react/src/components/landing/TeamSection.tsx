@@ -1,4 +1,5 @@
 import React from 'react';
+import isaacPhoto from '@assets/isaac.jpeg';
 
 const TeamSection: React.FC = () => {
   return (
@@ -17,8 +18,12 @@ const TeamSection: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               <div className="lg:col-span-1">
                 <div className="text-center lg:text-left">
-                  <div className="w-32 h-32 bg-primary-100 rounded-full flex items-center justify-center text-6xl mx-auto lg:mx-0 mb-6">
-                    👨‍💻
+                  <div className="w-32 h-32 rounded-full mx-auto lg:mx-0 mb-6 overflow-hidden">
+                    <img
+                      src={isaacPhoto}
+                      alt="Isaac Kargar"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
                     Isaac Kargar

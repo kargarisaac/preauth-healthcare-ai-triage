@@ -11,15 +11,13 @@
 # baml-cli is available with the baml package.
 
 import typing
+import typing_extensions
 import baml_py
 
 from . import stream_types, types, type_builder
 from .parser import LlmResponseParser, LlmStreamParser
 from .runtime import DoNotUseDirectlyCallManager, BamlCallOptions
-from .globals import (
-    DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME as __runtime__,
-)
-
+from .globals import DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME as __runtime__
 
 class BamlSyncClient:
     __options: DoNotUseDirectlyCallManager
@@ -50,15 +48,10 @@ class BamlSyncClient:
         self.__llm_response_parser = LlmResponseParser(self.__options)
         self.__llm_stream_parser = LlmStreamParser(self.__options)
 
-    def with_options(
-        self,
+    def with_options(self,
         tb: typing.Optional[type_builder.TypeBuilder] = None,
         client_registry: typing.Optional[baml_py.baml_py.ClientRegistry] = None,
-        collector: typing.Optional[
-            typing.Union[
-                baml_py.baml_py.Collector, typing.List[baml_py.baml_py.Collector]
-            ]
-        ] = None,
+        collector: typing.Optional[typing.Union[baml_py.baml_py.Collector, typing.List[baml_py.baml_py.Collector]]] = None,
         env: typing.Optional[typing.Dict[str, typing.Optional[str]]] = None,
     ) -> "BamlSyncClient":
         options: BamlCallOptions = {}
@@ -74,38 +67,39 @@ class BamlSyncClient:
 
     @property
     def stream(self):
-        return self.__stream_client
+      return self.__stream_client
 
     @property
     def request(self):
-        return self.__http_request
+      return self.__http_request
 
     @property
     def stream_request(self):
-        return self.__http_stream_request
+      return self.__http_stream_request
 
     @property
     def parse(self):
-        return self.__llm_response_parser
+      return self.__llm_response_parser
 
     @property
     def parse_stream(self):
-        return self.__llm_stream_parser
-
-    def ExtractResume(
-        self,
-        resume: str,
+      return self.__llm_stream_parser
+    
+    def GenerateQualityReport(self, validation_result: types.ValidationResult,
         baml_options: BamlCallOptions = {},
-    ) -> types.Resume:
-        result = self.__options.merge_options(baml_options).call_function_sync(
-            function_name="ExtractResume",
-            args={
-                "resume": resume,
-            },
-        )
-        return typing.cast(
-            types.Resume, result.cast_to(types, types, stream_types, False, __runtime__)
-        )
+    ) -> types.UIFriendlyReport:
+        result = self.__options.merge_options(baml_options).call_function_sync(function_name="GenerateQualityReport", args={
+            "validation_result": validation_result,
+        })
+        return typing.cast(types.UIFriendlyReport, result.cast_to(types, types, stream_types, False, __runtime__))
+    def ValidateHealthcareData(self, data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> types.ValidationResult:
+        result = self.__options.merge_options(baml_options).call_function_sync(function_name="ValidateHealthcareData", args={
+            "data_sample": data_sample,
+        })
+        return typing.cast(types.ValidationResult, result.cast_to(types, types, stream_types, False, __runtime__))
+    
 
 
 class BamlStreamClient:
@@ -114,29 +108,31 @@ class BamlStreamClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(
-        self,
-        resume: str,
+    def GenerateQualityReport(self, validation_result: types.ValidationResult,
         baml_options: BamlCallOptions = {},
-    ) -> baml_py.BamlSyncStream[stream_types.Resume, types.Resume]:
-        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(
-            function_name="ExtractResume",
-            args={
-                "resume": resume,
-            },
+    ) -> baml_py.BamlSyncStream[stream_types.UIFriendlyReport, types.UIFriendlyReport]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(function_name="GenerateQualityReport", args={
+            "validation_result": validation_result,
+        })
+        return baml_py.BamlSyncStream[stream_types.UIFriendlyReport, types.UIFriendlyReport](
+          result,
+          lambda x: typing.cast(stream_types.UIFriendlyReport, x.cast_to(types, types, stream_types, True, __runtime__)),
+          lambda x: typing.cast(types.UIFriendlyReport, x.cast_to(types, types, stream_types, False, __runtime__)),
+          ctx,
         )
-        return baml_py.BamlSyncStream[stream_types.Resume, types.Resume](
-            result,
-            lambda x: typing.cast(
-                stream_types.Resume,
-                x.cast_to(types, types, stream_types, True, __runtime__),
-            ),
-            lambda x: typing.cast(
-                types.Resume, x.cast_to(types, types, stream_types, False, __runtime__)
-            ),
-            ctx,
+    def ValidateHealthcareData(self, data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[stream_types.ValidationResult, types.ValidationResult]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(function_name="ValidateHealthcareData", args={
+            "data_sample": data_sample,
+        })
+        return baml_py.BamlSyncStream[stream_types.ValidationResult, types.ValidationResult](
+          result,
+          lambda x: typing.cast(stream_types.ValidationResult, x.cast_to(types, types, stream_types, True, __runtime__)),
+          lambda x: typing.cast(types.ValidationResult, x.cast_to(types, types, stream_types, False, __runtime__)),
+          ctx,
         )
-
+    
 
 class BamlHttpRequestClient:
     __options: DoNotUseDirectlyCallManager
@@ -144,20 +140,21 @@ class BamlHttpRequestClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(
-        self,
-        resume: str,
+    def GenerateQualityReport(self, validation_result: types.ValidationResult,
         baml_options: BamlCallOptions = {},
     ) -> baml_py.baml_py.HTTPRequest:
-        result = self.__options.merge_options(baml_options).create_http_request_sync(
-            function_name="ExtractResume",
-            args={
-                "resume": resume,
-            },
-            mode="request",
-        )
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="GenerateQualityReport", args={
+            "validation_result": validation_result,
+        }, mode="request")
         return result
-
+    def ValidateHealthcareData(self, data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="ValidateHealthcareData", args={
+            "data_sample": data_sample,
+        }, mode="request")
+        return result
+    
 
 class BamlHttpStreamRequestClient:
     __options: DoNotUseDirectlyCallManager
@@ -165,19 +162,20 @@ class BamlHttpStreamRequestClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(
-        self,
-        resume: str,
+    def GenerateQualityReport(self, validation_result: types.ValidationResult,
         baml_options: BamlCallOptions = {},
     ) -> baml_py.baml_py.HTTPRequest:
-        result = self.__options.merge_options(baml_options).create_http_request_sync(
-            function_name="ExtractResume",
-            args={
-                "resume": resume,
-            },
-            mode="stream",
-        )
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="GenerateQualityReport", args={
+            "validation_result": validation_result,
+        }, mode="stream")
         return result
-
+    def ValidateHealthcareData(self, data_sample: types.DataSample,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="ValidateHealthcareData", args={
+            "data_sample": data_sample,
+        }, mode="stream")
+        return result
+    
 
 b = BamlSyncClient(DoNotUseDirectlyCallManager({}))

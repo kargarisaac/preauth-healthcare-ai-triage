@@ -3,6 +3,7 @@ import { clsx } from 'clsx';
 import { Upload, FileText, Database, Zap, CheckCircle, X, Loader2 } from 'lucide-react';
 import { useProcessing } from '@/contexts/ProcessingContext';
 import Button from '@/components/ui/Button';
+import { LLMValidationToggle, LLMValidationResultDisplay } from './LLMValidation';
 
 const FileUploadArea: React.FC = () => {
   const {
@@ -10,7 +11,9 @@ const FileUploadArea: React.FC = () => {
     processingResults,
     isProcessing,
     uploadProgress,
+    enableLLMValidation,
     setCurrentFile,
+    setEnableLLMValidation,
     processFile
   } = useProcessing();
 
@@ -124,6 +127,17 @@ const FileUploadArea: React.FC = () => {
         onChange={handleFileInput}
       />
 
+      {/* LLM Validation Toggle */}
+      {currentFile && (
+        <div className="border-t pt-4">
+          <LLMValidationToggle
+            enabled={enableLLMValidation}
+            onChange={setEnableLLMValidation}
+            disabled={isProcessing}
+          />
+        </div>
+      )}
+
       {/* Actions */}
       {currentFile && (
         <div className="flex items-center space-x-2">
@@ -175,13 +189,22 @@ const FileUploadArea: React.FC = () => {
 
       {/* Results */}
       {processingResults && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-900">
-              Processed successfully in {processingResults.metadata?.processing_time_seconds?.toFixed(2) || 0}s
-            </span>
+        <div className="space-y-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-900">
+                Processed successfully in {processingResults.metadata?.processing_time_seconds?.toFixed(2) || 0}s
+              </span>
+            </div>
           </div>
+
+          {/* LLM Validation Results */}
+          {processingResults.metadata?.llm_validation && (
+            <LLMValidationResultDisplay
+              validationResult={processingResults.metadata.llm_validation}
+            />
+          )}
         </div>
       )}
     </div>

@@ -11,6 +11,7 @@ Nazmito is an AI-powered pre-authorization platform for UAE healthcare insurance
 - **Simplicity First**: Implement minimum viable code, avoid over-engineering
 - **Direct Solutions**: Choose straightforward approaches, prefer composition over inheritance
 - **Clear Code**: Use descriptive names, keep functions short (<50 lines), limit file size (<500 lines)
+- **Temporary Files**: IF you create any temporary files which are not part of the feature or not supposed to be pushed to git, like .md, .py, .json, etc. then always put them in the `output/` folder with a <name_date_time> name, so i know they are temporary and not for the project to be pushed on git. if there is any file that needs to be kept, do not put it in the `output/` folder.
 
 ## Sub-agent Usage Strategy
 
@@ -85,6 +86,9 @@ Key endpoints:
 - Comprehensive logging with loguru
 - Complete error context for troubleshooting
 
+### Logging and Debugging
+- Never create any debug or log result of test anywhere outside of the @logs folder
+
 ## Documentation References
 - **System Architecture**: `docs/ARCHITECTURE.md`
 - **FHIR Implementation**: `docs/FHIR_GUIDE.md`
@@ -92,3 +96,6 @@ Key endpoints:
 - **CSV Processing**: `docs/csv_processing.md`
 - **Format Comparison**: `docs/format_comparison.md`
 - **Field Mappings**: `docs/field_mappings.md`
+
+## File Organization Guidelines
+- Always keep the documents related to one part or topic in one single file in @docs/

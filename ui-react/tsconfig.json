@@ -18,7 +18,11 @@
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": false,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": true,
 
     /* Path mapping */
     "baseUrl": ".",

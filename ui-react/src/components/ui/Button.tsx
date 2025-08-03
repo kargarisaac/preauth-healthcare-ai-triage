@@ -14,7 +14,7 @@ const Button: React.FC<ButtonProps> = ({
   className,
   ...props
 }) => {
-  const baseClasses = 'btn focus-ring';
+  const baseClasses = 'btn focus-ring transition-all duration-200';
 
   const variantClasses = {
     primary: 'btn-primary',
@@ -52,3 +52,4 @@ const Button: React.FC<ButtonProps> = ({
 };
 
 export default Button;
+export { Button };

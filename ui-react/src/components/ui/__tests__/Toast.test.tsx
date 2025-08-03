@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@/test/utils'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Toast from '../Toast'
 import type { ToastMessage } from '@/types/ui'
@@ -8,7 +8,10 @@ import type { ToastMessage } from '@/types/ui'
 const mockRemoveToast = vi.fn()
 vi.mock('@contexts/ToastContext', () => ({
   useToast: () => ({
-    removeToast: mockRemoveToast
+    removeToast: mockRemoveToast,
+    toasts: [],
+    showToast: vi.fn(),
+    clearToasts: vi.fn(),
   })
 }))
 

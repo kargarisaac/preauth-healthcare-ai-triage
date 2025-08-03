@@ -9,3 +9,11 @@ ui-react/node_modules/
 ui-react/dist/
 # Cursor editor directory
 .cursor/
+*debug*
+output/
+data/
+.pytest_cache/
+.ruff_cache/
+.venv/
+.benchmarks/
+*analysis_results

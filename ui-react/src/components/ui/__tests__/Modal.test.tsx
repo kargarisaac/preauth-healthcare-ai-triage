@@ -8,14 +8,14 @@ describe('Modal Component', () => {
 
   beforeEach(() => {
     mockOnClose = vi.fn()
-    // Create a div with id 'root' for portal rendering
-    const portalRoot = document.createElement('div')
-    portalRoot.setAttribute('id', 'root')
-    document.body.appendChild(portalRoot)
   })
 
   afterEach(() => {
-    document.body.innerHTML = ''
+    // Clean up any modals that might be rendered
+    const modals = document.querySelectorAll('.modal-overlay')
+    modals.forEach(modal => modal.remove())
+    // Reset body overflow
+    document.body.style.overflow = 'unset'
     vi.clearAllMocks()
   })
 

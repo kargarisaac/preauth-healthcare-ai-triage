@@ -12,49 +12,120 @@
 
 import typing
 import typing_extensions
+from enum import Enum
 
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
+
+import baml_py
 
 CheckT = typing_extensions.TypeVar('CheckT')
 CheckName = typing_extensions.TypeVar('CheckName', bound=str)
-
 
 class Check(BaseModel):
     name: str
     expression: str
     status: str
-
-
 class Checked(BaseModel, typing.Generic[CheckT, CheckName]):
     value: CheckT
     checks: typing.Dict[CheckName, Check]
 
-
 def get_checks(checks: typing.Dict[CheckName, Check]) -> typing.List[Check]:
     return list(checks.values())
 
-
 def all_succeeded(checks: typing.Dict[CheckName, Check]) -> bool:
     return all(check.status == "succeeded" for check in get_checks(checks))
-
-
 # #########################################################################
-# Generated enums (0)
+# Generated enums (2)
 # #########################################################################
 
+class ValidationSeverity(str, Enum):
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
+
+class ValidationType(str, Enum):
+    COMPLIANCE = "COMPLIANCE"
+    CLINICAL = "CLINICAL"
+    DATA_QUALITY = "DATA_QUALITY"
+    CODE_VALIDATION = "CODE_VALIDATION"
+
 # #########################################################################
-# Generated classes (1)
+# Generated classes (7)
 # #########################################################################
 
+class ActionableItem(BaseModel):
+    priority: str
+    category: str
+    title: str
+    description: str
+    fix_suggestion: typing.Optional[str] = None
+    estimated_effort: typing.Optional[str] = None
+    affected_fields: typing.Optional[typing.List[str]] = None
+    regulation_reference: typing.Optional[str] = None
 
-class Resume(BaseModel):
-    name: str
-    email: str
-    experience: typing.List[str]
-    skills: typing.List[str]
+class DataContext(BaseModel):
+    source_system: typing.Optional[str] = None
+    emirate: typing.Optional[str] = None
+    provider_type: typing.Optional[str] = None
+    patient_category: typing.Optional[str] = None
+    processing_date: typing.Optional[str] = None
+    claim_type: typing.Optional[str] = None
 
+class DataSample(BaseModel):
+    resource_type: str
+    raw_data: str
+    context: typing.Optional["DataContext"] = None
+
+class QualityScore(BaseModel):
+    overall_score: float
+    compliance_score: float
+    clinical_logic_score: float
+    data_completeness_score: float
+    code_validity_score: float
+    total_issues: int
+    critical_issues: int
+    error_issues: int
+    warning_issues: int
+    info_issues: int
+
+class UIFriendlyReport(BaseModel):
+    status: str
+    summary: str
+    score: "QualityScore"
+    issues_by_severity: typing.Dict[str, typing.List["ValidationIssue"]]
+    actionable_items: typing.List["ActionableItem"]
+    next_steps: typing.Optional[typing.List[str]] = None
+
+class ValidationIssue(BaseModel):
+    id: str
+    type: ValidationType
+    severity: ValidationSeverity
+    code: str
+    message: str
+    field_path: typing.Optional[str] = None
+    expected_value: typing.Optional[str] = None
+    actual_value: typing.Optional[str] = None
+    resource_type: typing.Optional[str] = None
+    resource_id: typing.Optional[str] = None
+    suggestions: typing.Optional[typing.List[str]] = None
+    regulation_reference: typing.Optional[str] = None
+    emirate_specific: typing.Optional[bool] = None
+
+class ValidationResult(BaseModel):
+    overall_quality_score: float
+    confidence_score: float
+    validation_passed: bool
+    critical_issues: int
+    warning_issues: int
+    info_issues: int
+    top_issues: typing.List[str]
+    recommendations: typing.List[str]
+    processing_time_ms: int
+    model_used: str
+    reasoning: typing.Optional[str] = None
 
 # #########################################################################
 # Generated type aliases (0)
