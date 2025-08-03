@@ -182,6 +182,18 @@ wheels = [
 ]
 
 [[package]]
+name = "claude-code-sdk"
+version = "0.0.19"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f3/e9/0443cd7ada6a01730481b71956bd6bfea6cc348503e59a1dd7cbc05e3331/claude_code_sdk-0.0.19.tar.gz", hash = "sha256:9e23441a35928572a66c59d17fcd02d07478844d30611307b0b4460f2df6ef72", size = 23144, upload_time = "2025-08-01T05:35:48.914Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/2d/e4826ae5d361b772218491e21a5dc6b8b98e66737e255bf2891c76b0305d/claude_code_sdk-0.0.19-py3-none-any.whl", hash = "sha256:b451a6ba0199e52de7d0253d7ca074f0aa0e3bde7866a4f7174d49e721bd6a58", size = 17247, upload_time = "2025-08-01T05:35:47.683Z" },
+]
+
+[[package]]
 name = "click"
 version = "8.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -791,6 +803,7 @@ dependencies = [
     { name = "baml-cli" },
     { name = "baml-py" },
     { name = "chardet" },
+    { name = "claude-code-sdk" },
     { name = "fastapi" },
     { name = "fastparquet" },
     { name = "fuzzywuzzy" },
@@ -817,6 +830,7 @@ requires-dist = [
     { name = "baml-cli", specifier = ">=0.1.0" },
     { name = "baml-py", specifier = "==0.203.1" },
     { name = "chardet", specifier = ">=5.0.0" },
+    { name = "claude-code-sdk", specifier = ">=0.0.19" },
     { name = "fastapi", specifier = ">=0.104.0" },
     { name = "fastparquet", specifier = ">=0.8.0" },
     { name = "fuzzywuzzy", specifier = ">=0.18.0" },
