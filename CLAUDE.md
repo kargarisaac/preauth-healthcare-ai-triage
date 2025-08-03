@@ -11,6 +11,7 @@ Nazmito is an AI-powered pre-authorization platform for UAE healthcare insurance
 - **Simplicity First**: Implement minimum viable code, avoid over-engineering
 - **Direct Solutions**: Choose straightforward approaches, prefer composition over inheritance
 - **Clear Code**: Use descriptive names, keep functions short (<50 lines), limit file size (<500 lines)
+- **Temporary Files**: IF you create any temporary files which are not part of the feature or not supposed to be pushed to git, like .md, .py, .json, etc. then always put them in the `output/` folder with a <name_date_time> name, so i know they are temporary and not for the project to be pushed on git.
 
 ## Sub-agent Usage Strategy
 
