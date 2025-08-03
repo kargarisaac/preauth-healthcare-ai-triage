@@ -39,10 +39,10 @@ const DashboardOverview: React.FC = () => {
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="metric-card">
-          <div className="flex items-center">
+        <Card className="metric-card" padding="md">
+          <div className="flex items-center w-full">
             <div className="metric-icon bg-blue-100 text-blue-600">📝</div>
-            <div className="ml-4">
+            <div className="ml-4 flex-1">
               <div className="metric-value">{metrics.activeRequests}</div>
               <div className="metric-label">Active Requests</div>
               <div className="metric-change metric-change-positive">+12% this week</div>
@@ -50,10 +50,10 @@ const DashboardOverview: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="metric-card">
-          <div className="flex items-center">
+        <Card className="metric-card" padding="md">
+          <div className="flex items-center w-full">
             <div className="metric-icon bg-green-100 text-green-600">⚡</div>
-            <div className="ml-4">
+            <div className="ml-4 flex-1">
               <div className="metric-value">{metrics.autoApproved}%</div>
               <div className="metric-label">Auto-Approved</div>
               <div className="metric-change metric-change-positive">+5% improvement</div>
@@ -61,10 +61,10 @@ const DashboardOverview: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="metric-card">
-          <div className="flex items-center">
+        <Card className="metric-card" padding="md">
+          <div className="flex items-center w-full">
             <div className="metric-icon bg-orange-100 text-orange-600">⏱️</div>
-            <div className="ml-4">
+            <div className="ml-4 flex-1">
               <div className="metric-value">{metrics.avgResponseTime}</div>
               <div className="metric-label">Avg Response Time</div>
               <div className="metric-change metric-change-positive">-45% faster</div>
@@ -72,10 +72,10 @@ const DashboardOverview: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="metric-card">
-          <div className="flex items-center">
+        <Card className="metric-card" padding="md">
+          <div className="flex items-center w-full">
             <div className="metric-icon bg-purple-100 text-purple-600">💰</div>
-            <div className="ml-4">
+            <div className="ml-4 flex-1">
               <div className="metric-value">{metrics.costSavings}</div>
               <div className="metric-label">Cost Savings</div>
               <div className="metric-change metric-change-positive">This quarter</div>
@@ -110,21 +110,21 @@ const DashboardOverview: React.FC = () => {
         <Card title="Status Summary">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              <div className="flex items-center w-full">
                 <div className="w-3 h-3 bg-success-500 rounded-full mr-3"></div>
                 <span className="font-medium">Approved</span>
               </div>
               <span className="text-success-600 font-bold">{metrics.approvedCount}</span>
             </div>
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              <div className="flex items-center w-full">
                 <div className="w-3 h-3 bg-warning-500 rounded-full mr-3"></div>
                 <span className="font-medium">Pending Review</span>
               </div>
               <span className="text-warning-600 font-bold">{metrics.pendingCount}</span>
             </div>
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              <div className="flex items-center w-full">
                 <div className="w-3 h-3 bg-error-500 rounded-full mr-3"></div>
                 <span className="font-medium">Denied</span>
               </div>

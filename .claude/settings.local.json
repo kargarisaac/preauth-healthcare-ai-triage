@@ -21,7 +21,9 @@
       "Bash(find:*)",
       "Bash(npx tsc:*)",
       "Bash(uv add:*)",
-      "Bash(ruff check:*)"
+      "Bash(ruff check:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

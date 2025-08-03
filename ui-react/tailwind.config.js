@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -69,6 +70,23 @@ export default {
           700: '#404040',
           800: '#262626',
           900: '#171717',
+        },
+        // Healthcare-specific dark mode colors
+        dark: {
+          bg: {
+            primary: '#0f1419',
+            secondary: '#1a202c',
+            tertiary: '#2d3748',
+          },
+          text: {
+            primary: '#f7fafc',
+            secondary: '#e2e8f0',
+            tertiary: '#a0aec0',
+          },
+          border: {
+            primary: '#2d3748',
+            secondary: '#4a5568',
+          }
         },
       },
       fontFamily: {

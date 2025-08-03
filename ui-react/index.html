@@ -11,7 +11,8 @@
     <meta name="robots" content="index, follow" />
 
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#1E40AF" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Nazmito" />
@@ -61,6 +62,11 @@
 
     <!-- Critical CSS inline placeholder -->
     <style>
+      /* Theme detection and initialization */
+      :root {
+        color-scheme: light dark;
+      }
+
       /* Critical above-the-fold styles */
       body {
         margin: 0;
@@ -68,6 +74,25 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         background-color: #f9fafb;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      /* Dark mode styles */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #0f1419;
+          color: #f7fafc;
+        }
+      }
+
+      /* Manual dark mode class takes precedence */
+      .dark {
+        color-scheme: dark;
+      }
+
+      .dark body {
+        background-color: #0f1419;
+        color: #f7fafc;
       }
 
       #root {
@@ -115,8 +140,56 @@
       </div>
     </div>
 
-    <!-- Performance measurement script -->
+    <!-- Theme initialization script (must run before React) -->
     <script>
+      // Theme initialization
+      (function() {
+        function setTheme(theme) {
+          if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+        }
+
+        // Load saved theme from localStorage
+        try {
+          const savedTheme = localStorage.getItem('nazmito-theme');
+          if (savedTheme) {
+            setTheme(savedTheme);
+          } else {
+            // Default to system preference
+            setTheme('system');
+          }
+        } catch (e) {
+          // Fallback to system preference if localStorage fails
+          setTheme('system');
+        }
+
+        // Listen for system theme changes
+        if (window.matchMedia) {
+          const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+          const handleChange = () => {
+            try {
+              const currentTheme = localStorage.getItem('nazmito-theme');
+              if (currentTheme === 'system' || !currentTheme) {
+                setTheme('system');
+              }
+            } catch (e) {
+              setTheme('system');
+            }
+          };
+          
+          if (mediaQuery.addEventListener) {
+            mediaQuery.addEventListener('change', handleChange);
+          } else if (mediaQuery.addListener) {
+            mediaQuery.addListener(handleChange);
+          }
+        }
+      })();
+
       // Mark the start of loading
       if ('performance' in window && 'mark' in performance) {
         performance.mark('html-loaded');

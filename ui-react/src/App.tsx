@@ -1,9 +1,11 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { ReduxProvider } from './store/ReduxProvider';
+import { PerformanceProvider } from '@contexts/PerformanceContext';
+import { ThemeProvider } from '@contexts/ThemeContext';
 import { AppProvider } from '@contexts/AppContext';
 import { ToastProvider } from '@contexts/ToastContext';
 import { ProcessingProvider } from '@contexts/ProcessingContext';
-import { PerformanceProvider } from '@contexts/PerformanceContext';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 import { DashboardSkeleton } from '@components/ui/SkeletonLoader';
 import { PWAInstallPrompt } from '@components/ui/PWAInstallPrompt';
@@ -53,52 +55,56 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <PerformanceProvider>
-        <AppProvider>
-          <ToastProvider>
-            <ProcessingProvider>
-              <div className="min-h-screen bg-gray-50">
-                <Suspense fallback={<AdaptiveLoadingSpinner />}>
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <LandingPage />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/dashboard/*"
-                      element={
-                        <Suspense fallback={<AdaptiveLoadingSpinner route="/dashboard" />}>
-                          <DashboardPage />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/analytics"
-                      element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <AnalyticsShowcase />
-                        </Suspense>
-                      }
-                    />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Suspense>
-
-                {/* PWA Install Prompt */}
-                <PWAInstallPrompt
-                  variant="banner"
-                  position="bottom"
-                  autoShow={true}
+      <ReduxProvider>
+        <ThemeProvider>
+          <AppProvider>
+            <ToastProvider>
+              <ProcessingProvider>
+                <PerformanceProvider>
+            <div className="min-h-screen bg-gray-50 dark:bg-dark-bg-primary transition-colors duration-200">
+              <Suspense fallback={<AdaptiveLoadingSpinner />}>
+                <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <LandingPage />
+                    </Suspense>
+                  }
                 />
-              </div>
-            </ProcessingProvider>
-          </ToastProvider>
-        </AppProvider>
-      </PerformanceProvider>
+                <Route
+                  path="/dashboard/*"
+                  element={
+                    <Suspense fallback={<AdaptiveLoadingSpinner route="/dashboard" />}>
+                      <DashboardPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <AnalyticsShowcase />
+                    </Suspense>
+                  }
+                />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+
+              {/* PWA Install Prompt */}
+              <PWAInstallPrompt
+                variant="banner"
+                position="bottom"
+                autoShow={true}
+              />
+            </div>
+                </PerformanceProvider>
+              </ProcessingProvider>
+            </ToastProvider>
+          </AppProvider>
+        </ThemeProvider>
+      </ReduxProvider>
     </ErrorBoundary>
   );
 }
