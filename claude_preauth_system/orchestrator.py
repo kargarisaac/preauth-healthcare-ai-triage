@@ -7,7 +7,7 @@ This orchestrator coordinates multiple specialized medical agents to provide
 comprehensive pre-authorization analysis for UAE healthcare insurance.
 
 Usage:
-    python claude_preauth_orchestrator.py <current_request.xml> <patient_folder>
+    python claude_preauth_orchestrator.py <current_request.json> <patient_folder>
 
 Agents Coordinated:
     1. clinical-analyzer: Medical history and disease progression analysis
@@ -19,7 +19,6 @@ Agents Coordinated:
 
 import asyncio
 import json
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
@@ -107,18 +106,28 @@ class PreAuthOrchestrator:
     async def validate_inputs(self) -> bool:
         """Validate input files and patient data"""
         try:
-            # Validate current request file
+            # Validate current request file (JSON)
             if not self.current_request_path.exists():
                 logger.error(f"Current request file not found: {self.current_request_path}")
                 return False
             
-            # Validate XML structure
+            # Validate JSON structure
             try:
-                tree = ET.parse(self.current_request_path)
-                root = tree.getroot()
-                logger.info(f"XML validated: {root.tag}")
-            except ET.ParseError as e:
-                logger.error(f"Invalid XML structure: {e}")
+                with open(self.current_request_path, 'r', encoding='utf-8') as f:
+                    request_data = json.load(f)
+                    
+                # Validate FHIR Bundle structure
+                if not isinstance(request_data, dict):
+                    logger.error("Current request is not a valid JSON object")
+                    return False
+                    
+                if request_data.get('resourceType') != 'Bundle':
+                    logger.error("Current request is not a valid FHIR Bundle")
+                    return False
+                    
+                logger.info(f"JSON Bundle validated: {request_data.get('id', 'unknown')}")
+            except (json.JSONDecodeError, KeyError) as e:
+                logger.error(f"Invalid JSON structure: {e}")
                 return False
             
             # Validate patient folder
@@ -127,7 +136,7 @@ class PreAuthOrchestrator:
                 return False
             
             # Check for required patient files
-            required_files = ['profile.json', 'dataset_index.csv']
+            required_files = ['profile.json']
             for file_name in required_files:
                 file_path = self.patient_folder_path / file_name
                 if not file_path.exists():
@@ -171,11 +180,19 @@ class PreAuthOrchestrator:
 **CURRENT REQUEST FILE**: {self.current_request_path}
 
 **INSTRUCTIONS**:
-1. Read the current XML request file
-2. Read the patient profile.json file  
-3. Read the dataset_index.csv for historical context
-4. Read relevant historical XML files
+1. Read the current JSON request file (FHIR Bundle format)
+2. Read the patient profile.json file
+3. Read the dataset_index.csv for historical context (if available)
+4. Read relevant historical JSON files for patient medical history
 5. Conduct your specialized analysis based on your expertise: {agent_description}
+
+**DATA FORMAT NOTES**:
+- Current request is in FHIR Bundle JSON format with:
+  - Clinical data in 'activities' or 'services' fields
+  - Original data preserved in 'raw_data' field
+  - Patient identifiers and authorization details in root fields
+- Historical files follow the same JSON Bundle structure
+- All medical details including medications, vitals, labs are in structured JSON
 
 **REQUIRED OUTPUT FORMAT**:
 # {agent_name.title().replace('-', ' ')} Analysis Report
@@ -197,7 +214,7 @@ class PreAuthOrchestrator:
 ## Recommendations
 [Specific actionable recommendations]
 
-**START ANALYSIS NOW** - Read the files and provide your comprehensive medical analysis."""
+**START ANALYSIS NOW** - Read the JSON files and provide your comprehensive medical analysis."""
         return prompt
     
     def clean_agent_response(self, raw_response: str) -> str:
@@ -644,9 +661,9 @@ This comprehensive pre-authorization analysis was conducted using specialized Cl
 async def main():
     """Main entry point for the orchestrator"""
     if len(sys.argv) != 3:
-        print("Usage: python claude_preauth_orchestrator.py <current_request.xml> <patient_folder>")
+        print("Usage: python claude_preauth_orchestrator.py <current_request.json> <patient_folder>")
         print("\nExample:")
-        print("  python claude_preauth_orchestrator.py data/current_request.xml data/patient_123/")
+        print("  python claude_preauth_orchestrator.py data/processed_dataset/1/current_request.json data/processed_dataset/1/")
         sys.exit(1)
     
     current_request = sys.argv[1]

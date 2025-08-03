@@ -3,8 +3,8 @@
 # Nazmito AI Pre-Authorization Analysis System
 # User-friendly bash wrapper for the Python orchestrator
 # 
-# Usage: ./preauth_analyze <current_request.xml> <patient_folder>
-# Example: ./preauth_analyze data/current_request.xml data/patient_123/
+# Usage: ./preauth_analyze <current_request.json> <patient_folder>
+# Example: ./preauth_analyze data/processed_dataset/1/current_request.json data/processed_dataset/1/
 
 set -e  # Exit on any error
 
@@ -44,20 +44,24 @@ print_info() {
 }
 
 print_usage() {
-    echo "Usage: $0 <current_request.xml> <patient_folder>"
+    echo "Usage: $0 <current_request.json> <patient_folder>"
     echo ""
     echo "Arguments:"
-    echo "  current_request.xml    Path to the current pre-authorization request XML file"
+    echo "  current_request.json   Path to the current pre-authorization request JSON file (FHIR Bundle)"
     echo "  patient_folder         Path to the patient's historical data folder"
     echo ""
     echo "Examples:"
-    echo "  $0 data/current_request.xml data/patient_folder_10/"
-    echo "  $0 /path/to/request.xml /path/to/patient_data/"
+    echo "  $0 data/processed_dataset/1/current_request.json data/processed_dataset/1/"
+    echo "  $0 /path/to/bundle.json /path/to/patient_data/"
     echo ""
     echo "Requirements:"
     echo "  - Python 3.7+ with Claude Code SDK installed"
-    echo "  - Patient folder must contain profile.json and dataset_index.csv"
-    echo "  - Current request must be a valid XML file"
+    echo "  - Patient folder must contain profile.json"
+    echo "  - Current request must be a valid FHIR Bundle JSON file"
+    echo ""
+    echo "Data Format:"
+    echo "  - JSON files should be generated using pipelines/data_pipeline.py"
+    echo "  - Use data_pipeline.py for batch XML→JSON conversion, then analyze with this script"
     echo ""
     echo "Output:"
     echo "  - Comprehensive analysis report in analysis_results/analysis_TIMESTAMP/"
@@ -85,25 +89,42 @@ check_orchestrator() {
     fi
 }
 
-validate_xml_file() {
-    local xml_file="$1"
+validate_json_file() {
+    local json_file="$1"
     
-    if [[ ! -f "$xml_file" ]]; then
-        print_error "XML file not found: $xml_file"
+    if [[ ! -f "$json_file" ]]; then
+        print_error "JSON file not found: $json_file"
         return 1
     fi
     
-    # Basic XML validation
+    # Basic JSON validation and FHIR Bundle check
     if ! $PYTHON_CMD -c "
-import xml.etree.ElementTree as ET
+import json
 try:
-    ET.parse('$xml_file')
-    print('XML validation successful')
-except ET.ParseError as e:
-    print(f'XML validation failed: {e}')
+    with open('$json_file', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    # Validate FHIR Bundle structure
+    if not isinstance(data, dict):
+        print('JSON validation failed: Not a valid JSON object')
+        exit(1)
+    
+    if data.get('resourceType') != 'Bundle':
+        print('FHIR validation failed: Not a valid FHIR Bundle')
+        exit(1)
+        
+    print('JSON FHIR Bundle validation successful')
+    print(f'Bundle ID: {data.get(\"id\", \"unknown\")}')
+    print(f'Source: {data.get(\"meta\", {}).get(\"source\", \"unknown\")}')
+    
+except json.JSONDecodeError as e:
+    print(f'JSON validation failed: {e}')
+    exit(1)
+except Exception as e:
+    print(f'Validation failed: {e}')
     exit(1)
 " 2>/dev/null; then
-        print_error "Invalid XML file: $xml_file"
+        print_error "Invalid JSON file or FHIR Bundle: $json_file"
         return 1
     fi
     
@@ -118,14 +139,20 @@ validate_patient_folder() {
         return 1
     fi
     
-    # Check for required files
-    local required_files=("profile.json" "dataset_index.csv")
+    # Check for required files (dataset_index.csv is now optional)
+    local required_files=("profile.json")
     for file in "${required_files[@]}"; do
         if [[ ! -f "$patient_folder/$file" ]]; then
             print_error "Required file missing: $patient_folder/$file"
             return 1
         fi
     done
+    
+    # Check for additional JSON files (patient history)
+    local json_count=$(find "$patient_folder" -name "*.json" -not -name "profile.json" | wc -l)
+    if [[ $json_count -gt 0 ]]; then
+        print_info "Found $json_count additional JSON files for patient history"
+    fi
     
     return 0
 }
@@ -138,16 +165,16 @@ create_directories() {
 }
 
 run_analysis() {
-    local xml_file="$1"
+    local json_file="$1"
     local patient_folder="$2"
     
     print_info "Starting comprehensive pre-authorization analysis..."
-    print_info "Request file: $xml_file"
+    print_info "FHIR Bundle: $json_file"
     print_info "Patient data: $patient_folder"
     echo ""
     
     # Run the Python orchestrator
-    if $PYTHON_CMD "$ORCHESTRATOR" "$xml_file" "$patient_folder"; then
+    if $PYTHON_CMD "$ORCHESTRATOR" "$json_file" "$patient_folder"; then
         echo ""
         print_success "Analysis completed successfully!"
         print_info "Check the output directory for detailed reports"
@@ -193,11 +220,11 @@ main() {
         exit 1
     fi
     
-    local xml_file="$1"
+    local json_file="$1"
     local patient_folder="$2"
     
     # Convert relative paths to absolute paths
-    xml_file=$(realpath "$xml_file" 2>/dev/null || echo "$xml_file")
+    json_file=$(realpath "$json_file" 2>/dev/null || echo "$json_file")
     patient_folder=$(realpath "$patient_folder" 2>/dev/null || echo "$patient_folder")
     
     print_info "Performing system checks..."
@@ -210,11 +237,11 @@ main() {
     print_info "Validating input files..."
     
     # Input validation
-    if ! validate_xml_file "$xml_file"; then
-        print_error "XML file validation failed"
+    if ! validate_json_file "$json_file"; then
+        print_error "JSON file validation failed"
         exit 1
     fi
-    print_success "XML file validation passed"
+    print_success "JSON file validation passed"
     
     if ! validate_patient_folder "$patient_folder"; then
         print_error "Patient folder validation failed"
@@ -236,7 +263,7 @@ main() {
     echo ""
     
     # Run the analysis
-    run_analysis "$xml_file" "$patient_folder"
+    run_analysis "$json_file" "$patient_folder"
 }
 
 # Handle interruption gracefully
