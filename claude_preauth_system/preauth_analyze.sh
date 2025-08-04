@@ -4,7 +4,7 @@
 # User-friendly bash wrapper for the Python orchestrator
 # 
 # Usage: ./preauth_analyze <current_request.json> <patient_folder>
-# Example: ./preauth_analyze data/processed_dataset/1/current_request.json data/processed_dataset/1/
+# Example: ./preauth_analyze ../data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/abudhabi_11f5688b-6c4a-4c41-baad-71e6a4b82d91_20200214_req01_shafafiya.json ../data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/
 
 set -e  # Exit on any error
 
@@ -51,8 +51,8 @@ print_usage() {
     echo "  patient_folder         Path to the patient's historical data folder"
     echo ""
     echo "Examples:"
-    echo "  $0 data/processed_dataset/1/current_request.json data/processed_dataset/1/"
-    echo "  $0 /path/to/bundle.json /path/to/patient_data/"
+    echo "  $0 ../data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/abudhabi_11f5688b-6c4a-4c41-baad-71e6a4b82d91_20200214_req01_shafafiya.json ../data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/"
+    echo "  $0 /path/to/current_request.json /path/to/patient_folder/"
     echo ""
     echo "Requirements:"
     echo "  - Python 3.7+ with Claude Code SDK installed"
@@ -60,8 +60,9 @@ print_usage() {
     echo "  - Current request must be a valid FHIR Bundle JSON file"
     echo ""
     echo "Data Format:"
-    echo "  - JSON files should be generated using pipelines/data_pipeline.py"
-    echo "  - Use data_pipeline.py for batch XML→JSON conversion, then analyze with this script"
+    echo "  - JSON files should be generated using pipelines/data_pipeline.py (XML→JSON conversion)"
+    echo "  - Patient folders are UUID-based (e.g., 11f5688b-6c4a-4c41-baad-71e6a4b82d91)"
+    echo "  - Historical files in FHIR Bundle JSON format"
     echo ""
     echo "Output:"
     echo "  - Comprehensive analysis report in analysis_results/analysis_TIMESTAMP/"
@@ -281,9 +282,9 @@ fi
 if [[ "$1" == "-v" || "$1" == "--version" ]]; then
     print_header
     echo ""
-    print_info "Version: 1.0.0"
-    print_info "Python Orchestrator: claude_preauth_orchestrator_20250803.py"
-    print_info "Specialized Agents: 5 medical analysis agents"
+    print_info "Version: 1.1.0"
+    print_info "Python Orchestrator: orchestrator.py (enhanced with embedded agents)"
+    print_info "Specialized Agents: 5 self-contained medical analysis agents"
     exit 0
 fi
 

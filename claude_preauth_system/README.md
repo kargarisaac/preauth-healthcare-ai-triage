@@ -16,10 +16,16 @@ chmod +x claude_preauth_system/preauth_analyze.sh
 ## Example Usage
 
 ```bash
-# Analyze patient folder 1's processed JSON request (from project root)
+# Analyze a patient's current request (from project root)
 ./claude_preauth_system/preauth_analyze.sh \
-  data/processed_dataset/1/abudhabi_11f5688b-6c4a-4c41-baad-71e6a4b82d91_20200214_req01_shafafiya.json \
-  data/processed_dataset/1/
+  data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/abudhabi_11f5688b-6c4a-4c41-baad-71e6a4b82d91_20200214_req01_shafafiya.json \
+  data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/
+
+# List available patient folders (UUID-based)
+ls data/processed_data/
+
+# List available requests for a patient
+ls data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/*.json
 
 # View results
 ls analysis_results/analysis_*/
@@ -29,7 +35,7 @@ ls analysis_results/analysis_*/
 
 - **orchestrator.py** - Python orchestrator coordinating 5 medical agents
 - **preauth_analyze.sh** - User-friendly bash wrapper with JSON validation
-- **Medical Agents** - Located in `../.claude/agents/preauth/`
+- **Medical Agents** - Self-contained in `agents/` directory with specialized expertise
 - **Results** - Saved to `analysis_results/analysis_TIMESTAMP/`
 
 ## Data Format
@@ -48,7 +54,7 @@ Each analysis generates:
 
 ## Complete Documentation
 
-See [`docs/claude_preauth_system.md`](docs/claude_preauth_system.md) for:
+See [`../docs/claude_preauth_system.md`](../docs/claude_preauth_system.md) for:
 - System architecture and workflow
 - Agent specializations and capabilities
 - UAE healthcare compliance features

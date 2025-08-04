@@ -54,7 +54,7 @@ graph TB
 
 ### 1. Specialized Medical Agents
 
-Located in `.claude/agents/preauth/`, each agent has specific medical expertise:
+Self-contained in `claude_preauth_system/agents/`, each agent has specific medical expertise embedded directly in the system:
 
 #### Clinical Analyzer (`clinical-analyzer.md`)
 - **Purpose**: Medical history and disease progression analysis
@@ -147,18 +147,18 @@ uv add claude-code-sdk
 ### Directory Structure
 ```
 nazmito/
-├── claude-preauth-system/
-│   ├── orchestrator.py          # Main Python orchestrator
-│   └── preauth_analyze.sh       # Bash wrapper script
-├── .claude/agents/preauth/
-│   ├── clinical-analyzer.md     # Medical analysis agent
-│   ├── medication-specialist.md # Drug safety agent
-│   ├── risk-assessor.md        # Risk stratification agent
-│   ├── decision-maker.md       # Decision support agent
-│   └── compliance-auditor.md   # Regulatory compliance agent
+├── claude_preauth_system/
+│   ├── orchestrator.py          # Enhanced Python orchestrator
+│   ├── preauth_analyze.sh       # Bash wrapper script
+│   └── agents/                  # Self-contained agent definitions
+│       ├── clinical-analyzer.md     # Medical analysis agent
+│       ├── medication-specialist.md # Drug safety agent
+│       ├── risk-assessor.md        # Risk stratification agent
+│       ├── decision-maker.md       # Decision support agent
+│       └── compliance-auditor.md   # Regulatory compliance agent
 ├── analysis_results/           # Generated analysis reports
 ├── logs/                      # System logs
-└── data/synthetic_dataset/    # Sample patient data
+└── data/processed_data/       # Sample patient data with UUID folders
 ```
 
 ## Usage
@@ -174,14 +174,19 @@ cd claude-preauth-system
 
 ### Example Usage
 ```bash
-# Using sample data
+# Using sample data (UUID-based patient folders)
 ./preauth_analyze.sh \
-  ../data/synthetic_dataset/10/abudhabi_b7c8d9e0-1f2a-3b4c-5d6e-7f8g9h0i1j2k_20250820_req12_shafafiya.xml \
-  ../data/synthetic_dataset/10/
+  ../data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/abudhabi_11f5688b-6c4a-4c41-baad-71e6a4b82d91_20200214_req01_shafafiya.json \
+  ../data/processed_data/11f5688b-6c4a-4c41-baad-71e6a4b82d91/
+
+# Using Dubai (eClaimLink) data
+./preauth_analyze.sh \
+  ../data/processed_data/b7e2f1c3-5d4a-4b2e-8c7d-9f1e2a3b4c5d/dubai_b7e2f1c3-5d4a-4b2e-8c7d-9f1e2a3b4c5d_20200115_req01_eclaim.json \
+  ../data/processed_data/b7e2f1c3-5d4a-4b2e-8c7d-9f1e2a3b4c5d/
 
 # Using absolute paths
 ./preauth_analyze.sh \
-  /path/to/current_request.xml \
+  /path/to/current_request.json \
   /path/to/patient_folder/
 ```
 
@@ -193,23 +198,24 @@ cd claude-preauth-system
 
 ## Input Requirements
 
-### XML Request File
-- Valid XML structure (Shafafiya or eClaimLink format)
-- Current pre-authorization request
+### JSON Request File (FHIR Bundle)
+- Valid FHIR Bundle JSON format (processed from XML via data pipeline)
+- Current pre-authorization request with clinical data
 - Must include patient demographics and requested services
+- Select the most recent request file from the patient's UUID folder
 
 ### Patient Folder Structure
 ```
-patient_folder/
+patient_folder/ (UUID-based naming)
 ├── profile.json              # Patient demographics and baseline data
-├── dataset_index.csv         # Historical request index
-└── *.xml                    # Historical XML request files
+├── dataset_index.csv         # Historical request index (optional)
+└── *.json                   # Historical FHIR Bundle request files
 ```
 
 #### Required Files
 - **profile.json**: Patient demographics, risk factors, insurance info
-- **dataset_index.csv**: Chronological index of all requests
-- **Historical XML files**: Previous pre-authorization requests
+- **dataset_index.csv**: Chronological index of all requests (optional)
+- **Historical JSON files**: Previous FHIR Bundle requests (optional)
 
 ## Output Structure
 
@@ -282,7 +288,7 @@ analysis_results/analysis_YYYYMMDD_HHMMSS/
 
 3. **Agent Execution Failures**
    - Check logs/preauth_orchestrator.log
-   - Verify .claude/agents/preauth/ directory exists
+   - Verify claude_preauth_system/agents/ directory exists
    - Ensure agent markdown files are properly formatted
 
 ### Logging
@@ -307,7 +313,8 @@ analysis_results/analysis_YYYYMMDD_HHMMSS/
 ## Maintenance & Updates
 
 ### Agent Updates
-- Medical agents stored in version-controlled markdown files
+- Medical agents self-contained in claude_preauth_system/agents/
+- Version-controlled with main codebase for consistency
 - Easy updates to clinical guidelines and protocols
 - Modular design allows individual agent improvements
 
@@ -370,7 +377,7 @@ analysis_results/analysis_YYYYMMDD_HHMMSS/
 
 ---
 
-**System Version**: 1.0.0  
-**Last Updated**: August 3, 2025  
-**Documentation Version**: 1.0  
+**System Version**: 1.1.0 (Self-Contained Agents)  
+**Last Updated**: August 4, 2025  
+**Documentation Version**: 1.1  
 **Compatibility**: Claude Code SDK 0.0.19+
