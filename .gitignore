@@ -11,9 +11,9 @@ ui-react/dist/
 .cursor/
 *debug*
 output/
-data/
 .pytest_cache/
 .ruff_cache/
 .venv/
 .benchmarks/
 *analysis_results
+/data
