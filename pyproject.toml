@@ -28,5 +28,4 @@ dependencies = [
     "kuzu>=0.11.1",
     "baml-cli>=0.1.0",
     "claude-code-sdk>=0.0.19",
-    "dvc[gdrive]>=3.61.0",
 ]

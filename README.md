@@ -43,6 +43,7 @@ Nazmito transforms manual healthcare pre-authorization processes in the UAE into
 - Python 3.11+
 - Docker & Docker Compose
 - `uv` package manager (ultra-fast Python dependency management)
+- Google Cloud SDK (for dataset access via DVC)
 
 ### Installation
 ```bash
@@ -56,6 +57,13 @@ cd nazmito
 # Set up environment
 uv venv .venv && source .venv/bin/activate
 uv pip install -r pyproject.toml
+
+# Set up dataset access (one-time authentication)
+gcloud auth login
+gcloud auth application-default login
+
+# Pull latest dataset from cloud storage
+dvc pull
 
 # Start development environment
 make demo
@@ -79,6 +87,26 @@ cd ui && python3 -m http.server 8080
 # Process XML files via dashboard or API
 curl -X POST http://localhost:8000/api/process/sample/eclaim
 ```
+
+## Dataset Management
+
+### Data Version Control
+We use DVC (Data Version Control) to manage large healthcare datasets stored in Google Cloud Storage:
+
+- **Dataset Storage**: `gs://nazmito-datasets/` (Google Cloud Storage bucket)
+- **Version Control**: All dataset changes are tracked via DVC
+- **Team Access**: Use `gcloud auth login` for authentication, then `dvc pull` to sync latest data
+- **Updates**: Run `dvc add data && dvc push` after making dataset changes
+
+### Dataset Structure
+```
+data/
+├── dataset_1/          # Original UAE healthcare samples
+├── dataset_2/          # Synthetic patient data
+└── raw_data/          # Unprocessed XML/CSV files
+```
+
+**Note**: The `data/` directory is excluded from Git but version-controlled via DVC. All raw healthcare data remains secure in Google Cloud Storage with proper access controls.
 
 ## Architecture & Documentation
 
