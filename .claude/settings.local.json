@@ -23,7 +23,14 @@
       "Bash(uv add:*)",
       "Bash(ruff check:*)",
       "Bash(npm run test:coverage:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(for file in *.tsx)",
+      "Bash(do)",
+      "Bash(if ! grep -q \"export default\" \"$file\")",
+      "Bash(then)",
+      "Bash(echo:*)",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": []
   }

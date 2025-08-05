@@ -6,7 +6,9 @@ interface PWAInstallPromptProps {
   autoShow?: boolean;
 }
 
-export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = () => {
+const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = () => {
   // Simplified placeholder component
   return null;
 };
+
+export default PWAInstallPrompt;

@@ -130,3 +130,5 @@ export const LazyImage: React.FC<LazyImageProps> = React.memo(({
 });
 
 LazyImage.displayName = 'LazyImage';
+
+export default LazyImage;

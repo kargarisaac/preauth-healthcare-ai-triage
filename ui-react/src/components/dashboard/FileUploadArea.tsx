@@ -1,27 +1,58 @@
 import React, { useState, useCallback } from 'react';
 import { clsx } from 'clsx';
-import { Upload, FileText, Database, Zap, CheckCircle, X, Loader2 } from 'lucide-react';
-import { useProcessing } from '@/contexts/ProcessingContext';
+import { Upload, FileText, Zap, CheckCircle, X, Loader2, User } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { LLMValidationToggle, LLMValidationResultDisplay } from './LLMValidation';
+import type { PatientInfo, XMLProcessResponse } from '@/types/api';
+import { useProcessing } from '@/contexts/ProcessingContext';
 
-const FileUploadArea: React.FC = () => {
-  const {
-    currentFile,
-    processingResults,
-    isProcessing,
-    uploadProgress,
-    enableLLMValidation,
-    setCurrentFile,
-    setEnableLLMValidation,
-    processFile
+interface FileUploadAreaProps {
+  selectedPatient: PatientInfo | null;
+  onUploadComplete: (response: XMLProcessResponse) => void;
+  onUploadError: (error: string) => void;
+}
+
+const FileUploadArea: React.FC<FileUploadAreaProps> = ({
+  selectedPatient,
+  onUploadComplete,
+  onUploadError
+}) => {
+  const [dragOver, setDragOver] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<'eclaim' | 'shafafiya' | null>(null);
+  const [enableLLMValidation, setEnableLLMValidation] = useState(false);
+  
+  const { 
+    currentFile, 
+    setCurrentFile, 
+    isProcessing, 
+    uploadProgress, 
+    uploadFileForPatient 
   } = useProcessing();
 
-  const [dragOver, setDragOver] = useState(false);
+  // Suggest source based on filename patterns (user still needs to confirm)
+  const suggestSourceFromFilename = (filename: string): 'eclaim' | 'shafafiya' | null => {
+    const name = filename.toLowerCase();
+    if (name.includes('eclaim') || name.includes('dubai')) {
+      return 'eclaim';
+    } else if (name.includes('shafafiya') || name.includes('abudhabi') || name.includes('abu_dhabi')) {
+      return 'shafafiya';
+    }
+    return null;
+  };
 
-  const handleFileSelect = useCallback((file: File) => {
+  const handleFileSelect = useCallback(async (file: File) => {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (extension !== 'xml') {
+      onUploadError('Only XML files are supported for patient-specific uploads');
+      return;
+    }
+
     setCurrentFile(file);
-  }, [setCurrentFile]);
+    
+    // Suggest source based on filename, but user must confirm
+    const suggestedSource = suggestSourceFromFilename(file.name);
+    setSelectedSource(suggestedSource);
+  }, [onUploadError, setCurrentFile]);
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -51,14 +82,18 @@ const FileUploadArea: React.FC = () => {
   }, [handleFileSelect]);
 
   const handleProcess = useCallback(async () => {
-    if (!currentFile) return;
+    if (!currentFile || !selectedPatient || !selectedSource) return;
 
-    // Auto-detect format based on file extension
-    const extension = currentFile.name.split('.').pop()?.toLowerCase();
-    const format = extension === 'csv' ? 'csv' : 'eclaim';
-
-    await processFile(format);
-  }, [currentFile, processFile]);
+    try {
+      const result = await uploadFileForPatient(currentFile, selectedSource, selectedPatient.patient_id);
+      if (result) {
+        onUploadComplete(result);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      onUploadError(errorMessage);
+    }
+  }, [currentFile, selectedPatient, selectedSource, uploadFileForPatient, onUploadComplete, onUploadError]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -66,11 +101,6 @@ const FileUploadArea: React.FC = () => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
-
-  const getFileIcon = (file: File) => {
-    const extension = file.name.split('.').pop()?.toLowerCase();
-    return extension === 'csv' ? Database : FileText;
   };
 
   return (
@@ -93,15 +123,18 @@ const FileUploadArea: React.FC = () => {
         {currentFile ? (
           <div className="space-y-2">
             <div className="flex items-center justify-center">
-              {React.createElement(getFileIcon(currentFile), {
-                className: 'w-8 h-8 text-green-600'
-              })}
+              <FileText className="w-8 h-8 text-green-600" />
             </div>
             <div>
               <p className="font-medium text-gray-900">{currentFile.name}</p>
               <p className="text-sm text-gray-600">
                 {formatFileSize(currentFile.size)}
               </p>
+              {selectedSource && (
+                <p className="text-xs text-blue-600 font-medium">
+                  Source: {selectedSource === 'eclaim' ? 'eClaimLink (Dubai)' : 'Shafafiya (Abu Dhabi)'}
+                </p>
+              )}
             </div>
           </div>
         ) : (
@@ -112,7 +145,7 @@ const FileUploadArea: React.FC = () => {
                 Drop files here or click to upload
               </p>
               <p className="text-sm text-gray-500">
-                XML or CSV files up to 10MB
+                XML files only (eClaimLink or Shafafiya)
               </p>
             </div>
           </div>
@@ -123,18 +156,75 @@ const FileUploadArea: React.FC = () => {
         id="file-upload"
         type="file"
         className="hidden"
-        accept=".xml,.csv"
+        accept=".xml"
         onChange={handleFileInput}
       />
 
-      {/* LLM Validation Toggle */}
+      {/* Selected Patient Info */}
+      {selectedPatient && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-center space-x-2">
+            <User className="w-4 h-4 text-blue-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900">
+                {selectedPatient.folder_name}
+              </p>
+              <p className="text-xs text-blue-700">
+                {selectedPatient.patient_id} • {selectedPatient.xml_files} XML files • {selectedPatient.processed_json_files} processed
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Source Selection */}
       {currentFile && (
-        <div className="border-t pt-4">
-          <LLMValidationToggle
-            enabled={enableLLMValidation}
-            onChange={setEnableLLMValidation}
-            disabled={isProcessing}
-          />
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              XML Source Type *
+            </label>
+            <div className="flex space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="source"
+                  value="eclaim"
+                  checked={selectedSource === 'eclaim'}
+                  onChange={(e) => setSelectedSource(e.target.value as 'eclaim')}
+                  className="mr-2"
+                  disabled={isProcessing}
+                />
+                <span className="text-sm">eClaimLink (Dubai Health Authority)</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="source"
+                  value="shafafiya"
+                  checked={selectedSource === 'shafafiya'}
+                  onChange={(e) => setSelectedSource(e.target.value as 'shafafiya')}
+                  className="mr-2"
+                  disabled={isProcessing}
+                />
+                <span className="text-sm">Shafafiya (Abu Dhabi Department of Health)</span>
+              </label>
+            </div>
+            {!selectedSource && (
+              <p className="text-xs text-red-600 mt-1">
+                Please select the XML source type before processing
+              </p>
+            )}
+          </div>
+
+          {/* LLM Validation Toggle */}
+          <div className="border-t pt-4">
+            <LLMValidationToggle
+              enabled={enableLLMValidation}
+              onChange={setEnableLLMValidation}
+              disabled={isProcessing}
+            />
+          </div>
         </div>
       )}
 
@@ -145,7 +235,7 @@ const FileUploadArea: React.FC = () => {
             variant="primary"
             size="sm"
             onClick={handleProcess}
-            disabled={isProcessing}
+            disabled={isProcessing || !selectedPatient || !selectedSource}
             className="flex-1"
           >
             {isProcessing ? (
@@ -187,24 +277,31 @@ const FileUploadArea: React.FC = () => {
         </div>
       )}
 
-      {/* Results */}
-      {processingResults && (
-        <div className="space-y-4">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-900">
-                Processed successfully in {processingResults.metadata?.processing_time_seconds?.toFixed(2) || 0}s
-              </span>
-            </div>
+      {/* Processing Stages */}
+      {isProcessing && (
+        <div className="space-y-2">
+          <div className="text-xs text-gray-600 font-medium">Processing stages:</div>
+          <div className="space-y-1">
+            {[
+              { stage: 'File upload', completed: uploadProgress > 10 },
+              { stage: 'XML validation', completed: uploadProgress > 30 },
+              { stage: 'Source detection', completed: uploadProgress > 50 },
+              { stage: 'Patient linking', completed: uploadProgress > 70 },
+              { stage: 'Data processing', completed: uploadProgress > 90 },
+            ].map((item, index) => (
+              <div key={index} className="flex items-center space-x-2 text-xs">
+                <div className={`w-2 h-2 rounded-full ${
+                  item.completed ? 'bg-green-500' : 'bg-gray-300'
+                }`}></div>
+                <span className={item.completed ? 'text-green-700' : 'text-gray-600'}>
+                  {item.stage}
+                </span>
+                {item.completed && (
+                  <CheckCircle className="w-3 h-3 text-green-500" />
+                )}
+              </div>
+            ))}
           </div>
-
-          {/* LLM Validation Results */}
-          {processingResults.metadata?.llm_validation && (
-            <LLMValidationResultDisplay
-              validationResult={processingResults.metadata.llm_validation}
-            />
-          )}
         </div>
       )}
     </div>

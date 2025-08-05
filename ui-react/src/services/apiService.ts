@@ -1,5 +1,8 @@
+// Import the updated API types
+import type { PatientInfo, DashboardData, XMLProcessResponse, AnalysisResponse } from '@/types/api';
+
 // API configuration
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:8000/api';
 
 // Request types
 interface RequestOptions extends RequestInit {
@@ -138,10 +141,74 @@ class ApiService {
   async delete<T>(endpoint: string, options: Omit<RequestOptions, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
+
+  // File upload with FormData
+  async uploadFile<T>(
+    endpoint: string,
+    file: File,
+    additionalData?: Record<string, any>,
+    options: Omit<RequestOptions, 'method' | 'body'> = {}
+  ): Promise<ApiResponse<T>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    if (additionalData) {
+      Object.entries(additionalData).forEach(([key, value]) => {
+        formData.append(key, value.toString());
+      });
+    }
+
+    const { headers, ...restOptions } = options;
+    return this.request<T>(endpoint, {
+      ...restOptions,
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type for FormData, let browser set it with boundary
+        // Remove any Content-Type header that might be set
+        ...Object.fromEntries(
+          Object.entries(headers || {}).filter(([key]) => key.toLowerCase() !== 'content-type')
+        ),
+      },
+    });
+  }
 }
 
 // Create singleton instance
 export const apiService = new ApiService();
+
+// Patient API endpoints
+export const patientApi = {
+  // Get all patients for dropdown
+  getPatients: () => apiService.get<PatientInfo[]>('/patients'),
+  
+  // Upload XML file for patient
+  uploadXml: (file: File, source: 'eclaim' | 'shafafiya', patientId?: string) => {
+    const additionalData: Record<string, any> = { source };
+    if (patientId) {
+      additionalData.patient_id = patientId;
+    }
+    return apiService.uploadFile<XMLProcessResponse>('/upload-xml', file, additionalData);
+  },
+  
+  // Process XML for specific patient
+  processPatient: (patientId: string) => 
+    apiService.post<XMLProcessResponse>(`/process/${patientId}`),
+  
+  // Run Claude analysis
+  analyzePatient: (patientId: string, costLimit: number = 1.0, includeHistory: boolean = true) => 
+    apiService.post<AnalysisResponse>(`/analyze/${patientId}`, {
+      cost_limit_usd: costLimit,
+      include_history: includeHistory
+    }),
+  
+  // Get patient dashboard data
+  getPatientDashboard: (patientId: string) => 
+    apiService.get<DashboardData>(`/patient/${patientId}/dashboard`),
+  
+  // Health check endpoint
+  getHealthStatus: () => apiService.get('/health'),
+};
 
 // Export error types
 export { ApiError, NetworkError };

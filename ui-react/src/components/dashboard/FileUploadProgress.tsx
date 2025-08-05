@@ -1,5 +1,7 @@
 import React from 'react';
-import Button from '@components/ui/Button';
+import Button from '@/components/ui/Button';
+import { User, FileCheck } from 'lucide-react';
+import type { PatientInfo } from '@/types/api';
 
 interface FileUploadProgressProps {
   progress: number;
@@ -10,6 +12,8 @@ interface FileUploadProgressProps {
   onRetry?: () => void;
   estimatedTimeRemaining?: number;
   uploadSpeed?: string;
+  detectedSource?: string;
+  selectedPatient?: PatientInfo | null;
 }
 
 const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
@@ -21,6 +25,8 @@ const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
   onRetry,
   estimatedTimeRemaining,
   uploadSpeed,
+  detectedSource,
+  selectedPatient,
 }) => {
   const getStatusIcon = () => {
     switch (status) {
@@ -97,6 +103,23 @@ const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Patient Info */}
+      {selectedPatient && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center space-x-2">
+            <User className="w-4 h-4 text-blue-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900">
+                {selectedPatient.full_name}
+              </p>
+              <p className="text-xs text-blue-700">
+                {selectedPatient.id} • {selectedPatient.insurance_plan}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
@@ -108,6 +131,11 @@ const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
             <p className={`text-xs ${getStatusColor()}`}>
               {getStatusText()}
             </p>
+            {detectedSource && (
+              <p className="text-xs text-blue-600 font-medium">
+                Source: {detectedSource}
+              </p>
+            )}
           </div>
         </div>
 
@@ -220,27 +248,21 @@ const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
           <div className="text-xs text-gray-600 font-medium">Processing stages:</div>
           <div className="space-y-1">
             {[
-              { stage: 'File validation', completed: progress > 10 },
-              { stage: 'Format detection', completed: progress > 30 },
-              { stage: 'Data extraction', completed: progress > 60 },
-              { stage: 'FHIR mapping', completed: progress > 80 },
-              { stage: 'Quality validation', completed: progress > 90 },
+              { stage: 'XML validation', completed: progress > 10 },
+              { stage: 'Source detection', completed: progress > 30 },
+              { stage: 'Patient linking', completed: progress > 50 },
+              { stage: 'FHIR conversion', completed: progress > 70 },
+              { stage: 'Generate JSON', completed: progress > 90 },
             ].map((item, index) => (
               <div key={index} className="flex items-center space-x-2 text-xs">
                 <div className={`w-2 h-2 rounded-full ${
-                  item.completed ? 'bg-success-500' : 'bg-gray-300'
+                  item.completed ? 'bg-green-500' : 'bg-gray-300'
                 }`}></div>
-                <span className={item.completed ? 'text-success-700' : 'text-gray-600'}>
+                <span className={item.completed ? 'text-green-700' : 'text-gray-600'}>
                   {item.stage}
                 </span>
                 {item.completed && (
-                  <svg className="w-3 h-3 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <FileCheck className="w-3 h-3 text-green-500" />
                 )}
               </div>
             ))}

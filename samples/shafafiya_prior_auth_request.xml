@@ -10,40 +10,116 @@
     <!-- dd/mm/yyyy HH:MM format as required by HeaderTransactionDate type -->
     <TransactionDate>27/07/2025 10:32</TransactionDate>
     <RecordCount>1</RecordCount>
-    <DispositionFlag>TEST</DispositionFlag>
+    <DispositionFlag>PROD</DispositionFlag>
   </Header>
 
-  <!-- Authorization section -->
-  <Authorization>
-    <Result>Yes</Result>
-    <!-- Unique authorization identifier -->
-    <ID>PA-2025-000123</ID>
-    <!-- Start & End in dd/mm/yyyy HH:MM format -->
-    <Start>25/07/2025 00:00</Start>
-    <End>25/07/2025 00:00</End>
-    <!-- Human-readable comments / justification -->
-    <Comments>Patient with poorly controlled diabetes; last HbA1c 9 months ago. No retinopathy screen in 18 months.</Comments>
+  <!-- Patient Information -->
+  <Patient>
+    <PersonID>PER-2025-123456</PersonID>
+    <EmiratesID>784-1990-7654321-2</EmiratesID>
+    <DateOfBirth>22/08/1990</DateOfBirth>
+    <Gender>F</Gender>
+    <FirstName>Fatima</FirstName>
+    <LastName>Al-Zahra</LastName>
+    <Nationality>UAE</Nationality>
+    <ContactNumber>+971-50-9876543</ContactNumber>
+    <Email>fatima.alzahra@email.ae</Email>
+    <Weight>68.2</Weight>
+    <Height>165</Height>
+    <Address>
+      <Street>Corniche Road, Apartment 567</Street>
+      <City>Abu Dhabi</City>
+      <Emirate>Abu Dhabi</Emirate>
+      <PostalCode>67890</PostalCode>
+    </Address>
+    <InsuranceDetails>
+      <MemberNumber>DOH-2025-AB-8899</MemberNumber>
+      <PolicyHolder>Self</PolicyHolder>
+      <EffectiveDate>01/01/2025</EffectiveDate>
+      <ExpiryDate>31/12/2025</ExpiryDate>
+      <CoverageLevel>Premium</CoverageLevel>
+    </InsuranceDetails>
+    <ClinicalInformation>
+      <PrimaryDiagnosis code="E11.9">Type 2 Diabetes Mellitus, unspecified</PrimaryDiagnosis>
+      <SecondaryDiagnosis code="H36.0">Diabetic retinopathy</SecondaryDiagnosis>
+      <Allergies>NKDA</Allergies>
+      <CurrentTreatment>
+        <Medication>Metformin 1000mg twice daily</Medication>
+        <Medication>Insulin glargine 20 units at bedtime</Medication>
+      </CurrentTreatment>
+      <VitalSigns>
+        <BloodPressure>135/85</BloodPressure>
+        <BMI>25.1</BMI>
+        <LastHbA1c>8.9%</LastHbA1c>
+        <LastHbA1cDate>15/01/2025</LastHbA1cDate>
+      </VitalSigns>
+    </ClinicalInformation>
+  </Patient>
 
-    <!-- First activity -->
-    <Activity>
-      <ID>1</ID>
+  <!-- Provider Information -->
+  <Provider>
+    <ProviderID>PROV12345</ProviderID>
+    <ProviderName>Abu Dhabi Medical Complex</ProviderName>
+    <LicenseNumber>DOH-LIC-2025-1234</LicenseNumber>
+    <AttendingPhysician>Dr. Mohammad Al-Rashid</AttendingPhysician>
+    <Specialty>Endocrinology</Specialty>
+    <ContactNumber>+971-2-6789012</ContactNumber>
+    <Email>contact@admedcomplex.ae</Email>
+    <FacilityAddress>
+      <Street>Khalifa Street, Medical District</Street>
+      <City>Abu Dhabi</City>
+      <Emirate>Abu Dhabi</Emirate>
+      <PostalCode>12345</PostalCode>
+    </FacilityAddress>
+  </Provider>
+
+  <!-- Authorization Request section -->
+  <AuthorizationRequest>
+    <Status>Pending</Status>
+    <!-- Request identifier -->
+    <RequestID>REQ-2025-000123</RequestID>
+    <!-- Requested coverage period -->
+    <CoverageStart>28/07/2025 00:00</CoverageStart>
+    <CoverageEnd>28/10/2025 23:59</CoverageEnd>
+    <!-- Clinical justification -->
+    <ClinicalJustification>Patient with poorly controlled diabetes; last HbA1c 8.9% from 6 months ago. No retinopathy screen in 18 months. Requires comprehensive metabolic assessment and ophthalmologic evaluation to prevent diabetic complications. Requesting authorization for essential diabetes management services.</ClinicalJustification>
+
+    <!-- Requested services -->
+    <RequestedService>
+      <ServiceID>1</ServiceID>
       <!-- 3 = CPT as per ActivityType enumeration -->
-      <Type>3</Type>
+      <ServiceType>3</ServiceType>
       <Code>83036</Code>
+      <Description>Hemoglobin A1c test</Description>
       <Quantity>1</Quantity>
-      <Net>120.00</Net>
-      <PaymentAmount>0.00</PaymentAmount>
-    </Activity>
+      <EstimatedCost>120.00</EstimatedCost>
+      <Urgency>Routine</Urgency>
+      <ScheduledDate>28/07/2025 09:00</ScheduledDate>
+    </RequestedService>
 
-    <!-- Second activity -->
-    <Activity>
-      <ID>2</ID>
-      <Type>3</Type>
+    <!-- Second requested service -->
+    <RequestedService>
+      <ServiceID>2</ServiceID>
+      <ServiceType>3</ServiceType>
       <Code>92014</Code>
+      <Description>Comprehensive eye examination with ophthalmoscopy</Description>
       <Quantity>1</Quantity>
-      <Net>250.00</Net>
-      <PaymentAmount>0.00</PaymentAmount>
-    </Activity>
-  </Authorization>
+      <EstimatedCost>250.00</EstimatedCost>
+      <Urgency>Routine</Urgency>
+      <ScheduledDate>28/07/2025 14:00</ScheduledDate>
+    </RequestedService>
+
+    <!-- Third requested service -->
+    <RequestedService>
+      <ServiceID>3</ServiceID>
+      <ServiceType>3</ServiceType>
+      <Code>80053</Code>
+      <Description>Comprehensive metabolic panel</Description>
+      <Quantity>1</Quantity>
+      <EstimatedCost>85.00</EstimatedCost>
+      <Urgency>Routine</Urgency>
+      <ScheduledDate>28/07/2025 09:30</ScheduledDate>
+    </RequestedService>
+  </AuthorizationRequest>
 
 </Prior.Authorization>

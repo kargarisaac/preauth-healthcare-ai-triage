@@ -77,7 +77,7 @@ def test_api_structure():
     try:
         # Read main.py and check for new endpoints
         main_path = Path(__file__).parent / "main.py"
-        with open(main_path, 'r') as f:
+        with open(main_path, "r") as f:
             content = f.read()
 
         required_endpoints = [
@@ -123,7 +123,7 @@ def test_csv_processor_enhancements():
     try:
         # Read csv_processor.py and check for new methods
         csv_path = Path(__file__).parent.parent / "pipelines" / "csv_processor.py"
-        with open(csv_path, 'r') as f:
+        with open(csv_path, "r") as f:
             content = f.read()
 
         required_methods = [

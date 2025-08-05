@@ -6,10 +6,11 @@ import { ThemeProvider } from '@contexts/ThemeContext';
 import { AppProvider } from '@contexts/AppContext';
 import { ToastProvider } from '@contexts/ToastContext';
 import { ProcessingProvider } from '@contexts/ProcessingContext';
+import { PatientProvider } from '@contexts/PatientContext';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 import { DashboardSkeleton } from '@components/ui/SkeletonLoader';
-import { PWAInstallPrompt } from '@components/ui/PWAInstallPrompt';
-import { ErrorBoundary } from '@components/ui/ErrorBoundary';
+import PWAInstallPrompt from '@components/ui/PWAInstallPrompt';
+import ErrorBoundary from '@components/ui/ErrorBoundary';
 
 // Lazy load pages with better loading states
 const LandingPage = lazy(() =>
@@ -60,7 +61,8 @@ function App() {
           <AppProvider>
             <ToastProvider>
               <ProcessingProvider>
-                <PerformanceProvider>
+                <PatientProvider>
+                  <PerformanceProvider>
             <div className="min-h-screen bg-gray-50 dark:bg-dark-bg-primary transition-colors duration-200">
               <Suspense fallback={<AdaptiveLoadingSpinner />}>
                 <Routes>
@@ -99,7 +101,8 @@ function App() {
                 autoShow={true}
               />
             </div>
-                </PerformanceProvider>
+                  </PerformanceProvider>
+                </PatientProvider>
               </ProcessingProvider>
             </ToastProvider>
           </AppProvider>

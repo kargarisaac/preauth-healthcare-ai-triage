@@ -9,6 +9,58 @@
         <TransactionID>TXN-ECLAIM-2025-001789</TransactionID>
     </Header>
     
+    <!-- Patient Information Section -->
+    <Patient>
+        <MemberID>MEM-2025-567890</MemberID>
+        <EmiratesIDNumber>784-1985-1234567-8</EmiratesIDNumber>
+        <DateOfBirth>15/03/1988</DateOfBirth>
+        <Weight>75.5</Weight>
+        <Email>ahmed.hassan@email.ae</Email>
+        <FirstName>Ahmed</FirstName>
+        <LastName>Hassan</LastName>
+        <Gender>M</Gender>
+        <Nationality>UAE</Nationality>
+        <PhoneNumber>+971-50-1234567</PhoneNumber>
+        <Address>
+            <Street>Al Wasl Road, Villa 123</Street>
+            <City>Dubai</City>
+            <Emirate>Dubai</Emirate>
+            <PostalCode>12345</PostalCode>
+        </Address>
+        <InsurancePolicy>
+            <PolicyNumber>POL-DXB-2025-9876</PolicyNumber>
+            <PayerName>Dubai Health Insurance</PayerName>
+            <ValidFrom>01/01/2025</ValidFrom>
+            <ValidTo>31/12/2025</ValidTo>
+            <CoverageType>Comprehensive</CoverageType>
+        </InsurancePolicy>
+        <MedicalHistory>
+            <Condition code="E11.9">Type 2 Diabetes Mellitus</Condition>
+            <Condition code="I10">Essential Hypertension</Condition>
+            <Allergy>No known drug allergies</Allergy>
+            <CurrentMedications>
+                <Medication>Metformin 850mg BD</Medication>
+                <Medication>Lisinopril 10mg OD</Medication>
+            </CurrentMedications>
+        </MedicalHistory>
+    </Patient>
+    
+    <!-- Provider Information -->
+    <Provider>
+        <ProviderID>PROV54321</ProviderID>
+        <ProviderName>Dubai Medical Center</ProviderName>
+        <LicenseNumber>DHA-LIC-2025-4567</LicenseNumber>
+        <ContactPerson>Dr. Sarah Al-Mahmoud</ContactPerson>
+        <PhoneNumber>+971-4-3456789</PhoneNumber>
+        <Email>info@dubaimedcenter.ae</Email>
+        <Address>
+            <Street>Sheikh Zayed Road, Building 45</Street>
+            <City>Dubai</City>
+            <Emirate>Dubai</Emirate>
+            <PostalCode>54321</PostalCode>
+        </Address>
+    </Provider>
+    
     <!-- Clinical justification text for comprehensive clinical context -->
     <JustificationText>35-year-old patient with Type 2 Diabetes Mellitus, poorly controlled (last HbA1c 9.2% from 6 months ago). Patient presents with symptoms of diabetic retinopathy - blurred vision and difficulty reading. Recent fasting glucose levels consistently above 250 mg/dL despite maximum metformin therapy. Requires comprehensive diabetes management including glycemic control assessment and retinal screening for complications. Patient is motivated and adherent to prescribed medications. Family history of diabetes and cardiovascular disease.</JustificationText>
     

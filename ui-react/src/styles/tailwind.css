@@ -271,7 +271,7 @@
   }
 
   .dark .metric-card {
-    @apply bg-white border-gray-200 shadow-lg hover:shadow-xl;
+    @apply bg-dark-bg-secondary border-dark-border-primary shadow-lg hover:shadow-xl;
   }
 
   .metric-icon {
@@ -302,8 +302,16 @@
     @apply text-success-600;
   }
 
+  .dark .metric-change-positive {
+    @apply text-success-400;
+  }
+
   .metric-change-negative {
     @apply text-error-600;
+  }
+
+  .dark .metric-change-negative {
+    @apply text-error-400;
   }
 
   /* Status Components */
