@@ -13,6 +13,7 @@ Nazmito is an AI-powered pre-authorization platform for UAE healthcare insurance
 - **Clear Code**: Use descriptive names, keep functions short (<50 lines), limit file size (<500 lines)
 - **Temporary Files**: IF you create any temporary files which are not part of the feature or not supposed to be pushed to git, like .md, .py, .json, etc. then always put them in the `output/` folder with a <name_date_time> name, so i know they are temporary and not for the project to be pushed on git. if there is any file that needs to be kept, do not put it in the `output/` folder.
 - **Package Importing**: Always import packages from root, and not local and relative importing
+- Never use try/except block for imports. if a necessary library is not installed, it should fail.
 
 ## Sub-agent Usage Strategy
 
@@ -39,22 +40,6 @@ Nazmito is an AI-powered pre-authorization platform for UAE healthcare insurance
 - **API docs**: http://localhost:8000/api/docs
 
 ## Architecture
-
-### Data Processors
-- **XMLProcessor** (`pipelines/xml_processor.py`): Handles eClaimLink (Dubai) and Shafafiya (Abu Dhabi) formats
-- **CSVProcessor** (`pipelines/csv_processor.py`): Processes healthcare CSV with intelligent column detection and FHIR resource mapping
-
-### Usage
-See `docs/xml_processing.md` and `docs/csv_processing.md` for usage examples.
-
-### Output Structure
-Both processors return FHIR Bundle with:
-- `resourceType: "Bundle"`
-- Essential mapped fields (authorization_id, sender, receiver)
-- FHIR resources (Claims, ServiceRequests, Observations, MedicationStatements, Conditions, Procedures)
-- Complete original data preserved in `raw_data` field
-- Processing metadata
-
 ### FastAPI Backend (`api/main.py`)
 Key endpoints:
 - `POST /api/process/eclaim` - Process eClaimLink XML files
@@ -69,7 +54,6 @@ Key endpoints:
 
 ## Key UAE Healthcare Standards
 - **eClaimLink** (Dubai Health Authority): XML-based claims system
-- **Shafafiya** (Abu Dhabi Department of Health): Healthcare data exchange
 - **ICD-10-AM**: Australian modification of ICD-10 used in UAE
 - **CPT**: Current Procedural Terminology codes
 
@@ -91,12 +75,8 @@ Key endpoints:
 - Never create any debug or log result of test anywhere outside of the @logs folder
 
 ## Documentation References
-- **System Architecture**: `docs/ARCHITECTURE.md`
+- **System Architecture**: `docs/system_design.md`
 - **FHIR Implementation**: `docs/FHIR_GUIDE.md`
-- **XML Processing**: `docs/xml_processing.md`
-- **CSV Processing**: `docs/csv_processing.md`
-- **Format Comparison**: `docs/format_comparison.md`
-- **Field Mappings**: `docs/field_mappings.md`
 
 ## File Organization Guidelines
 - Always keep the documents related to one part or topic in one single file in @docs/

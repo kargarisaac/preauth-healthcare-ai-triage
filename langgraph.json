@@ -1,0 +1,6 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "nazmito": "preauth_system/graph.py:graph"
+  }
+}
