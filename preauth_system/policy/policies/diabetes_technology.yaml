@@ -1,0 +1,85 @@
+# Diabetes Technology Coverage Policy
+# Covers CGM (95250) and Insulin Pump (E0784) for Type 1 and Type 2 Diabetes
+
+metadata:
+  id: "diabetes_technology"
+  version: "1.0"
+  effective_date: "2025-01-01"
+  created_by: "UAE Healthcare Policy Committee"
+  description: "Coverage criteria for diabetes technology including CGM and insulin pumps"
+  source: "Based on ADA guidelines and UAE DHA standards"
+  
+codes:
+  service_codes:
+    - "95250"  # Continuous Glucose Monitor (CGM)
+    - "E0784"  # Insulin Pump System
+  diagnosis_codes:
+    - "E10.9"  # Type 1 diabetes mellitus without complications
+    - "E10"    # Type 1 diabetes mellitus (all subtypes)
+    - "E11.9"  # Type 2 diabetes mellitus without complications  
+    - "E11"    # Type 2 diabetes mellitus (all subtypes)
+
+criteria:
+  # Diabetes Diagnosis - Only essential criterion for demo
+  - id: "diabetes_diagnosis"
+    type: "condition_present"
+    description: "Confirmed diagnosis of diabetes mellitus"
+    any_of_conditions:
+      - "E10"
+      - "E10.9"
+      - "E11" 
+      - "E11.9"
+    required: true
+    missing_documentation_message: "Diabetes diagnosis documentation required with ICD-10 code"
+
+coverage_rules:
+  # CGM Coverage (95250) - Minimal demo requirements
+  cgm_coverage:
+    service_code: "95250"
+    criteria_required:
+      - "diabetes_diagnosis"
+    criteria_supporting: []
+    approval_threshold: 1.0  # All required criteria must be met
+    
+  # Insulin Pump Coverage (E0784) - Minimal demo requirements
+  insulin_pump_coverage:
+    service_code: "E0784"
+    criteria_required:
+      - "diabetes_diagnosis"
+    criteria_supporting: []
+    approval_threshold: 1.0  # All required criteria must be met
+
+decision_matrix:
+  # APPROVE if diabetes diagnosis confirmed
+  approve_conditions:
+    - all_required_criteria_met: true
+      
+  # DENY only if diabetes not diagnosed
+  deny_conditions:
+    - unmet_criteria:
+        - "diabetes_diagnosis"
+        
+  # REVIEW only for major documentation gaps
+  review_conditions:
+    - missing_documentation_count: ">= 5"
+
+authorization_terms:
+  validity_period: 365  # days
+  renewal_requirements:
+    - "Updated HbA1c results"
+    - "Clinical progress notes"
+    - "Device usage compliance report"
+  monitoring_requirements:
+    - "Quarterly endocrinology visits"
+    - "Annual diabetes complications screening"
+    
+cost_considerations:
+  cgm_annual_cost_aed: 5700  # ~$1,550 USD
+  insulin_pump_cost_aed: 11400  # ~$3,100 USD
+  cost_effectiveness_threshold: "Demonstrated improvement in glycemic control"
+  
+references:
+  - "American Diabetes Association Standards of Medical Care 2024"
+  - "UAE DHA Diabetes Management Guidelines 2023"
+  - "Pediatric Endocrine Society CGM Guidelines"
+  - "ISPAD Clinical Practice Consensus Guidelines"

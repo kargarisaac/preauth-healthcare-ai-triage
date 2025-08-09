@@ -1,215 +1,100 @@
-# Nazmito – Intelligent AI-Powered Pre‑Authorization Platform
+# Nazmito
 
-## Overview
-
-Nazmito transforms manual healthcare pre-authorization processes in the UAE into intelligent clinical decision opportunities. Our AI-powered platform ingests multi-format healthcare data (XML, CSV, PDF, scanned documents), normalizes it to FHIR standards, and provides explainable clinical intelligence that reduces costs while improving patient outcomes.
-
-**Key Differentiators:**
-- **Deep UAE Integration**: Native support for eClaimLink (Dubai) and Shafafiya (Abu Dhabi) standards
-- **Multi-Format Intelligence**: Handle structured data, PDFs, and scanned documents with OCR and NLP
-- **Clinical Context**: AI agents provide explainable recommendations based on patient history and guidelines
-- **Regulatory Compliance**: Built for UAE PDPL, ADHICS, and ISO 27001 requirements
-
-## Business Impact
-
-### Market Opportunity
-- **TAM**: USD 224M–560M annually (9.3M UAE insured lives)
-- **Target**: 30% chronic condition cohort (~2.8M lives)
-- **Pricing**: USD 2–5 Per Member Per Month (PMPM)
-
-### Value Proposition
-- **40% reduction** in manual review processes
-- **50% faster** authorization turnaround times
-- **25% improvement** in clinical guideline adherence
-- **Proactive chronic care** management preventing costly complications
-
-## Technology Stack
-
-### Architecture
-- **Medallion Data Architecture**: Bronze (raw) → Silver (cleaned) → Gold (FHIR canonical)
-- **AI-Powered Processing**: Vector embeddings, knowledge graphs, LLM agents
-- **Event-Driven**: Kafka streaming for real-time processing
-- **FHIR-Compliant**: International standards with UAE extensions
-
-### Core Capabilities
-1. **Multi-Format Ingestion**: XML (eClaimLink/Shafafiya), CSV, PDF table extraction, OCR for scanned documents
-2. **Clinical NLP**: Fine-tuned models for Arabic/English medical text processing
-3. **Knowledge Graphs**: Clinical reasoning with patient history and drug interactions
-4. **Explainable AI**: Transparent decision-making with audit trails
+AI-powered pre-authorization platform for UAE healthcare insurance that processes XML and CSV healthcare data into FHIR-compliant canonical JSON.
 
 ## Quick Start
 
-### Prerequisites
-- Python 3.11+
-- Docker & Docker Compose
-- `uv` package manager (ultra-fast Python dependency management)
-- Google Cloud SDK (for dataset access via DVC)
-
-### Installation
+### Setup
 ```bash
-# Install uv package manager
-curl -Ls https://astral.sh/uv/install.sh | sh
-
-# Clone repository
-git clone https://github.com/isaackargar/nazmito.git
-cd nazmito
-
-# Set up environment
+# Create and activate a virtual environment (optional)
 uv venv .venv && source .venv/bin/activate
-uv pip install -r pyproject.toml
 
-# Set up dataset access (one-time authentication)
-gcloud auth login
-gcloud auth application-default login
-
-# Pull latest dataset from cloud storage
-dvc pull
-
-# Start development environment
-make demo
+# Install dependencies
+uv sync
 ```
 
-### Access Points
-- **Professional Dashboard**: `ui/dashboard/dashboard.html` (XML processing and audit interface)
-- **Landing Page**: `ui/landing/index.html` (Marketing website and platform overview)
-- **FastAPI Docs**: http://localhost:8000/api/docs (REST API documentation)
-- **API Backend**: http://localhost:8000 (FastAPI server for XML processing)
+### Running the System
 
-### Quick Demo
+**API Server:**
 ```bash
-# Start the FastAPI backend
-python api/run_server.py
+uv run python api/run_server.py
+```
+→ API docs: http://localhost:8000/api/docs
 
-# Open the professional dashboard (in another terminal)
-cd ui && python3 -m http.server 8080
-# Then visit: http://localhost:8080/dashboard/dashboard.html
-
-# Process XML files via dashboard or API
-curl -X POST http://localhost:8000/api/process/sample/eclaim
+**Professional Dashboard:**
+```bash
+cd ui-react && uv run npm install && uv run npm run dev
 ```
 
-## Dataset Management
-
-### Data Version Control
-We use DVC (Data Version Control) to manage large healthcare datasets stored in Google Cloud Storage:
-
-- **Dataset Storage**: `gs://nazmito-datasets/` (Google Cloud Storage bucket)
-- **Version Control**: All dataset changes are tracked via DVC
-- **Team Access**: Use `gcloud auth login` for authentication, then `dvc pull` to sync latest data
-- **Updates**: Run `dvc add data && dvc push` after making dataset changes
-
-### Dataset Structure
-```
-data/
-├── dataset_1/          # Original UAE healthcare samples
-├── dataset_2/          # Synthetic patient data
-└── raw_data/          # Unprocessed XML/CSV files
+**Demo Cases:**
+```bash
+uv run python -m tests.manual.run_single_agent --agent clinical-analyzer --xml data/dataset_2/synthetic_dataset/UAE_XML/Patient_007_eclaim.xml
 ```
 
-**Note**: The `data/` directory is excluded from Git but version-controlled via DVC. All raw healthcare data remains secure in Google Cloud Storage with proper access controls.
+### MCP Tools
+- Start MCP server (for agents):
+```bash
+uv run python -m preauth_system.tools.mcp_server
+```
+- Quick tool check (direct):
+```bash
+uv run python tests/manual/run_mcp_tools.py
+```
 
-## Architecture & Documentation
+## Recommended way to run scripts in a package
+- Prefer module-style execution so Python sets the package context correctly:
+```bash
+uv run python -m tests.manual.run_single_agent --agent clinical-analyzer --xml path/to.xml
+```
+- If you must run scripts by path, ensure the project is importable:
+  - Option A (recommended): run with `-m` as above
+  - Option B: install the package in editable mode (see below)
 
-### Technical Documentation
-- **System Architecture**: [`docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md) - Complete technical design and data flow
-- **XML Processing Guide**: [`docs/xml_processing.md`](/docs/xml_processing.md) - Comprehensive XML ingestion architecture and API reference
-- **CSV Processing Guide**: [`docs/csv_processing.md`](/docs/csv_processing.md) - Healthcare CSV processing and FHIR mapping
-- **Format Comparison**: [`docs/format_comparison.md`](/docs/format_comparison.md) - eClaimLink vs Shafafiya analysis
-- **Field Mappings**: [`docs/field_mappings.md`](/docs/field_mappings.md) - Complete field transformation reference
-- **FHIR Strategy**: [`docs/FHIR_GUIDE.md`](/docs/FHIR_GUIDE.md) - UAE FHIR implementation and clinical enhancements
-- **Development Roadmap**: [`docs/roadmap.md`](/docs/roadmap.md) - Sprint-based development timeline
+## Editable install (optional)
+If you want to run scripts by path (not via `-m`) and import `preauth_system` anywhere, install the repo in editable mode. Setuptools needs explicit package discovery to avoid the “Multiple top-level packages discovered” error.
 
-### Data Standards
-- **UAE Compliance**: eClaimLink (Dubai), Shafafiya (Abu Dhabi), ICD-10-AM, CPT codes
-- **FHIR Resources**: Claim, ServiceRequest, Observation, MedicationStatement with UAE extensions
-- **Security**: AES-256 encryption, TLS 1.2+, RBAC, immutable audit logs
+1) Update `pyproject.toml` package discovery (already configured):
+```toml
+[tool.setuptools]
+packages = [
+  "preauth_system",
+  "data_ingestion",
+  "api",
+]
+```
 
-## 28-Day MVP Timeline
+2) Install in editable mode once per environment:
+```bash
+uv pip install -e .
+```
+After that, `uv run python tests/manual/run_single_agent.py ...` will work because `preauth_system` is importable as an installed package.
 
-Our accelerated development approach delivers a complete platform in four 7-day sprints:
+## Architecture
 
-- **Sprint 1 (Days 1-7)**: Core data pipeline with multi-format ingestion
-- **Sprint 2 (Days 8-14)**: Production API, audit UI, and demo packaging
-- **Sprint 3 (Days 15-21)**: Advanced AI with knowledge graphs and semantic search
-- **Sprint 4 (Days 22-28)**: LLM agents and explainable clinical decision support
+### Core Components
+- **API Layer** (`api/main.py`): FastAPI backend with endpoints
+- **Orchestrator** (`preauth_system/orchestrator.py`): Main workflow coordinator
+- **Policy Engine** (`preauth_system/policy/`): YAML-based rules engine
+- **RAG System** (`preauth_system/rag/`): Knowledge retrieval with BM25S
+- **Agent Tools** (`preauth_system/tools/`): MCP tools for Claude Code agents
 
-See [`docs/roadmap.md`](/docs/roadmap.md) for detailed daily breakdown and implementation plan.
+### LangGraph Workflow
+- **5 Specialized Agents**: Clinical analyzer, medication specialist, risk assessor, decision maker, compliance auditor
+- **3-Phase Process**: Clinical analysis → Risk assessment → Decision & compliance
 
-## Competitive Advantage
+## Development
 
-### vs. Traditional TPAs (NAS, Neuron, NextCare)
-- **AI-Driven**: Proactive clinical intelligence vs. static rule engines
-- **Comprehensive**: Multi-format data handling vs. limited XML processing
-- **Clinical Context**: Historical data analysis vs. transaction-level decisions
+### Code Quality
+```bash
+uv run ruff check . --fix       # Lint
+uv run black .                  # Format
+uv run pytest                   # Test
+```
 
-### vs. Global Tech (Optum, eviCore)
-- **UAE-Native**: Deep integration with local standards and regulations
-- **Regional Expertise**: Arabic language support, Islamic calendar, local clinical practices
-- **Regulatory Alignment**: PDPL/ADHICS compliance from the ground up
-
-### vs. Regional Players (AppliedAI, Klaim, Wellx.ai)
-- **Clinical Intelligence**: Advanced AI reasoning vs. basic automation
-- **Pre-Authorization Focus**: Specialized authorization workflows vs. general claims processing
-- **Explainable AI**: Transparent clinical decision-making vs. black-box algorithms
-
-## Business Model & Go-to-Market
-
-### Revenue Streams
-- **Primary**: SaaS PMPM fees (USD 2-5 per member per month)
-- **Pilot**: Per-request pricing for initial integrations
-- **Value-Share**: 15-30% of validated medical cost savings
-
-### Go-to-Market Strategy
-1. **MVP Demo** (Month 2): Synthetic UAE data showcase
-2. **Pilot Partners** (Months 3-4): LOIs with major UAE payers
-3. **Technical Integration** (Months 3-6): 3-month integration + 3-month pilot
-4. **Market Expansion** (Months 6-12): Additional payers and employers
-
-## Compliance & Security
-
-### UAE Regulatory Compliance
-- **PDPL**: Personal Data Protection Law compliance framework
-- **ADHICS**: Abu Dhabi Healthcare Cyber Security standards
-- **DHA Standards**: Dubai Health Authority integration requirements
-- **ISO 27001**: Information security management (certification planned Month 6)
-
-### Data Protection
-- **Encryption**: AES-256 at rest, TLS 1.2+ in transit
-- **Access Control**: Role-based permissions with audit logging
-- **Data Residency**: UAE data localization compliance
-- **Immutable Audits**: Complete decision trail for regulatory review
-
-## Investment & Funding
-
-### Current Round
-- **Amount**: USD 500K Seed funding
-- **Use of Funds**: 50% Product Development, 30% Go-to-Market, 20% Compliance
-- **Runway**: 18 months to first revenue and Series A preparation
-
-### Team
-- **Founder**: Isaac Kargar - AI scientist with GCC healthcare experience
-- **Planned Hires**: Head of Engineering (FHIR expertise), Regulatory Lead
-- **Advisors**: Former DHA/ADHICS officials, ex-Daman medical directors, UAE TPA executives
-
-## Next Steps
-
-### For Developers
-1. Follow the Quick Start guide above
-2. Review [`docs/roadmap.md`](/docs/roadmap.md) for development roadmap
-3. Check [`docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md) for technical deep-dive
-
-### For Investors
-1. Schedule live demo with synthetic UAE healthcare data
-2. Review detailed compliance roadmap and data protection policies
-3. Discuss pilot partnership opportunities with UAE payers
-
-### For Payers/Partners
-1. Explore integration with existing authorization workflows
-2. Review FHIR compliance and data mapping capabilities
-3. Initiate pilot LOI/MOU discussions
-
-**Contact**: [info@nazmito.com](mailto:info@nazmito.com) | [Schedule Demo](https://calendly.com/nazmito-demo)
+### Key Endpoints
+- `POST /api/process/eclaim` - Process eClaimLink XML files
+- `GET /api/health` - Health check
 
 ---
 
-*Nazmito transforms pre-authorization from administrative paperwork to proactive clinical intervention, significantly reducing healthcare costs while improving patient care in the UAE.*
+Built with FastAPI, LangGraph, and Claude Code agents following CLAUDE.md principles.

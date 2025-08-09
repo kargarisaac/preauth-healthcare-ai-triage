@@ -31,7 +31,8 @@
       "Bash(echo:*)",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

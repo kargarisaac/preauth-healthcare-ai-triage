@@ -32,6 +32,9 @@ from preauth_system.utils import (
     execute_claude_agent,
     make_final_decision,
 )
+from preauth_system.intake import process_pa_request
+from preauth_system.summary import build_clinical_summary
+from preauth_system.safety import run_basic_safety_checks
 
 from data_ingestion.etl import get_patient_data, find_patient_by_emirates_id
 
@@ -102,7 +105,7 @@ def prepare_context_node(state: PreAuthState) -> Dict[str, Any]:
 
 def clinical_analysis_node(state: PreAuthState) -> Dict[str, Any]:
     """
-    Execute clinical-analyzer agent.
+    Execute clinical analysis using Claude Code agent with healthcare tools.
 
     Phase: 1 (Parallel with medication analysis)
     Dependencies: prepare_context
@@ -110,38 +113,12 @@ def clinical_analysis_node(state: PreAuthState) -> Dict[str, Any]:
     Args:
         state: Current workflow state
     """
-    try:
-        print("🤖 Running clinical-analyzer agent...")
-
-        # Build prompt and execute agent
-        result = execute_claude_agent(
-            agent_name="clinical-analyzer",
-            shared_context=state["shared_context"],
-            agents_dir=state["agents_dir"],
-            agent_results=get_all_agent_results(state),
-        )
-
-        # Store result
-        updates = set_agent_result(state, "clinical_analysis_result", result)
-
-        # Update workflow control
-        workflow_control = state["workflow_control"].copy()
-        workflow_control["phase_1_completed"] = True
-
-        return {**updates, "workflow_control": workflow_control}
-
-    except Exception as e:
-        print(f"❌ Clinical analysis failed: {e}")
-        workflow_control = state["workflow_control"].copy()
-        workflow_control["errors"] = workflow_control["errors"] + [
-            f"Clinical analysis failed: {str(e)}"
-        ]
-        return {"workflow_control": workflow_control}
+    return _execute_agent_node(state, "clinical-analyzer")
 
 
 def medication_analysis_node(state: PreAuthState) -> Dict[str, Any]:
     """
-    Execute medication-specialist agent.
+    Execute medication analysis using Claude Code agent with healthcare tools.
 
     Phase: 1 (Parallel with clinical analysis)
     Dependencies: prepare_context
@@ -157,7 +134,7 @@ def medication_analysis_node(state: PreAuthState) -> Dict[str, Any]:
 
 def risk_assessment_node(state: PreAuthState) -> Dict[str, Any]:
     """
-    Execute risk-assessor agent.
+    Execute risk assessment using Claude Code agent with healthcare tools.
 
     Phase: 2 (Sequential after Phase 1)
     Dependencies: clinical_analysis, medication_analysis
@@ -173,7 +150,7 @@ def risk_assessment_node(state: PreAuthState) -> Dict[str, Any]:
 
 def decision_making_node(state: PreAuthState) -> Dict[str, Any]:
     """
-    Execute decision-maker agent.
+    Execute decision making using Claude Code agent with healthcare tools.
 
     Phase: 3 (Parallel with compliance audit)
     Dependencies: clinical_analysis, medication_analysis, risk_assessment
@@ -189,7 +166,7 @@ def decision_making_node(state: PreAuthState) -> Dict[str, Any]:
 
 def compliance_audit_node(state: PreAuthState) -> Dict[str, Any]:
     """
-    Execute compliance-auditor agent.
+    Execute compliance audit using Claude Code agent with healthcare tools.
 
     Phase: 3 (Parallel with decision making)
     Dependencies: decision_making (for compliance verification)

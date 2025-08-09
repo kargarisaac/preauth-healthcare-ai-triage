@@ -2,24 +2,32 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "preauth_system_agent",
+            "name": "🤖 Debug Orchestrator Only", 
             "type": "debugpy",
             "request": "launch",
-            "module": "preauth_system.agent",
+            "program": "${workspaceFolder}/preauth_system/orchestrator.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}"
+                "PYTHONPATH": "${workspaceFolder}",
+                "ENVIRONMENT": "development"
             },
-            "args": [],
-            "justMyCode": false,
-            "stopOnEntry": false,
-            "purpose": ["debug-test"],
-            "presentation": {
-                "hidden": false,
-                "group": "preauth_system",
-                "order": 2
-            }
+            "args": ["--demo"],
+            "python": "${workspaceFolder}/.venv/bin/python"
+        },
+        {
+            "name": "🚀 Debug FastAPI Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/api/run_server.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "ENVIRONMENT": "development",
+                "PORT": "8000"
+            },
+            "python": "${workspaceFolder}/.venv/bin/python"
         }
     ]
 }

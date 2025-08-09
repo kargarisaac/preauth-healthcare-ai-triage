@@ -1,0 +1,219 @@
+# Osteoarthritis Knee Intervention Coverage Policy
+# Covers Arthroscopy (29881) and Hyaluronic Acid Injection (20610) for Knee OA
+
+metadata:
+  id: "osteoarthritis_knee_intervention"
+  version: "1.0" 
+  effective_date: "2025-01-01"
+  created_by: "UAE Healthcare Policy Committee"
+  description: "Coverage criteria for knee osteoarthritis interventions"
+  source: "Based on ACR guidelines and UAE orthopedic standards"
+
+codes:
+  service_codes:
+    - "29881"  # Arthroscopy, knee, surgical; with meniscectomy
+    - "20610"  # Arthrocentesis, aspiration and/or injection; major joint
+  diagnosis_codes:
+    - "M17.1"  # Unilateral primary osteoarthritis, knee
+    - "M17.0"  # Bilateral primary osteoarthritis of knee  
+    - "M17.9"  # Osteoarthritis of knee, unspecified
+    - "M17"    # Osteoarthritis of knee (all subtypes)
+
+criteria:
+  # Age Requirements
+  - id: "age_requirement"
+    type: "age_range"
+    description: "Patient must be 18-75 years for knee intervention coverage"
+    min_age: 18
+    max_age: 75
+    required: true
+    missing_documentation_message: "Patient age verification required"
+    
+  # Osteoarthritis Diagnosis
+  - id: "oa_diagnosis"
+    type: "condition_present"
+    description: "Confirmed diagnosis of knee osteoarthritis"
+    required_conditions:
+      - "M17"
+    required: true
+    missing_documentation_message: "Knee osteoarthritis diagnosis documentation with ICD-10 code required"
+    
+  # Conservative Therapy Duration
+  - id: "conservative_therapy"
+    type: "therapy_duration"
+    description: "Failed conservative therapy for at least 6 weeks"
+    required_duration: "6 weeks"
+    therapy_types:
+      - "physical_therapy"
+      - "nsaid_therapy"
+      - "weight_management"
+      - "activity_modification"
+    required: true
+    missing_documentation_message: "Documentation of conservative therapy failure for ≥6 weeks required (PT, NSAIDs, etc.)"
+    
+  # Pain Severity
+  - id: "pain_severity"
+    type: "documentation"
+    description: "Significant pain interfering with function (VAS ≥ 6/10)"
+    required_documents:
+      - "pain_assessment"
+      - "functional_assessment"
+    minimum_pain_score: 6
+    required: true
+    missing_documentation_message: "Pain assessment with VAS score ≥6/10 and functional impact required"
+    
+  # Recent Imaging
+  - id: "recent_imaging"
+    type: "imaging_recency"
+    description: "Recent imaging showing OA changes (within 6 months)"
+    imaging_types:
+      - "knee_xray"
+      - "knee_mri"
+    max_age: "6 months"
+    required: true
+    missing_documentation_message: "Recent knee imaging (X-ray or MRI within 6 months) showing OA changes required"
+    
+  # Kellgren-Lawrence Grade
+  - id: "oa_severity"
+    type: "documentation"
+    description: "Kellgren-Lawrence Grade 2-3 osteoarthritis"
+    acceptable_grades: [2, 3]
+    required: true
+    missing_documentation_message: "Kellgren-Lawrence grading of OA severity required (Grade 2-3 for coverage)"
+    
+  # Mechanical Symptoms (for arthroscopy)
+  - id: "mechanical_symptoms"
+    type: "documentation"
+    description: "Mechanical symptoms suggesting meniscal pathology"
+    symptoms:
+      - "locking"
+      - "catching"
+      - "giving_way"
+    required: false  # Required only for arthroscopy
+    missing_documentation_message: "Mechanical symptoms documentation required for arthroscopy"
+    
+  # Joint Effusion (for injection)
+  - id: "joint_effusion"
+    type: "documentation"
+    description: "Clinical evidence of joint effusion or synovitis"
+    clinical_findings:
+      - "joint_swelling"
+      - "warmth"
+      - "effusion"
+    required: false  # More relevant for injection
+    missing_documentation_message: "Clinical evidence of joint effusion/synovitis for injection therapy"
+    
+  # BMI Consideration
+  - id: "bmi_assessment"
+    type: "documentation" 
+    description: "BMI assessment and weight management counseling"
+    required_documents:
+      - "bmi_calculation"
+      - "weight_counseling"
+    required: false
+    missing_documentation_message: "BMI assessment and weight management counseling recommended"
+    
+  # Contraindications Assessment
+  - id: "contraindications"
+    type: "documentation"
+    description: "Assessment for contraindications to procedure"
+    contraindications_assessed:
+      - "infection"
+      - "bleeding_disorders"
+      - "medication_allergies"
+    required: true
+    missing_documentation_message: "Assessment for procedural contraindications required"
+
+coverage_rules:
+  # Arthroscopy Coverage (29881)
+  arthroscopy_coverage:
+    service_code: "29881"
+    criteria_required:
+      - "age_requirement"
+      - "oa_diagnosis"
+      - "conservative_therapy" 
+      - "pain_severity"
+      - "recent_imaging"
+      - "oa_severity"
+      - "mechanical_symptoms"  # Specific for arthroscopy
+      - "contraindications"
+    criteria_supporting:
+      - "bmi_assessment"
+    approval_threshold: 1.0  # All required criteria must be met
+    
+  # Hyaluronic Acid Injection Coverage (20610)
+  injection_coverage:
+    service_code: "20610"
+    criteria_required:
+      - "age_requirement"
+      - "oa_diagnosis"
+      - "conservative_therapy"
+      - "pain_severity" 
+      - "recent_imaging"
+      - "oa_severity"
+      - "contraindications"
+    criteria_supporting:
+      - "joint_effusion"
+      - "bmi_assessment"
+    approval_threshold: 1.0  # All required criteria must be met
+
+decision_matrix:
+  # APPROVE if all required criteria met
+  approve_conditions:
+    - all_required_criteria_met: true
+      supporting_criteria_count: ">= 0"
+      
+  # DENY if critical criteria unmet  
+  deny_conditions:
+    - unmet_criteria:
+        - "oa_diagnosis" 
+        - "age_requirement"
+    - oa_grade: "> 3"  # Too severe for covered interventions
+    - oa_grade: "< 2"  # Too mild for intervention
+        
+  # REVIEW for borderline/missing documentation cases
+  review_conditions:
+    - unmet_criteria:
+        - "conservative_therapy"
+        - "recent_imaging" 
+        - "pain_severity"
+    - uncertain_criteria_count: ">= 2"
+    - missing_documentation_count: ">= 3"
+
+authorization_terms:
+  validity_period: 90  # days
+  session_limits:
+    arthroscopy: 1  # Single procedure
+    injection: 3    # Up to 3 injections per year
+  renewal_requirements:
+    - "Clinical response assessment"
+    - "Updated imaging if no improvement"
+    - "Continued conservative therapy"
+  monitoring_requirements:
+    - "6-week follow-up visit"
+    - "3-month functional assessment"
+    
+cost_considerations:
+  arthroscopy_cost_aed: 8500     # ~$2,300 USD
+  injection_cost_aed: 950        # ~$260 USD per injection
+  cost_effectiveness_threshold: "Demonstrated functional improvement"
+  alternative_considerations:
+    - "Physical therapy intensification"
+    - "Oral hyaluronic acid supplements"
+    - "Corticosteroid injection"
+    
+exclusions:
+  absolute_contraindications:
+    - "Active joint infection"
+    - "Bleeding disorders"  
+    - "Allergy to procedure components"
+  relative_contraindications:
+    - "BMI > 40"
+    - "Advanced OA (KL Grade 4)"
+    - "Significant joint deformity"
+    
+references:
+  - "American College of Rheumatology OA Guidelines 2019"
+  - "AAOS Clinical Practice Guidelines for Knee OA 2021"  
+  - "UAE Orthopedic Society Treatment Standards"
+  - "Kellgren-Lawrence Radiographic Assessment Criteria"

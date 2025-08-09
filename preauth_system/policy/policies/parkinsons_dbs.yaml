@@ -1,0 +1,253 @@
+# Parkinson's Disease Deep Brain Stimulation Coverage Policy
+# Covers DBS Evaluation and Implantation (61885) for Advanced Parkinson's Disease
+
+metadata:
+  id: "parkinsons_dbs"
+  version: "1.0"
+  effective_date: "2025-01-01" 
+  created_by: "UAE Healthcare Policy Committee"
+  description: "Coverage criteria for Deep Brain Stimulation in Parkinson's disease"
+  source: "Based on Movement Disorders Society and UAE neurology standards"
+
+codes:
+  service_codes:
+    - "61885"  # Insertion or replacement of cranial neurostimulator pulse generator or receiver
+    - "61867"  # Twist drill, burr hole, craniotomy for stereotactic implantation of neurostimulator electrode
+    - "95970"  # Electronic analysis of implanted neurostimulator pulse generator system
+  diagnosis_codes:
+    - "G20"    # Parkinson's disease
+    - "G20.C"  # Parkinson's disease with severe complications
+
+criteria:
+  # Age Requirements
+  - id: "age_requirement"
+    type: "age_range"
+    description: "Patient must be 18-75 years for DBS consideration"
+    min_age: 18
+    max_age: 75
+    required: true
+    missing_documentation_message: "Patient age verification required for DBS candidacy"
+    
+  # Parkinson's Disease Diagnosis  
+  - id: "parkinsons_diagnosis"
+    type: "condition_present"
+    description: "Confirmed diagnosis of idiopathic Parkinson's disease"
+    required_conditions:
+      - "G20"
+    diagnosis_duration: ">= 5 years"
+    required: true
+    missing_documentation_message: "Confirmed Parkinson's disease diagnosis with ≥5 year history required"
+    
+  # Levodopa Responsiveness
+  - id: "levodopa_response"
+    type: "documentation"
+    description: "Documented levodopa responsiveness (≥30% improvement in UPDRS)"
+    required_documents:
+      - "updrs_assessment"
+      - "levodopa_challenge_test"
+    minimum_improvement: 30  # percent
+    required: true
+    missing_documentation_message: "Levodopa challenge test with ≥30% UPDRS improvement required"
+    
+  # Optimized Medical Therapy Duration
+  - id: "optimal_medical_therapy"
+    type: "therapy_duration"
+    description: "Optimized medical therapy for at least 12 months with documented failure"
+    required_duration: "12 months"
+    therapy_types:
+      - "levodopa_carbidopa"
+      - "dopamine_agonists"
+      - "mao_inhibitors"
+      - "comt_inhibitors"
+    required: true
+    missing_documentation_message: "Documentation of optimized medical therapy for ≥12 months with failure/intolerance required"
+    
+  # Motor Fluctuations
+  - id: "motor_fluctuations"
+    type: "documentation"
+    description: "Disabling motor fluctuations despite optimal medical therapy"
+    required_symptoms:
+      - "on_off_fluctuations"
+      - "wearing_off"
+      - "dyskinesias"
+    severity_threshold: "moderate_to_severe"
+    required: true
+    missing_documentation_message: "Documentation of disabling motor fluctuations (on-off, wearing off, dyskinesias) required"
+    
+  # Functional Disability
+  - id: "functional_disability"
+    type: "documentation"
+    description: "Significant functional disability affecting activities of daily living"
+    required_assessments:
+      - "updrs_part_ii"  # ADL scale
+      - "hoehn_yahr_scale"
+      - "schwab_england_scale"
+    minimum_disability_score: "Hoehn-Yahr ≥ 2.5"
+    required: true
+    missing_documentation_message: "Functional disability assessment (UPDRS-II, Hoehn-Yahr ≥2.5) required"
+    
+  # Cognitive Assessment
+  - id: "cognitive_status"
+    type: "documentation"
+    description: "Adequate cognitive function for DBS therapy"
+    required_assessments:
+      - "mmse"
+      - "moca"
+      - "neuropsychological_evaluation"
+    minimum_cognitive_score: "MMSE ≥ 24 or MoCA ≥ 21"
+    required: true
+    missing_documentation_message: "Cognitive assessment (MMSE ≥24 or MoCA ≥21) required for DBS candidacy"
+    
+  # Psychiatric Stability
+  - id: "psychiatric_evaluation"
+    type: "documentation"
+    description: "Psychiatric stability and absence of active psychosis"
+    required_assessments:
+      - "psychiatric_consultation"
+      - "depression_screening"
+      - "psychosis_assessment"
+    exclusions:
+      - "active_psychosis"
+      - "severe_depression"
+      - "active_suicidal_ideation"
+    required: true
+    missing_documentation_message: "Psychiatric evaluation confirming stability and absence of psychosis required"
+    
+  # Movement Disorders Specialist Care
+  - id: "specialist_evaluation"
+    type: "documentation"
+    description: "Evaluation by movement disorders specialist"
+    required_specialists:
+      - "movement_disorders_neurologist"
+      - "dbs_program_neurologist"
+    required_duration: ">= 6 months"
+    required: true
+    missing_documentation_message: "Movement disorders specialist evaluation and management ≥6 months required"
+    
+  # DBS Team Evaluation
+  - id: "multidisciplinary_evaluation"
+    type: "documentation"
+    description: "Comprehensive DBS team evaluation"
+    required_team_members:
+      - "neurosurgeon"
+      - "neurologist"
+      - "neuropsychologist"
+      - "psychiatrist"
+    required_assessments:
+      - "surgical_candidacy"
+      - "benefit_risk_analysis"
+    required: true
+    missing_documentation_message: "Multidisciplinary DBS team evaluation with all specialties required"
+    
+  # Brain MRI
+  - id: "brain_imaging"
+    type: "imaging_recency"
+    description: "Recent brain MRI showing no contraindications to DBS"
+    imaging_types:
+      - "brain_mri"
+    max_age: "6 months"
+    exclusions:
+      - "significant_atrophy"
+      - "vascular_lesions"
+      - "structural_abnormalities"
+    required: true
+    missing_documentation_message: "Recent brain MRI (within 6 months) without contraindications required"
+
+coverage_rules:
+  # DBS Evaluation and Implantation
+  dbs_coverage:
+    service_codes: ["61885", "61867", "95970"]
+    criteria_required:
+      - "age_requirement"
+      - "parkinsons_diagnosis"
+      - "levodopa_response"
+      - "optimal_medical_therapy"
+      - "motor_fluctuations"
+      - "functional_disability"
+      - "cognitive_status"
+      - "psychiatric_evaluation"
+      - "specialist_evaluation"
+      - "multidisciplinary_evaluation"
+      - "brain_imaging"
+    criteria_supporting: []
+    approval_threshold: 1.0  # ALL criteria must be met
+
+decision_matrix:
+  # APPROVE only if ALL required criteria met (very strict)
+  approve_conditions:
+    - all_required_criteria_met: true
+      uncertain_criteria_count: 0
+      
+  # DENY if any critical criteria unmet
+  deny_conditions:
+    - unmet_criteria:
+        - "parkinsons_diagnosis"
+        - "age_requirement"  
+        - "levodopa_response"
+        - "optimal_medical_therapy"
+        - "cognitive_status"
+        - "psychiatric_evaluation"
+    - psychiatric_exclusions_present: true
+    - cognitive_score_below_threshold: true
+    - imaging_contraindications: true
+        
+  # REVIEW for incomplete documentation
+  review_conditions:
+    - uncertain_criteria_count: ">= 1"
+    - missing_documentation_count: ">= 2"
+    - incomplete_team_evaluation: true
+
+authorization_terms:
+  validity_period: 180  # days for evaluation and surgery
+  staged_approach:
+    - "Initial DBS evaluation"
+    - "Multidisciplinary team assessment" 
+    - "Surgical candidacy determination"
+    - "DBS implantation surgery"
+    - "Programming and optimization"
+  renewal_requirements:
+    - "Clinical outcome assessment"
+    - "Device interrogation reports"
+    - "Continued neurologist care"
+  monitoring_requirements:
+    - "3-month post-operative assessment"
+    - "Annual neurological evaluation"
+    - "Device maintenance as needed"
+    
+cost_considerations:
+  dbs_system_cost_aed: 73500      # ~$20,000 USD (device + surgery)
+  evaluation_cost_aed: 7350       # ~$2,000 USD
+  annual_maintenance_aed: 3675     # ~$1,000 USD
+  cost_effectiveness_threshold: "Demonstrated significant motor improvement with maintained cognition"
+  alternative_considerations:
+    - "Continuous levodopa infusion"
+    - "Focused ultrasound thalamotomy" 
+    - "Optimized oral medications"
+    
+exclusions:
+  absolute_contraindications:
+    - "Active psychosis or severe psychiatric illness"
+    - "Dementia (MMSE < 24)"
+    - "Significant brain atrophy or structural lesions"
+    - "Poor surgical candidacy"
+    - "Lack of levodopa responsiveness"
+  relative_contraindications:
+    - "Age > 75 years"
+    - "Significant comorbidities"
+    - "Poor medication compliance"
+    - "Inadequate social support"
+    - "Atypical parkinsonism features"
+    
+quality_metrics:
+  required_outcomes:
+    - "UPDRS improvement ≥ 30%"
+    - "Quality of life measures"
+    - "Medication reduction"
+    - "Complication rates"
+  follow_up_duration: "2 years minimum"
+  
+references:
+  - "Movement Disorders Society DBS Guidelines 2020"
+  - "International Association of Parkinson's and Movement Disorders"
+  - "UAE Neurology Society DBS Standards"
+  - "European Academy of Neurology PD Guidelines"

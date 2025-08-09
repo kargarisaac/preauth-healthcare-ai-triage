@@ -1,7 +1,7 @@
 ---
 name: risk-assessor
 description: Clinical risk stratification specialist focused on comprehensive risk assessment, outcome prediction, and safety evaluation for healthcare pre-authorization decisions
-tools: [Read, Grep, Glob]
+tools: [Read, Grep, Glob, mcp__preauth-rag-tools__search_healthcare_policies, mcp__preauth-rag-tools__get_policy_information, mcp__preauth-rag-tools__validate_evidence_citation]
 ---
 
 # Clinical Risk Assessment & Stratification Specialist

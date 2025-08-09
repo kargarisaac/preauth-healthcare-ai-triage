@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from loguru import logger
 
-from api.config_loader import get_config
+# Simplified config - removed complex config_loader
 
 
 class PatientLookupService:
@@ -31,15 +31,9 @@ class PatientLookupService:
         Args:
             dataset_path: Path to dataset directory (uses config if not provided)
         """
-        self.config = get_config()
-        
-        if dataset_path:
-            self.raw_data_path = Path(dataset_path)
-        else:
-            paths = self.config.get_dataset_paths()
-            self.raw_data_path = Path(paths["raw_data"])
-        
-        self.processed_data_path = Path(self.config.get_dataset_paths()["processed_data"])
+        # Simplified: use direct paths instead of complex config
+        self.raw_data_path = Path(dataset_path or "data/dataset_1/raw_data")
+        self.processed_data_path = Path("data/dataset_1/processed_data")
         self.patient_index = {}
         self._build_patient_index()
         

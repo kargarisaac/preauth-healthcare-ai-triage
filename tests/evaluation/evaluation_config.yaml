@@ -1,0 +1,39 @@
+test_cases:
+  - id: patient_007_diabetes_cgm
+    name: "Patient 007 - Diabetes CGM Approval"
+    description: "35-year-old with T2DM requesting CGM - Expected APPROVE"
+    xml_file: "Patient_007_eclaim.xml"
+    expected_outcome: "APPROVE"
+    expected_confidence: 0.9
+    expected_auth_amount: 1200.0
+    max_processing_time: 20.0
+    max_cost: 0.10
+    patient_type: "Patient_007"
+    condition: "Type 2 Diabetes"
+    treatment: "CGM"
+
+  - id: patient_005_osteoarthritis_review
+    name: "Patient 005 - Osteoarthritis Review"
+    description: "68-year-old with knee osteoarthritis - Expected REVIEW"
+    xml_file: "Patient_005_eclaim.xml"
+    expected_outcome: "REVIEW"
+    expected_confidence: 0.6
+    expected_auth_amount: 0.0
+    max_processing_time: 20.0
+    max_cost: 0.10
+    patient_type: "Patient_005"
+    condition: "Knee Osteoarthritis"
+    treatment: "Knee Surgery"
+
+  - id: patient_011_parkinsons_deny
+    name: "Patient 011 - Parkinson's DBS Denial"
+    description: "72-year-old with Parkinson's requesting DBS - Expected DENY"
+    xml_file: "Patient_011_eclaim.xml"
+    expected_outcome: "DENY"
+    expected_confidence: 0.8
+    expected_auth_amount: 0.0
+    max_processing_time: 20.0
+    max_cost: 0.10
+    patient_type: "Patient_011"
+    condition: "Parkinson's Disease"
+    treatment: "DBS"

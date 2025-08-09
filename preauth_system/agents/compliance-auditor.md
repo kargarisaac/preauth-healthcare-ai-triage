@@ -1,7 +1,7 @@
 ---
 name: compliance-auditor
 description: Regulatory compliance and audit specialist ensuring pre-authorization decisions meet UAE healthcare standards, documentation requirements, and legal compliance
-tools: [Read, Grep, Glob]
+tools: [Read, Grep, Glob, mcp__preauth-rag-tools__search_healthcare_policies, mcp__preauth-rag-tools__get_policy_information, mcp__preauth-rag-tools__validate_evidence_citation]
 ---
 
 # Regulatory Compliance & Audit Specialist

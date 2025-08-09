@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import traceback
+import uuid
+import os
 import xmltodict  # type: ignore
 
 from claude_code_sdk import (
@@ -19,9 +21,27 @@ from claude_code_sdk import (
     TextBlock,
     ResultMessage,
 )
-
-
+from claude_code_sdk import ToolUseBlock, ToolResultBlock  # type: ignore
 from preauth_system.state import AgentResult, SharedContext
+
+# Module-level cache for agent definitions to avoid re-loading on every agent run
+_AGENT_DEFINITIONS_CACHE: Optional[Dict[str, Dict[str, Any]]] = None
+
+
+def get_cached_agent_definitions() -> Optional[Dict[str, Dict[str, Any]]]:
+    """Return cached agent definitions if they have been loaded."""
+    return _AGENT_DEFINITIONS_CACHE
+
+
+def prime_agent_definitions_cache() -> Dict[str, Dict[str, Any]]:
+    """
+    Load agent definitions and store them in a module-level cache.
+    Subsequent calls to execute agents will reuse this cache.
+    """
+    global _AGENT_DEFINITIONS_CACHE
+    if _AGENT_DEFINITIONS_CACHE is None:
+        _AGENT_DEFINITIONS_CACHE = load_agent_definitions()
+    return _AGENT_DEFINITIONS_CACHE
 
 
 def load_agent_definitions() -> Dict[str, Dict[str, Any]]:
@@ -34,6 +54,11 @@ def load_agent_definitions() -> Dict[str, Dict[str, Any]]:
     Raises:
         Exception: If any required agent definition file is missing
     """
+    # Return cached definitions if already loaded
+    global _AGENT_DEFINITIONS_CACHE
+    if _AGENT_DEFINITIONS_CACHE is not None:
+        return _AGENT_DEFINITIONS_CACHE
+
     base_path = Path(__file__).parent
     agents_dir = base_path / "agents"
 
@@ -69,6 +94,8 @@ def load_agent_definitions() -> Dict[str, Dict[str, Any]]:
             print(f"⚠️ No .md file found for {agent_name}")
             raise Exception(f"No agent definition markdown file found for {agent_name}")
 
+    # Store in cache for subsequent calls
+    _AGENT_DEFINITIONS_CACHE = agent_definitions
     return agent_definitions
 
 
@@ -182,15 +209,72 @@ def extract_patient_info(xml_data: Dict[str, Any], xml_format: str) -> Dict[str,
         xml_format: XML format type ('eclaim' or 'shafafiya')
 
     Returns:
-        Dict containing extracted patient information
+        Dict containing extracted patient information with required fields:
+        - EmiratesIDNumber, services, total_cost, justification
     """
+    patient_info = {}
+
     if xml_format == "eclaim":
-        return xml_data.get("as_dict", {}).get("Patient", {})
+        xml_dict = xml_data.get("as_dict", {})
+        patient_data = xml_dict.get("Patient", {})
+
+        # Extract Emirates ID
+        patient_info["EmiratesIDNumber"] = patient_data.get("EmiratesIDNumber")
+
+        # Extract services from ServiceRequests
+        service_requests = xml_dict.get("ServiceRequests", {}).get("ServiceRequest", [])
+        if isinstance(service_requests, dict):
+            service_requests = [service_requests]  # Single service case
+
+        services = []
+        total_cost = 0.0
+
+        for service in service_requests:
+            # Handle namespace-expanded keys
+            activity_code = service.get("ct:ActivityCode", "") or service.get(
+                "http://www.eclaimlink.ae/DHD/ValidationSchema:ActivityCode", ""
+            )
+            instructions = service.get("ct:ActivityInstructions", "") or service.get(
+                "http://www.eclaimlink.ae/DHD/ValidationSchema:ActivityInstructions", ""
+            )
+            diagnosis_code = service.get("ct:DiagnosisCode", "") or service.get(
+                "http://www.eclaimlink.ae/DHD/ValidationSchema:DiagnosisCode", ""
+            )
+
+            amount_data = service.get("RequestedAmount", {})
+            if isinstance(amount_data, dict):
+                amount = float(amount_data.get("#text", 0) or 0)
+            else:
+                amount = float(amount_data or 0)
+
+            service_info = {
+                "code": activity_code,
+                "description": instructions,
+                "diagnosis_code": diagnosis_code,
+                "amount": amount,
+            }
+            services.append(service_info)
+            total_cost += service_info["amount"]
+
+        patient_info["services"] = services
+        patient_info["total_cost"] = total_cost
+
+        # Extract justification text
+        patient_info["justification"] = xml_dict.get("JustificationText")
+
+        # Add other patient demographics for compatibility
+        patient_info.update(patient_data)
+
     elif xml_format == "shafafiya":
         # Add Shafafiya parsing logic when needed
-        pass
+        patient_info = {
+            "EmiratesIDNumber": None,
+            "services": [],
+            "total_cost": 0.0,
+            "justification": None,
+        }
 
-    return {}
+    return patient_info
 
 
 def determine_specialty(xml_data: Dict[str, Any], patient_data: Dict[str, Any]) -> str:
@@ -299,6 +383,23 @@ def prepare_shared_context(
     )
 
 
+# Simple JSONL trace writer
+class _TraceWriter:
+    def __init__(self, run_id: str):
+        traces_dir = Path("output") / "traces"
+        traces_dir.mkdir(parents=True, exist_ok=True)
+        self.path = traces_dir / f"{run_id}.jsonl"
+
+    def write(self, event_type: str, **payload: Any) -> None:
+        record = {
+            "ts": datetime.utcnow().isoformat(),
+            "event": event_type,
+            **payload,
+        }
+        with open(self.path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
 def execute_claude_agent(
     agent_name: str,
     shared_context: SharedContext,
@@ -320,9 +421,13 @@ def execute_claude_agent(
     """
     try:
         start_time = datetime.now()
+        run_id = f"{agent_name}_{start_time.strftime('%Y%m%dT%H%M%S')}_{uuid.uuid4().hex[:6]}"
+        tracer = _TraceWriter(run_id)
 
-        # Load agent definitions
-        agent_definitions = load_agent_definitions()
+        # Load agent definitions (cached)
+        agent_definitions = (
+            get_cached_agent_definitions() or prime_agent_definitions_cache()
+        )
         agent_def = agent_definitions.get(agent_name, {})
 
         if not agent_def:
@@ -344,11 +449,26 @@ def execute_claude_agent(
             allowed_tools=agent_tools,
         )
 
+        tracer.write(
+            "agent_started",
+            agent=agent_name,
+            allowed_tools=agent_tools,
+            run_id=run_id,
+        )
+
         # Execute agent synchronously using asyncio.run
-        result = asyncio.run(_execute_agent_async(prompt, options))
+        result = asyncio.run(_execute_agent_async(prompt, options, tracer, agent_name))
 
         end_time = datetime.now()
         processing_time = (end_time - start_time).total_seconds()
+
+        tracer.write(
+            "agent_finished",
+            agent=agent_name,
+            run_id=run_id,
+            processing_time_seconds=processing_time,
+            usage=result.get("usage", {}),
+        )
 
         return AgentResult(
             agent_name=agent_name,
@@ -379,7 +499,10 @@ def execute_claude_agent(
 
 
 async def _execute_agent_async(
-    prompt: str, options: ClaudeCodeOptions
+    prompt: str,
+    options: ClaudeCodeOptions,
+    tracer: Optional[_TraceWriter] = None,
+    agent_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Execute agent asynchronously with Claude Code SDK.
@@ -387,22 +510,69 @@ async def _execute_agent_async(
     Args:
         prompt: Complete prompt for the agent
         options: Claude Code execution options
+        tracer: Optional trace writer for step/tool logging
+        agent_name: Optional agent name for trace enrichment
 
     Returns:
         Dict with response and usage data
     """
     text_responses = []
     usage_data = {}
-    total_cost = 0.0
+    pending_tool_name: Optional[str] = None
 
     async for message in query(prompt=prompt, options=options):
-        # Extract text from AssistantMessage
+        # Assistant text blocks
         if isinstance(message, AssistantMessage):
             for block in message.content:
                 if isinstance(block, TextBlock):
                     text_responses.append(block.text)
+                    if tracer:
+                        tracer.write(
+                            "assistant_text",
+                            agent=agent_name,
+                            text_preview=block.text[:500],
+                        )
+                        # Heuristic: if a tool was just used and the next block is text, treat it as the tool result
+                        if pending_tool_name:
+                            parsed = None
+                            try:
+                                # Try to extract JSON payload from the block text
+                                idx = block.text.find("{")
+                                if idx != -1:
+                                    parsed = json.loads(block.text[idx:])
+                            except Exception:
+                                parsed = None
+                            tracer.write(
+                                "tool_result",
+                                agent=agent_name,
+                                tool=pending_tool_name,
+                                output_preview=block.text[:500],
+                                parsed=parsed
+                                if isinstance(parsed, (dict, list))
+                                else None,
+                            )
+                            pending_tool_name = None
+                # Tool use/result blocks if available in SDK
+                if ToolUseBlock and isinstance(block, ToolUseBlock):  # type: ignore
+                    pending_tool_name = getattr(block, "name", None)
+                    if tracer:
+                        tracer.write(
+                            "tool_used",
+                            agent=agent_name,
+                            tool=pending_tool_name,
+                            input=getattr(block, "input", None),
+                        )
+                if ToolResultBlock and isinstance(block, ToolResultBlock):  # type: ignore
+                    if tracer:
+                        tracer.write(
+                            "tool_result",
+                            agent=agent_name,
+                            tool=getattr(block, "name", None),
+                            output_preview=str(getattr(block, "output", None))[:500],
+                        )
+                    pending_tool_name = None
 
-        # Capture usage data from ResultMessage
+        # Final result/usage
         if isinstance(message, ResultMessage):
             if hasattr(message, "usage") and message.usage:
                 usage_data = {
@@ -411,10 +581,8 @@ async def _execute_agent_async(
                     "total_tokens": message.usage.get("input_tokens", 0)
                     + message.usage.get("output_tokens", 0),
                 }
-
-            if hasattr(message, "total_cost_usd") and message.total_cost_usd:
-                usage_data["total_cost_usd"] = float(message.total_cost_usd)
-                total_cost += usage_data["total_cost_usd"]
+            if tracer:
+                tracer.write("result_usage", agent=agent_name, usage=usage_data)
 
     meaningful_response = (
         "\n\n".join(text_responses) if text_responses else "Analysis completed"
@@ -513,9 +681,9 @@ def make_final_decision(
         Exception: If decision-maker agent failed
     """
     # Get decision maker result if available
-    decision_agent = agent_results.get("decision-maker", {})
+    decision_agent = agent_results.get("decision-maker")
 
-    if decision_agent.get("success"):
+    if decision_agent and decision_agent.get("success"):
         # Extract decision from agent response
         response = decision_agent.get("response", "")
 
@@ -530,56 +698,94 @@ def make_final_decision(
             decision = "REQUIRES_REVIEW"
             confidence = 0.60
     else:
-        error_msg = decision_agent.get("error", "Unknown error")
+        error_msg = (
+            decision_agent.get("error", "Unknown error")
+            if decision_agent
+            else "Decision maker not executed"
+        )
         print(f"❌ Decision maker failed: {error_msg}")
         raise Exception(f"Decision maker failed: {error_msg}")
+
+    # Generate authorization number based on file path hash
+    file_path = xml_data.get("file_path", "default")
+    auth_number = f"AUTH-2025-{datetime.now().strftime('%Y%m%d')}-{abs(hash(file_path)) % 10000:04d}"
 
     return {
         "decision": decision,
         "confidence": confidence,
-        "authorization_number": f"AUTH-2025-{datetime.now().strftime('%Y%m%d')}-{hash(xml_data['file_path']) % 10000:04d}",
+        "authorization_number": auth_number,
         "valid_days": 90,
         "conditions": ["Standard monitoring", "Follow-up required"],
         "rationale": "Based on comprehensive agent analysis including clinical review, medication assessment, and risk stratification.",
-        "agent_based": decision_agent.get("success", False),
+        "agent_based": decision_agent.get("success", False)
+        if decision_agent
+        else False,
     }
 
 
-def get_agent_configuration() -> Dict[str, Dict[str, Any]]:
+def calculate_egfr(
+    creatinine_mg_dl: float, age_years: int, gender: str, race: str = "other"
+) -> float:
     """
-    Get agent configuration with phases and dependencies.
+    Calculate estimated Glomerular Filtration Rate (eGFR) using CKD-EPI equation.
+
+    Args:
+        creatinine_mg_dl: Serum creatinine in mg/dL
+        age_years: Age in years
+        gender: 'M' for male, 'F' for female
+        race: 'black' or 'other' (default)
 
     Returns:
-        Dict mapping agent names to their configuration
+        eGFR value in mL/min/1.73m²
     """
+    if creatinine_mg_dl <= 0:
+        return 0.0
+
+    # CKD-EPI equation constants
+    if gender.upper() == "F":  # Female
+        if creatinine_mg_dl <= 0.7:
+            egfr = 144 * ((creatinine_mg_dl / 0.7) ** -0.329) * (0.993**age_years)
+        else:
+            egfr = 144 * ((creatinine_mg_dl / 0.7) ** -1.209) * (0.993**age_years)
+    else:  # Male
+        if creatinine_mg_dl <= 0.9:
+            egfr = 141 * ((creatinine_mg_dl / 0.9) ** -0.411) * (0.993**age_years)
+        else:
+            egfr = 141 * ((creatinine_mg_dl / 0.9) ** -1.209) * (0.993**age_years)
+
+    # Race factor
+    if race.lower() == "black":
+        egfr *= 1.159
+
+    return round(egfr, 1)
+
+
+def get_latest_creatinine(patient_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """
+    Get the most recent creatinine lab result from patient data.
+
+    Args:
+        patient_data: Patient data from ETL system
+
+    Returns:
+        Dict with latest creatinine info or None if not found
+    """
+    labs = patient_data.get("labs", [])
+    creatinine_labs = [
+        lab for lab in labs if "creatinine" in lab.get("test_name", "").lower()
+    ]
+
+    if not creatinine_labs:
+        return None
+
+    # Sort by test_date and get the most recent
+    creatinine_labs.sort(key=lambda x: x.get("test_date", ""), reverse=True)
+    latest = creatinine_labs[0]
+
     return {
-        "clinical-analyzer": {
-            "phase": 1,
-            "dependencies": [],
-            "description": "Medical history and disease progression analysis",
-        },
-        "medication-specialist": {
-            "phase": 1,
-            "dependencies": [],
-            "description": "Drug interactions and safety assessment",
-        },
-        "risk-assessor": {
-            "phase": 2,
-            "dependencies": ["clinical-analyzer", "medication-specialist"],
-            "description": "Clinical risk stratification and outcome prediction",
-        },
-        "decision-maker": {
-            "phase": 3,
-            "dependencies": [
-                "clinical-analyzer",
-                "medication-specialist",
-                "risk-assessor",
-            ],
-            "description": "Evidence-based authorization recommendations",
-        },
-        "compliance-auditor": {
-            "phase": 3,
-            "dependencies": ["decision-maker"],
-            "description": "UAE regulatory compliance verification",
-        },
+        "value": float(latest.get("result_value", 0)),
+        "unit": latest.get("unit", "mg/dL"),
+        "date": latest.get("test_date"),
+        "reference_range": latest.get("reference_range", ""),
+        "abnormal_flag": latest.get("abnormal_flag", "N"),
     }

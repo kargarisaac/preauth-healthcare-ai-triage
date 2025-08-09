@@ -18,3 +18,5 @@ output/
 *analysis_results
 /data
 .langgraph_api/
+# Runtime cache files
+preauth_cache/

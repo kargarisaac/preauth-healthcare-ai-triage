@@ -18,19 +18,30 @@ def run_development():
     """Run development server with auto-reload."""
     import uvicorn
 
+    # Use configuration manager if available
+    try:
+        from preauth_system.config_manager import get_config_manager
+        config_mgr = get_config_manager()
+        host = config_mgr.get('server.host', '127.0.0.1')
+        port = config_mgr.get('server.port', 8000, int)
+    except Exception:
+        # Fallback to defaults
+        host = "127.0.0.1"
+        port = 8000
+
     print("🚀 Starting Nazmito Healthcare XML API - Development Mode")
-    print("📖 API Documentation: http://localhost:8000/api/docs")
+    print(f"📖 API Documentation: http://{host}:{port}/api/docs")
     print("🔄 Auto-reload enabled")
     print("-" * 60)
 
     uvicorn.run(
         "api.main:app",
-        host="0.0.0.0",
-        port=8000,
+        host=host,
+        port=port,
         reload=True,
         log_level="info",
         access_log=True,
-        reload_dirs=["api", "pipelines"],
+        reload_dirs=["api", "preauth_system"],
     )
 
 
@@ -62,9 +73,18 @@ def run_docker():
     """Run server optimized for Docker container."""
     import uvicorn
 
-    host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", "8000"))
-    workers = int(os.getenv("WORKERS", "1"))
+    # Use configuration manager if available
+    try:
+        from preauth_system.config_manager import get_config_manager
+        config_mgr = get_config_manager()
+        host = config_mgr.get('server.host', '0.0.0.0')
+        port = config_mgr.get('server.port', 8000, int)
+        workers = config_mgr.get('server.workers', 1, int)
+    except Exception:
+        # Fallback to environment variables
+        host = os.getenv("HOST", "0.0.0.0")
+        port = int(os.getenv("PORT", "8000"))
+        workers = int(os.getenv("WORKERS", "1"))
 
     print("🐳 Starting Nazmito Healthcare XML API - Docker Mode")
     print(f"🌐 Server: http://{host}:{port}")
