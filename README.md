@@ -31,16 +31,6 @@ cd ui-react && uv run npm install && uv run npm run dev
 uv run python -m tests.manual.run_single_agent --agent clinical-analyzer --xml data/dataset_2/synthetic_dataset/UAE_XML/Patient_007_eclaim.xml
 ```
 
-### MCP Tools
-- Start MCP server (for agents):
-```bash
-uv run python -m preauth_system.tools.mcp_server
-```
-- Quick tool check (direct):
-```bash
-uv run python tests/manual/run_mcp_tools.py
-```
-
 ## Recommended way to run scripts in a package
 - Prefer module-style execution so Python sets the package context correctly:
 ```bash
