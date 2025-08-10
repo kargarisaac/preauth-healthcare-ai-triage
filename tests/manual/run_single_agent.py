@@ -6,38 +6,28 @@ Usage:
 """
 
 import argparse
-from preauth_system.utils import (
-    parse_xml,
-    extract_patient_info,
-    prepare_shared_context,
-    execute_claude_agent,
-)
-from data_ingestion.etl import find_patient_by_emirates_id, get_patient_data
+from preauth_system.state import AgentResult, SharedContext
+from preauth_system.utils import prepare_shared_context
+from preauth_system.agents_openai import execute_openai_agent
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--agent",
-        required=True,
-        help="Agent name (clinical-analyzer|medication-specialist|risk-assessor|decision-maker|compliance-auditor)",
-    )
-    parser.add_argument("--xml", required=True, help="Path to eClaim XML file")
+    parser.add_argument("agent", type=str)
     args = parser.parse_args()
 
-    xml = parse_xml(args.xml, "eclaim")
-    info = extract_patient_info(xml, "eclaim")
-    emirates_id = info["EmiratesIDNumber"]
-    patient_id = find_patient_by_emirates_id(emirates_id)
-    pdata = get_patient_data(patient_id)
-    shared = prepare_shared_context(xml, info, pdata, specialty="pediatric")
+    # minimal fake shared context
+    shared: SharedContext = {
+        "xml_request": {"dummy": True},
+        "patient_demographics": {},
+        "medical_history": {},
+        "clinical_data": {},
+        "specialty": "general",
+        "analysis_timestamp": "",
+    }
 
-    result = execute_claude_agent(args.agent, shared, previous_results={})
-    print(f"Agent: {args.agent}")
-    print(f"Success: {result['success']}")
-    print(f"Time (s): {result.get('processing_time_seconds')}")
-    print("\n=== Response (truncated) ===\n")
-    print((result.get("response") or ""))
+    result: AgentResult = execute_openai_agent(args.agent, shared, previous_results={})
+    print(result)
 
 
 if __name__ == "__main__":
