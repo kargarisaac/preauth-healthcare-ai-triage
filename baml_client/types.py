@@ -37,8 +37,14 @@ def get_checks(checks: typing.Dict[CheckName, Check]) -> typing.List[Check]:
 def all_succeeded(checks: typing.Dict[CheckName, Check]) -> bool:
     return all(check.status == "succeeded" for check in get_checks(checks))
 # #########################################################################
-# Generated enums (1)
+# Generated enums (2)
 # #########################################################################
+
+class RiskLevel(str, Enum):
+    LOW = "LOW"
+    MODERATE = "MODERATE"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
 
 class Specialty(str, Enum):
     Pediatric = "Pediatric"
@@ -54,8 +60,22 @@ class Specialty(str, Enum):
     General = "General"
 
 # #########################################################################
-# Generated classes (1)
+# Generated classes (3)
 # #########################################################################
+
+class ClinicalRiskAssessment(BaseModel):
+    overall_risk: RiskLevel
+    risk_factors: typing.List[str]
+    confidence: float
+    reasoning: str
+
+class DataQualityAssessment(BaseModel):
+    overall_score: float
+    completeness_score: float
+    richness_score: float
+    accuracy_score: float
+    recommendations: typing.List[str]
+    reasoning: str
 
 class SpecialtyDecision(BaseModel):
     specialty: Specialty

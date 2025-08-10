@@ -85,6 +85,20 @@ class BamlSyncClient:
     def parse_stream(self):
       return self.__llm_stream_parser
     
+    def AssessClinicalRisk(self, demographics: str,recent_observations: str,current_medications: str,observation_count: int,medication_count: int,
+        baml_options: BamlCallOptions = {},
+    ) -> types.ClinicalRiskAssessment:
+        result = self.__options.merge_options(baml_options).call_function_sync(function_name="AssessClinicalRisk", args={
+            "demographics": demographics,"recent_observations": recent_observations,"current_medications": current_medications,"observation_count": observation_count,"medication_count": medication_count,
+        })
+        return typing.cast(types.ClinicalRiskAssessment, result.cast_to(types, types, stream_types, False, __runtime__))
+    def CalculateDataQuality(self, demographics_completeness: str,clinical_data_richness: int,medication_data_availability: int,total_data_points: int,
+        baml_options: BamlCallOptions = {},
+    ) -> types.DataQualityAssessment:
+        result = self.__options.merge_options(baml_options).call_function_sync(function_name="CalculateDataQuality", args={
+            "demographics_completeness": demographics_completeness,"clinical_data_richness": clinical_data_richness,"medication_data_availability": medication_data_availability,"total_data_points": total_data_points,
+        })
+        return typing.cast(types.DataQualityAssessment, result.cast_to(types, types, stream_types, False, __runtime__))
     def DetermineSpecialty(self, input: str,
         baml_options: BamlCallOptions = {},
     ) -> types.SpecialtyDecision:
@@ -101,6 +115,30 @@ class BamlStreamClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
+    def AssessClinicalRisk(self, demographics: str,recent_observations: str,current_medications: str,observation_count: int,medication_count: int,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[stream_types.ClinicalRiskAssessment, types.ClinicalRiskAssessment]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(function_name="AssessClinicalRisk", args={
+            "demographics": demographics,"recent_observations": recent_observations,"current_medications": current_medications,"observation_count": observation_count,"medication_count": medication_count,
+        })
+        return baml_py.BamlSyncStream[stream_types.ClinicalRiskAssessment, types.ClinicalRiskAssessment](
+          result,
+          lambda x: typing.cast(stream_types.ClinicalRiskAssessment, x.cast_to(types, types, stream_types, True, __runtime__)),
+          lambda x: typing.cast(types.ClinicalRiskAssessment, x.cast_to(types, types, stream_types, False, __runtime__)),
+          ctx,
+        )
+    def CalculateDataQuality(self, demographics_completeness: str,clinical_data_richness: int,medication_data_availability: int,total_data_points: int,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[stream_types.DataQualityAssessment, types.DataQualityAssessment]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(function_name="CalculateDataQuality", args={
+            "demographics_completeness": demographics_completeness,"clinical_data_richness": clinical_data_richness,"medication_data_availability": medication_data_availability,"total_data_points": total_data_points,
+        })
+        return baml_py.BamlSyncStream[stream_types.DataQualityAssessment, types.DataQualityAssessment](
+          result,
+          lambda x: typing.cast(stream_types.DataQualityAssessment, x.cast_to(types, types, stream_types, True, __runtime__)),
+          lambda x: typing.cast(types.DataQualityAssessment, x.cast_to(types, types, stream_types, False, __runtime__)),
+          ctx,
+        )
     def DetermineSpecialty(self, input: str,
         baml_options: BamlCallOptions = {},
     ) -> baml_py.BamlSyncStream[stream_types.SpecialtyDecision, types.SpecialtyDecision]:
@@ -121,6 +159,20 @@ class BamlHttpRequestClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
+    def AssessClinicalRisk(self, demographics: str,recent_observations: str,current_medications: str,observation_count: int,medication_count: int,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="AssessClinicalRisk", args={
+            "demographics": demographics,"recent_observations": recent_observations,"current_medications": current_medications,"observation_count": observation_count,"medication_count": medication_count,
+        }, mode="request")
+        return result
+    def CalculateDataQuality(self, demographics_completeness: str,clinical_data_richness: int,medication_data_availability: int,total_data_points: int,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="CalculateDataQuality", args={
+            "demographics_completeness": demographics_completeness,"clinical_data_richness": clinical_data_richness,"medication_data_availability": medication_data_availability,"total_data_points": total_data_points,
+        }, mode="request")
+        return result
     def DetermineSpecialty(self, input: str,
         baml_options: BamlCallOptions = {},
     ) -> baml_py.baml_py.HTTPRequest:
@@ -136,6 +188,20 @@ class BamlHttpStreamRequestClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
+    def AssessClinicalRisk(self, demographics: str,recent_observations: str,current_medications: str,observation_count: int,medication_count: int,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="AssessClinicalRisk", args={
+            "demographics": demographics,"recent_observations": recent_observations,"current_medications": current_medications,"observation_count": observation_count,"medication_count": medication_count,
+        }, mode="stream")
+        return result
+    def CalculateDataQuality(self, demographics_completeness: str,clinical_data_richness: int,medication_data_availability: int,total_data_points: int,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="CalculateDataQuality", args={
+            "demographics_completeness": demographics_completeness,"clinical_data_richness": clinical_data_richness,"medication_data_availability": medication_data_availability,"total_data_points": total_data_points,
+        }, mode="stream")
+        return result
     def DetermineSpecialty(self, input: str,
         baml_options: BamlCallOptions = {},
     ) -> baml_py.baml_py.HTTPRequest:

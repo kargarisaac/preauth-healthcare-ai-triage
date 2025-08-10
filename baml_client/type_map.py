@@ -16,9 +16,17 @@ from . import stream_types
 
 type_map = {
 
+    "types.ClinicalRiskAssessment": types.ClinicalRiskAssessment,
+    "stream_types.ClinicalRiskAssessment": stream_types.ClinicalRiskAssessment,
+
+    "types.DataQualityAssessment": types.DataQualityAssessment,
+    "stream_types.DataQualityAssessment": stream_types.DataQualityAssessment,
+
     "types.SpecialtyDecision": types.SpecialtyDecision,
     "stream_types.SpecialtyDecision": stream_types.SpecialtyDecision,
 
+
+    "types.RiskLevel": types.RiskLevel,
 
     "types.Specialty": types.Specialty,
 

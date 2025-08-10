@@ -22,6 +22,18 @@ class LlmResponseParser:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
+    def AssessClinicalRisk(
+        self, llm_response: str, baml_options: BamlCallOptions = {},
+    ) -> types.ClinicalRiskAssessment:
+        result = self.__options.merge_options(baml_options).parse_response(function_name="AssessClinicalRisk", llm_response=llm_response, mode="request")
+        return typing.cast(types.ClinicalRiskAssessment, result)
+
+    def CalculateDataQuality(
+        self, llm_response: str, baml_options: BamlCallOptions = {},
+    ) -> types.DataQualityAssessment:
+        result = self.__options.merge_options(baml_options).parse_response(function_name="CalculateDataQuality", llm_response=llm_response, mode="request")
+        return typing.cast(types.DataQualityAssessment, result)
+
     def DetermineSpecialty(
         self, llm_response: str, baml_options: BamlCallOptions = {},
     ) -> types.SpecialtyDecision:
@@ -35,6 +47,18 @@ class LlmStreamParser:
 
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
+
+    def AssessClinicalRisk(
+        self, llm_response: str, baml_options: BamlCallOptions = {},
+    ) -> stream_types.ClinicalRiskAssessment:
+        result = self.__options.merge_options(baml_options).parse_response(function_name="AssessClinicalRisk", llm_response=llm_response, mode="stream")
+        return typing.cast(stream_types.ClinicalRiskAssessment, result)
+
+    def CalculateDataQuality(
+        self, llm_response: str, baml_options: BamlCallOptions = {},
+    ) -> stream_types.DataQualityAssessment:
+        result = self.__options.merge_options(baml_options).parse_response(function_name="CalculateDataQuality", llm_response=llm_response, mode="stream")
+        return typing.cast(stream_types.DataQualityAssessment, result)
 
     def DetermineSpecialty(
         self, llm_response: str, baml_options: BamlCallOptions = {},
