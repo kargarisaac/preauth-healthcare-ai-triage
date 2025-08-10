@@ -20,3 +20,4 @@ output/
 .langgraph_api/
 # Runtime cache files
 preauth_cache/
+nazmito.egg-info/*

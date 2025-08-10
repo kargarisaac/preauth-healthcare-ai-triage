@@ -27,7 +27,6 @@ dependencies = [
     "baml-py==0.203.1",
     "kuzu>=0.11.1",
     "baml-cli>=0.1.0",
-    "claude-code-sdk>=0.0.19",
     "langgraph-cli[inmem]>=0.3.6",
     "bm25s>=0.2.13",
     "stemmer>=0.0.4",
@@ -35,8 +34,11 @@ dependencies = [
     "pystemmer>=3.0.0",
     "redis>=5.0.0",
     "psutil>=5.9.0",
-    "mcp>=1.12.4",
+    # Replaced claude/mcp with OpenAI
+    "openai>=1.40.0",
     "openai-agents>=0.2.5",
+    "tiktoken>=0.7.0",
+    "dotenv>=0.9.9",
 ]
 
 [tool.setuptools]
