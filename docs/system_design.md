@@ -19,6 +19,80 @@ This document outlines a best-in-class, production-grade, AI-driven prior author
   - UAE coding adapters: eClaimLink/Shafafiya → canonical model; mapping tables for ICD-10, CPT/HCPCS, LOINC, RxNorm, SNOMED CT.
   - Provider network and site-of-care registry; fee schedules and contracted rates.
 
+- **Data Sources to Nazmito Platform**
+
+```mermaid
+%%{init: {'flowchart': {'curve': 'orthogonal', 'htmlLabels': true, 'nodeSpacing': 40, 'rankSpacing': 60}}}%%
+flowchart LR
+  %% Groups
+  subgraph GOV["🏛️ Government Authorities"]
+    direction TB
+    GovToProviders["📤 TO PROVIDERS<br/>• Clinical Treatment Guidelines<br/>• Drug Formulary Updates<br/>• Regulatory Requirements<br/>• Quality Standards<br/>• Licensing Renewals"]:::box
+    GovToInsurers["📤 TO INSURERS<br/>• Provider Network Lists<br/>• Licensed Facility Registry<br/>• Regulatory Compliance Status<br/>• Policy Coverage Guidelines"]:::box
+    GovFromNazmito["📥 FROM NAZMITO<br/>• Compliance Reports<br/>• Healthcare Analytics<br/>• Quality Metrics<br/>• Population Health Insights"]:::box
+  end
+
+  subgraph HIE["📋 Patient Health Records (Government‑Controlled)<br/>• MALAFFI (Abu Dhabi HIE)<br/>• NABIDH (Dubai Unified Records)<br/>• EHR Systems (Cerner, Epic, Salama)<br/>• Lab Centers & Pharmacy Records<br/>• Hospital Systems<br/>⚠️ No direct access to Nazmito – UAE Health Data Law"]
+  end
+
+  subgraph EX["📚 External Knowledge"]
+    extBody["• UpToDate, Micromedex<br/>• Drug Interaction DBs<br/>• Evidence‑Based Medicine<br/>• ICD‑10‑AM/CPT Codes<br/>• Clinical Decision Support"]:::box
+  end
+
+  subgraph Providers["🏥 Healthcare Providers"]
+    direction TB
+    ProvidersIn["📥 INPUT TO NAZMITO<br/>• eClaimLink/Shafafiya XML<br/>• Clinical Documentation<br/>• Lab Results & Imaging<br/>• Treatment Plans<br/>• Provider Credentials"]:::box
+    ProvidersOut["📤 OUTPUT FROM NAZMITO<br/>• Approval/Denial Notifications<br/>• Missing Documentation Lists<br/>• Alternative Treatment Options<br/>• Next Steps & Appeal Guidance"]:::box
+  end
+
+  subgraph Insurers["🏢 Insurance Companies"]
+    direction TB
+    InsurersIn["📥 INPUT TO NAZMITO<br/>• Member Eligibility APIs<br/>• Policy Terms & Benefits<br/>• Claims History<br/>• Provider Networks<br/>• Drug Formularies<br/>• Daman, AXA Gulf, Oman Insurance"]:::box
+    InsurersOut["📤 OUTPUT FROM NAZMITO<br/>• Pre‑auth Decisions<br/>• Clinical Dossiers<br/>• Audit Reports<br/>• Cost Analysis<br/>• Risk Assessments"]:::box
+  end
+
+  subgraph NAZMITO["🤖 NAZMITO AI PLATFORM<br/>• Data Integration Layer<br/>• FHIR Canonical Store<br/>• Policy Engine<br/>• Clinical AI Agents<br/>• Decision Engine<br/>• Audit & Compliance"]
+  end
+
+  %% Flows (kept simple to avoid crossing)
+  GovToInsurers --> InsurersIn
+  GovToProviders --> ProvidersIn
+
+  extBody --> NAZMITO
+
+  ProvidersIn --> NAZMITO
+  InsurersIn --> NAZMITO
+
+  HIE -.->|Filtered data via| InsurersIn
+  HIE -.->|Clinical summaries via| ProvidersIn
+
+  NAZMITO --> InsurersOut
+  NAZMITO --> ProvidersOut
+  NAZMITO --> GovFromNazmito
+
+  %% Styling
+  classDef box fill:#0f172a,stroke:#475569,stroke-width:1px,color:#e2e8f0,rx:6,ry:6;
+```
+
+  **Actual UAE Healthcare Data Flow (Based on UAE Health Data Law 2024):**
+
+  **Input to Nazmito:**
+  - **Insurance Companies**: Member eligibility, policy terms, claims history, provider networks, drug formularies (filtered patient data from MALAFFI/NABIDH via government-approved access)
+  - **Healthcare Providers**: Pre-auth requests via eClaimLink/Shafafiya, clinical documentation summaries, treatment plans, provider credentials (clinical summaries extracted from EHRs, not raw patient records)
+  - **External Knowledge**: Clinical decision support databases, drug interaction references, evidence-based medicine, UAE coding standards (direct API access)
+
+  **Government Authority Data Distribution:**
+  - **To Insurance Companies**: Provider network lists, licensed facility registry, regulatory compliance status, policy coverage guidelines
+  - **To Healthcare Providers**: Clinical treatment guidelines, drug formulary updates, regulatory requirements, quality standards, licensing renewals
+  - **From Nazmito**: Compliance reports, healthcare analytics, quality metrics, population health insights
+
+  **Patient Records Reality:**
+  - **No Direct Access**: UAE Health Information Exchanges (MALAFFI/NABIDH) are government-controlled and cannot directly connect to third-party systems like Nazmito
+  - **Indirect Access Only**: Patient data reaches Nazmito through:
+    - Insurance companies (filtered data for claims verification under UAE Health Data Law)
+    - Healthcare providers (clinical summaries submitted with pre-authorization requests)
+  - **Regulatory Compliance**: All data transfers must comply with UAE Health Data Law data localization requirements
+
 - **Knowledge Sources**
   - Policy rule base: Payer-specific medical policies (DHA, DOH, insurer internal policies) compiled to machine-executable rules with provenance and effective dates.
   - Clinical guidelines KB: ACR Appropriateness Criteria, NCCN, ADA, GOLD, ACC/AHA, etc., stored with citation granularity.
@@ -31,6 +105,94 @@ This document outlines a best-in-class, production-grade, AI-driven prior author
   - RAG service over KB/KG with hybrid search (BM25+dense), section-level citations.
   - LLM router: small models for extraction/classification; larger models only when required.
   - Cost/usage accounting, caching (request-level, patient-level, retrieval cache), and replayable audit logs.
+
+---
+
+### FHIR Bundle Creation from Patient Data
+
+**Core Architecture Principle:** FHIR Bundles serve as the single canonical data format, created through enrichment of simple patient CSV data to eliminate data duplication and provide optimal structure for AI/LLM consumption.
+
+#### Data Flow: CSV → Enriched FHIR Bundle
+
+The system transforms raw CSV patient data through a comprehensive enrichment process:
+
+**1. Raw CSV Patient Data (Input):**
+- Basic demographics: name, age, gender, insurance ID
+- Simple clinical data: diagnosis codes, current medications, recent labs
+- Administrative data: provider information, visit dates
+
+**2. Enrichment Process:**
+- **LOINC Code Addition**: Lab results enriched with standard LOINC codes for interoperability
+- **RxNorm Code Mapping**: Medications mapped to RxNorm terminology for drug interaction analysis
+- **Clinical Relationship Creation**: Establish proper FHIR resource relationships (Patient → Observation → Condition)
+- **UAE-Specific Extensions**: Add emirate authority, regulatory flags, and local coding standards
+- **Temporal Organization**: Structure historical data with proper effective dates and sequences
+
+**3. FHIR Bundle Output (Canonical Format):**
+```json
+{
+  "resourceType": "Bundle",
+  "id": "enriched-patient-001",
+  "type": "collection",
+  "entry": [
+    {"resource": {"resourceType": "Patient", "id": "P001", ...}},
+    {"resource": {"resourceType": "Observation", "code": {"coding": [{"system": "http://loinc.org", "code": "4548-4"}]}, ...}},
+    {"resource": {"resourceType": "MedicationStatement", "medicationCodeableConcept": {"coding": [{"system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "6809"}]}, ...}},
+    {"resource": {"resourceType": "Condition", "code": {"coding": [{"system": "http://hl7.org/fhir/sid/icd-10-am", "code": "E11.9"}]}, ...}}
+  ]
+}
+```
+
+#### Benefits of FHIR-First Architecture
+
+**Single Source of Truth:**
+- Eliminates data duplication between CSV, XML, and internal formats
+- Reduces processing complexity by standardizing on one canonical format
+- Ensures consistency across all system components
+
+**Optimal for AI/LLM Processing:**
+- **Structured Medical Codes**: LOINC, RxNorm, ICD-10-AM codes provide semantic meaning
+- **Standardized Relationships**: FHIR resource references enable sophisticated clinical reasoning
+- **Rich Clinical Context**: Proper observation categories, medication dosages, and temporal relationships
+- **Evidence-Based Decisions**: Built-in support for clinical citations and guideline references
+
+**Data Prioritization Strategy:**
+When multiple data sources exist, the system prioritizes based on currency and accuracy:
+1. **XML Request Data** (highest priority): Most current demographics and insurance information from active requests
+2. **Recent CSV Clinical Data**: Laboratory results, medication changes within the last 3 months
+3. **Historical Database Records**: Older clinical history for trend analysis and baseline establishment
+
+**Processing Efficiency:**
+- Single FHIR parsing pipeline instead of multiple format-specific processors
+- Consistent validation rules across all data sources
+- Unified clinical intelligence regardless of input format
+- Streamlined regulatory compliance checking
+
+#### Implementation Example
+
+**Before (Multi-Format Chaos):**
+```
+CSV Data → Custom Parser → Internal Format A
+XML Data → XML Parser → Internal Format B
+Database → Query Results → Internal Format C
+↓
+Multiple data reconciliation steps
+↓
+Decision Engine (handling 3+ formats)
+```
+
+**After (FHIR-First):**
+```
+CSV Data → Enrichment Engine → FHIR Bundle
+XML Data → FHIR Converter → FHIR Bundle (priority merge)
+Database → FHIR Mapper → FHIR Bundle (historical context)
+↓
+Single FHIR Bundle (canonical)
+↓
+Decision Engine (one format, rich context)
+```
+
+This architecture ensures that regardless of whether patient data originates from CSV files, XML requests, or database queries, the clinical intelligence system always operates on consistently structured, semantically rich FHIR data with proper medical coding and clinical relationships.
 
 ---
 
@@ -138,82 +300,112 @@ This document outlines a best-in-class, production-grade, AI-driven prior author
 
 ### Mermaid Architecture
 ```mermaid
-flowchart TD
-  subgraph Providers[Providers]
-    A1[Clinician] -->|Submit PA| A2[eClaimLink/Shafafiya Payload]
+%%{init: {'flowchart': {'curve': 'orthogonal', 'htmlLabels': true, 'nodeSpacing': 40, 'rankSpacing': 70}}}%%
+flowchart LR
+  %% Actors
+  subgraph Providers["🏥 Providers"]
+    A1["Clinician"]:::actor -->|Submit PA| A2["eClaimLink/Shafafiya Payload"]:::box
   end
 
-  subgraph Intake[Ingestion & Canonicalization]
-    A2 --> B1[Intake & Normalization Agent]
-    B1 --> B2[Canonical PA + FHIR]
-    B2 --> B3[Schema & Code Validation]
+  %% Intake & Canonicalization
+  subgraph Intake["Ingestion & Canonicalization"]
+    direction LR
+    B1["Intake & Normalization Agent"]:::proc
+    B2["Canonical PA + FHIR"]:::data
+    B3["Schema & Code Validation"]:::proc
   end
 
-  subgraph Payer[Payer Systems]
-    P1[Eligibility API]:::svc
-    P2[Benefits & Plan Rules]:::svc
-    P3[Policy Repository]:::svc
+  %% Payer Systems
+  subgraph Payer["Payer Systems"]
+    direction TB
+    P1["Eligibility API"]:::svc
+    P2["Benefits & Plan Rules"]:::svc
+    P3["Policy Repository"]:::svc
   end
 
-  subgraph Data[Clinical & Claims Data]
-    D1[FHIR Store]:::db
-    D2[Claims History]:::db
-    D3[Provider Network & Fees]:::db
+  %% Data Stores
+  subgraph Data["Clinical & Claims Data"]
+    direction TB
+    D1["FHIR Store"]:::db
+    D2["Claims History"]:::db
+    D3["Provider Network & Fees"]:::db
   end
 
-  subgraph Knowledge[Knowledge & Reasoning]
-    K1[Policy Rule Engine]:::svc
-    K2[Guideline KB + Vector Index]:::db
-    K3[Medical Knowledge Graph]:::db
-    K4[Drug/Proc Safety DB]:::db
+  %% Knowledge & Reasoning
+  subgraph Knowledge["Knowledge & Reasoning"]
+    direction TB
+    K1["Policy Rule Engine"]:::svc
+    K2["Guideline KB + Vector Index"]:::db
+    K3["Medical Knowledge Graph"]:::db
+    K4["Drug/Proc Safety DB"]:::db
   end
 
-  subgraph Agents[Reasoning Agents]
-    E1[Eligibility & Benefits Agent]
-    E2[Clinical Summarization Agent]
-    E3[Guideline Retrieval Agent]
-    E4[Policy Evaluation Agent]
-    E5[Safety & Risk Agent]
-    E6[Alternatives & Cost Agent]
-    E7[Compliance & Documentation Agent]
-    E8[Decision Synthesis & Explainability Agent]
-    E9[Appeals & Next-Steps Agent]
-    E10[Feedback & Learning Agent]
+  %% Agents
+  subgraph Agents["Reasoning Agents"]
+    direction TB
+    E1["Eligibility & Benefits Agent"]:::agent
+    E2["Clinical Summarization Agent"]:::agent
+    E3["Guideline Retrieval Agent"]:::agent
+    E4["Policy Evaluation Agent"]:::agent
+    E5["Safety & Risk Agent"]:::agent
+    E6["Alternatives & Cost Agent"]:::agent
+    E7["Compliance & Documentation Agent"]:::agent
+    E8["Decision Synthesis & Explainability Agent"]:::agent
+    E9["Appeals & Next‑Steps Agent"]:::agent
+    E10["Feedback & Learning Agent"]:::agent
   end
 
-  B2 --> E1 -->|Coverage/Plan| P1
+  %% Intake flow
+  A2 --> B1 --> B2 --> B3
+
+  %% Agent wiring from canonical data
+  B2 --> D1
+  B2 --> E1
+
+  %% Eligibility
+  E1 -->|Coverage/Plan| P1
   E1 --> P2
 
-  B2 --> D1
+  %% Clinical Summary → Retrieval
   D1 --> E2 -->|Structured Summary| E3
-
-  E3 -->|Guideline Sections + Citations| K2
+  E3 --> K2
   E3 --> K3
 
+  %% Policy Evaluation
   E4 --> K1
   E4 --> P3
   E4 -->|Criteria Checklist| E8
 
+  %% Safety & Risk
   E5 --> K4
   E5 --> K3
 
+  %% Alternatives
   E6 --> D3
   E6 --> K2
 
+  %% Compliance
   E7 --> P3
 
+  %% Decisions & Outputs
   E8 -->|Decision + Dossier| Providers
   E8 -->|Decision + Audit| Payer
   E8 --> E9
-
   E9 -->|Missing Info / Appeal Advice| Providers
 
+  %% Feedback
   E10 -->|Labels/Outcomes| K1
   E10 --> K3
   E10 --> K2
 
-  classDef db fill:#eef,stroke:#88a,stroke-width:1px;
-  classDef svc fill:#efe,stroke:#8a8,stroke-width:1px;
+  %% Styling
+  classDef box fill:#0f172a,stroke:#475569,stroke-width:1px,color:#e2e8f0,rx:6,ry:6;
+  classDef actor fill:#0b3,stroke:#065f46,color:#ecfdf5,rx:6,ry:6;
+  classDef proc fill:#334155,stroke:#64748b,stroke-width:1px,color:#e2e8f0,rx:6,ry:6;
+  classDef data fill:#1f2937,stroke:#60a5fa,stroke-width:1.5px,color:#e2e8f0,rx:8,ry:8;
+  classDef db fill:#0f172a,stroke:#60a5fa,stroke-width:1.25px,color:#e2e8f0,rx:6,ry:6;
+  classDef svc fill:#14532d,stroke:#34d399,stroke-width:1px,color:#e2e8f0,rx:6,ry:6;
+  classDef agent fill:#1e293b,stroke:#a78bfa,stroke-width:1.25px,color:#e2e8f0,rx:6,ry:6;
 ```
 
 ---
@@ -388,6 +580,6 @@ The MVP has been successfully implemented with all core components working:
 - Deterministic policy evaluation with clear criteria mapping
 - Safety screening with clinical contraindications
 - Evidence-based dossiers with guideline citations
-- MCP tool integration for Claude Code agents
+- OpenAI Agents SDK tool integration (replaces MCP)
 - UAE compliance (PDPL data handling)
 
