@@ -2,766 +2,454 @@
 RAG Tool Functions for Agent Integration
 =======================================
 
-Tool functions for KB search and evidence retrieval that integrate with LangGraph agents.
-Provides structured outputs, citation formatting, and cost-aware caching.
-
-This module provides functionality to:
-- Tool functions for KB search and evidence retrieval
-- Citation formatting for agent responses  
-- Cost tracking and token budgets for LLM calls
-- Caching layer for repeated retrievals
-- Integration with existing agent workflow
+Simplified RAG per requirements:
+- Files with < threshold tokens: read entire file content inline
+- Files with >= threshold tokens: use OpenAI File Search
+- No BM25/NLTK or local vector search
 """
 
-import json
-import hashlib
-import time
-from typing import Dict, List, Any, Optional, Union, Tuple
-from dataclasses import dataclass, asdict
-from pathlib import Path
-from datetime import datetime, timedelta
-import logging
+from __future__ import annotations
+
 import os
+import json
+import time
+import logging
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from loguru import logger
 
-from preauth_system.rag.retrieve import create_retriever, RetrievalResponse
+from preauth_system.utils import get_config
+
+# OpenAI file-search for large files
+try:
+    from openai import OpenAI  # type: ignore
+except Exception:  # pragma: no cover
+    OpenAI = None  # type: ignore
+
+# Load config from shared utils
+_CFG = get_config()
 
 
 @dataclass
 class ToolResponse:
-    """Standardized tool response format for agent consumption."""
-
     success: bool
-    data: Any
+    data: Optional[Dict[str, Any]]
     error: Optional[str] = None
-    processing_time_ms: float = 0
+    processing_time_ms: Optional[float] = None
     cached: bool = False
-    cost_info: Dict[str, Any] = None
-
-    def __post_init__(self):
-        if self.cost_info is None:
-            self.cost_info = {}
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for serialization."""
-        return asdict(self)
+    cost_info: Optional[Dict[str, Any]] = None
 
 
-# Lightweight JSONL tracer for RAG tools
+class RAGToolCache:
+    def __init__(self, ttl_minutes: int = 60) -> None:
+        self.ttl_seconds = ttl_minutes * 60
+        self.cache: Dict[str, Any] = {}
+        self.timestamps: Dict[str, float] = {}
+
+    def _make_key(self, query: str, **params: Any) -> str:
+        return json.dumps({"q": query, **params}, sort_keys=True)
+
+    def get(self, query: str, **params: Any) -> Optional[Dict[str, Any]]:
+        key = self._make_key(query, **params)
+        if key in self.cache:
+            if time.time() - self.timestamps[key] < self.ttl_seconds:
+                return self.cache[key]
+            else:
+                del self.cache[key]
+                del self.timestamps[key]
+        return None
+
+    def set(self, query: str, value: Dict[str, Any], **params: Any) -> None:
+        key = self._make_key(query, **params)
+        self.cache[key] = value
+        self.timestamps[key] = time.time()
+
+
+# Tracing
 class _RagToolsTracer:
     def __init__(self) -> None:
-        traces_dir = Path("output") / "traces"
+        traces_dir = Path(
+            (_CFG.get("tracing", {}) or {}).get("dir", str(Path("output") / "traces"))
+        ).resolve()
         traces_dir.mkdir(parents=True, exist_ok=True)
         day = datetime.utcnow().strftime("%Y%m%d")
         self.path = traces_dir / f"rag_tools_{day}.jsonl"
 
     def write(self, event: str, **payload: Any) -> None:
-        record = {
-            "ts": datetime.utcnow().isoformat(),
-            "event": event,
-            **payload,
-        }
-        with open(self.path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        try:
+            with open(self.path, "a", encoding="utf-8") as f:
+                f.write(
+                    json.dumps(
+                        {"ts": datetime.utcnow().isoformat(), "event": event, **payload}
+                    )
+                    + "\n"
+                )
+        except Exception:
+            pass
 
 
 _tools_tracer = _RagToolsTracer()
-# Optional: include content previews in trace. Set RAG_TOOLS_LOG_CONTENT to an int (chars)
-try:
-    RAG_TRACE_CONTENT_MAX = int(os.getenv("RAG_TOOLS_LOG_CONTENT", "0"))
-except Exception:
-    RAG_TRACE_CONTENT_MAX = 0
 
 
-class RAGToolCache:
-    """
-    Simple in-memory cache for RAG retrieval results to reduce costs.
-
-    Implements aggressive caching to meet <$0.10/case cost target.
-    """
-
-    def __init__(self, ttl_minutes: int = 60, max_size: int = 1000):
-        """
-        Initialize cache with TTL and size limits.
-
-        Args:
-            ttl_minutes: Time-to-live for cached entries in minutes
-            max_size: Maximum number of entries to cache
-        """
-        self.cache: Dict[str, Dict[str, Any]] = {}
-        self.ttl_minutes = ttl_minutes
-        self.max_size = max_size
-
-    def _get_cache_key(self, query: str, **kwargs) -> str:
-        """Generate cache key from query and parameters."""
-        key_data = {"query": query.lower().strip(), **kwargs}
-        key_str = json.dumps(key_data, sort_keys=True)
-        return hashlib.md5(key_str.encode()).hexdigest()[:16]
-
-    def get(self, query: str, **kwargs) -> Optional[Any]:
-        """Get cached result if available and not expired."""
-        cache_key = self._get_cache_key(query, **kwargs)
-
-        if cache_key in self.cache:
-            entry = self.cache[cache_key]
-
-            # Check if entry has expired
-            cached_time = datetime.fromisoformat(entry["timestamp"])
-            if datetime.now() - cached_time < timedelta(minutes=self.ttl_minutes):
-                logging.debug(f"Cache hit for query: {query[:50]}...")
-                return entry["data"]
-            else:
-                # Remove expired entry
-                del self.cache[cache_key]
-
-        return None
-
-    def set(self, query: str, data: Any, **kwargs) -> None:
-        """Cache result with current timestamp."""
-        cache_key = self._get_cache_key(query, **kwargs)
-
-        # Implement simple LRU by removing oldest entries when at max size
-        if len(self.cache) >= self.max_size:
-            oldest_key = min(
-                self.cache.keys(), key=lambda k: self.cache[k]["timestamp"]
-            )
-            del self.cache[oldest_key]
-
-        self.cache[cache_key] = {"data": data, "timestamp": datetime.now().isoformat()}
-
-        logging.debug(f"Cached result for query: {query[:50]}...")
-
-    def clear(self) -> None:
-        """Clear all cached entries."""
-        self.cache.clear()
-        logging.info("RAG cache cleared")
-
-    def get_stats(self) -> Dict[str, Any]:
-        """Get cache statistics."""
-        return {
-            "entries": len(self.cache),
-            "max_size": self.max_size,
-            "ttl_minutes": self.ttl_minutes,
-        }
+RAG_TRACE_CONTENT_MAX = 500
 
 
 class RAGTools:
-    """
-    RAG tool functions for LangGraph agent integration.
-
-    Provides standardized tool functions with caching, cost tracking,
-    and structured outputs for agent consumption.
-    """
-
     def __init__(
         self,
-        kb_directory: Union[str, Path],
-        index_path: Optional[Union[str, Path]] = None,
+        kb_directory: Path,
+        index_path: Optional[Path] = None,
         enable_cache: bool = True,
         cache_ttl_minutes: int = 60,
     ):
         """
-        Initialize RAG tools with retriever and caching.
-
-        Args:
-            kb_directory: Path to knowledge base directory
-            index_path: Optional path to search index
-            enable_cache: Whether to enable result caching
-            cache_ttl_minutes: Cache TTL in minutes
+        Initialize simplified RAG tools with caching and token-aware behavior.
         """
-        self.retriever = create_retriever(kb_directory, index_path)
+        self.kb_directory = kb_directory
+
+        cache_cfg = (
+            ((_CFG.get("rag") or {}).get("cache")) if isinstance(_CFG, dict) else None
+        ) or {}
         self.cache = (
-            RAGToolCache(ttl_minutes=cache_ttl_minutes) if enable_cache else None
+            RAGToolCache(
+                ttl_minutes=int(cache_cfg.get("ttl_minutes", cache_ttl_minutes))
+            )
+            if enable_cache
+            else None
         )
 
-        # Cost tracking
-        self.total_retrievals = 0
-        self.cache_hits = 0
-
-        logging.info(
-            f"✅ RAG Tools initialized with {len(self.retriever.kb_loader.snippets)} snippets"
+        # Shared config lookups
+        rag_cfg = (_CFG.get("rag") or {}) if isinstance(_CFG, dict) else {}
+        self._large_file_token_threshold = int(
+            rag_cfg.get("large_file_token_threshold", 10000)
         )
+        self._openai_file_registry = Path(
+            rag_cfg.get("openai_file_registry_path", "output/openai_files.json")
+        ).resolve()
+        self._kb_token_csv = Path(
+            rag_cfg.get(
+                "kb_token_csv_path", "preauth_system/rag/kb/kb_token_counts.csv"
+            )
+        ).resolve()
+        self._max_large_files = int(rag_cfg.get("max_large_files", 3))
+
+        # Internal registries
+        self._kb_token_counts = self._load_kb_token_counts()
+        self._openai_files = self._load_openai_file_registry()
+
+    def _load_kb_token_counts(self) -> Dict[str, int]:
+        counts: Dict[str, int] = {}
+        try:
+            if self._kb_token_csv.exists():
+                import csv
+
+                with open(self._kb_token_csv, "r", encoding="utf-8") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        counts[row["file_path"]] = (
+                            int(row["num_tokens"]) if row.get("num_tokens") else 0
+                        )
+            else:
+                logging.warning(f"KB token CSV not found at: {self._kb_token_csv}")
+        except Exception as e:  # pragma: no cover
+            logging.warning(f"Failed to load KB token counts: {e}")
+        return counts
+
+    def _load_openai_file_registry(self) -> Dict[str, Any]:
+        try:
+            if self._openai_file_registry.exists():
+                return json.loads(
+                    self._openai_file_registry.read_text(encoding="utf-8")
+                )
+        except Exception:
+            pass
+        return {}
+
+    def _save_openai_file_registry(self) -> None:
+        self._openai_file_registry.parent.mkdir(parents=True, exist_ok=True)
+        self._openai_file_registry.write_text(
+            json.dumps(self._openai_files, indent=2), encoding="utf-8"
+        )
+
+    def _infer_policy_type(self, path: Path) -> Optional[str]:
+        name = path.name.lower()
+        if "diabetes" in name:
+            return "diabetes_tech"
+        if "osteo" in name:
+            return "osteoarthritis"
+        if "parkinson" in name:
+            return "parkinson_dbs"
+        return None
+
+    def _list_kb_markdown_files(self) -> List[Path]:
+        files: List[Path] = []
+        if self.kb_directory.exists():
+            for p in sorted(self.kb_directory.glob("**/*.md")):
+                files.append(p)
+        return files
+
+    def _get_small_and_large_files(
+        self, policy_filter: Optional[List[str]] = None
+    ) -> Dict[str, List[Path]]:
+        small: List[Path] = []
+        large: List[Path] = []
+        all_files = self._list_kb_markdown_files()
+        for p in all_files:
+            pt = self._infer_policy_type(p)
+            if policy_filter and pt not in (policy_filter or []):
+                continue
+            tokens = self._kb_token_counts.get(str(p), 0)
+            if tokens >= self._large_file_token_threshold:
+                large.append(p)
+            else:
+                small.append(p)
+        # limit large files for cost
+        large = sorted(
+            large,
+            key=lambda x: self._kb_token_counts.get(str(x), 0),
+            reverse=True,
+        )[: self._max_large_files]
+        return {"small": small, "large": large}
+
+    def _ensure_openai_file_ids(self, file_paths: List[Path]) -> List[str]:
+        if not file_paths:
+            return []
+        if OpenAI is None:
+            logging.warning("OpenAI client not available; skipping file-search upload")
+            return []
+        client = OpenAI()
+        file_ids: List[str] = []
+        updated = False
+        for p in file_paths:
+            key = str(p)
+            mtime = p.stat().st_mtime if p.exists() else 0
+            rec = self._openai_files.get(key)
+            if rec and rec.get("mtime") == mtime and rec.get("file_id"):
+                file_ids.append(rec["file_id"])
+                continue
+            try:
+                with open(p, "rb") as f:
+                    uploaded = client.files.create(file=f, purpose="file_search")
+                fid = getattr(uploaded, "id", None)
+                if fid:
+                    self._openai_files[key] = {"file_id": fid, "mtime": mtime}
+                    file_ids.append(fid)
+                    updated = True
+                    _tools_tracer.write(
+                        "openai_file_uploaded",
+                        file=str(p),
+                        file_id=fid,
+                        size=os.path.getsize(p),
+                    )
+            except Exception as e:  # pragma: no cover
+                logging.warning(f"Failed to upload file to OpenAI: {p} ({e})")
+        if updated:
+            self._save_openai_file_registry()
+        return file_ids
+
+    def _query_openai_file_search(
+        self, query: str, file_ids: List[str]
+    ) -> Optional[Dict[str, Any]]:
+        if not file_ids or OpenAI is None:
+            return None
+        if self.cache:
+            cached = self.cache.get(
+                query, provider="openai_file_search", file_ids=file_ids
+            )
+            if cached:
+                return cached
+        try:
+            from preauth_system.rag.openai_rag import query_large_file
+
+            resp = query_large_file(query, file_ids=file_ids)
+            data = {
+                "provider": "openai_file_search",
+                "text": resp.get("text") or "",
+                "file_ids": file_ids,
+            }
+            if self.cache:
+                self.cache.set(
+                    query, data, provider="openai_file_search", file_ids=file_ids
+                )
+            return data
+        except Exception as e:  # pragma: no cover
+            logging.warning(f"OpenAI file search failed: {e}")
+            return None
+
+    def _read_text(self, p: Path) -> str:
+        try:
+            return p.read_text(encoding="utf-8")
+        except Exception:
+            try:
+                return p.read_text(errors="ignore")
+            except Exception:
+                return ""
 
     def search_knowledge_base(
         self,
         query: str,
         top_k: int = 5,
         policy_filter: Optional[List[str]] = None,
-        min_score: float = 0.1,
     ) -> ToolResponse:
-        """
-        Search knowledge base for relevant evidence.
-
-        This is the primary tool function for agent knowledge retrieval.
-
-        Args:
-            query: Search query describing the clinical question
-            top_k: Maximum number of results to return (1-10)
-            policy_filter: Filter by policy types (diabetes_tech, osteoarthritis, parkinson_dbs)
-            min_score: Minimum relevance score threshold (0.0-1.0)
-
-        Returns:
-            ToolResponse with formatted search results and citations
-        """
         start_time = time.time()
-        self.total_retrievals += 1
 
         try:
-            # Check cache first
-            cached_result = None
+            cache_key_params = {
+                "top_k": top_k,
+                "policy_filter": policy_filter,
+                "provider": "inline_and_file_search",
+            }
             if self.cache:
-                cache_params = {
-                    "top_k": top_k,
-                    "policy_filter": policy_filter,
-                    "min_score": min_score,
-                }
-                cached_result = self.cache.get(query, **cache_params)
-
-                if cached_result:
-                    self.cache_hits += 1
-                    processing_time = (time.time() - start_time) * 1000
-                    # Trace cached retrieval
-                    try:
-                        ids = [
-                            e.get("snippet_id")
-                            for e in cached_result.get("evidence", [])
-                        ]
-                        _tools_tracer.write(
-                            "rag_search",
-                            cached=True,
-                            query=query,
-                            top_k=top_k,
-                            policy_filter=policy_filter,
-                            results_returned=len(cached_result.get("evidence", [])),
-                            snippet_ids=ids,
-                            processing_time_ms=processing_time,
-                        )
-                    except Exception:
-                        pass
-
+                cached = self.cache.get(query, **cache_key_params)
+                if cached:
                     return ToolResponse(
                         success=True,
-                        data=cached_result,
-                        processing_time_ms=processing_time,
+                        data=cached,
+                        processing_time_ms=(time.time() - start_time) * 1000,
                         cached=True,
-                        cost_info={"cache_hit": True, "retrieval_avoided": True},
+                        cost_info={"cache_hit": True},
                     )
 
-            # Perform retrieval
-            response = self.retriever.retrieve(
-                query=query,
-                top_k=top_k,
-                policy_filter=policy_filter,
-                min_score=min_score,
-                expand_query=True,
-            )
+            fl = self._get_small_and_large_files(policy_filter)
+            small_files = fl["small"]
+            large_files = fl["large"]
 
-            # Format for agent consumption
-            formatted_data = self._format_retrieval_response(response)
+            # Inline include: read entire small files
+            evidence: List[Dict[str, Any]] = []
+            for p in small_files:
+                content = self._read_text(p)
+                evidence.append(
+                    {
+                        "snippet_id": str(p),
+                        "title": (p.stem.replace("_", " ") or "KB File"),
+                        "policy_type": self._infer_policy_type(p),
+                        "section": None,
+                        "relevance_score": None,
+                        "content": content,
+                        "citation": f"{p.name}",
+                    }
+                )
 
-            # Cache result
+            data: Dict[str, Any] = {
+                "results_returned": len(evidence),
+                "evidence": evidence if top_k <= 0 else evidence[: max(top_k, 1)],
+            }
+
+            # Augment with OpenAI file search for large files
+            if large_files:
+                file_ids = self._ensure_openai_file_ids(large_files)
+                augmentation = self._query_openai_file_search(query, file_ids)
+                if augmentation and augmentation.get("text"):
+                    data["openai_file_search"] = augmentation
+
             if self.cache:
-                cache_params = {
-                    "top_k": top_k,
-                    "policy_filter": policy_filter,
-                    "min_score": min_score,
-                }
-                self.cache.set(query, formatted_data, **cache_params)
+                self.cache.set(query, data, **cache_key_params)
 
             processing_time = (time.time() - start_time) * 1000
-
-            # Trace retrieval summary (IDs and titles only)
-            try:
-                ids = [e.get("snippet_id") for e in formatted_data.get("evidence", [])]
-                titles = [e.get("title") for e in formatted_data.get("evidence", [])]
-                payload = {
-                    "event": "rag_search",
-                    "cached": False,
-                    "query": query,
-                    "top_k": top_k,
-                    "policy_filter": policy_filter,
-                    "results_returned": formatted_data.get("results_returned", 0),
-                    "snippet_ids": ids,
-                    "titles_preview": titles[:5],
-                    "processing_time_ms": processing_time,
-                }
-                if RAG_TRACE_CONTENT_MAX > 0:
-                    previews = []
-                    for ev in formatted_data.get("evidence", [])[:5]:
-                        previews.append(
-                            {
-                                "snippet_id": ev.get("snippet_id"),
-                                "title": ev.get("title"),
-                                "content_preview": (ev.get("content") or "")[
-                                    :RAG_TRACE_CONTENT_MAX
-                                ],
-                            }
-                        )
-                    payload["evidence_preview"] = previews
-                _tools_tracer.write(**payload)
-            except Exception:
-                pass
-
-            return ToolResponse(
-                success=True,
-                data=formatted_data,
-                processing_time_ms=processing_time,
-                cached=False,
-                cost_info={
-                    "query_expansion_terms": len(response.query_expansion),
-                    "total_snippets_searched": len(self.retriever.kb_loader.snippets),
-                },
-            )
-
-        except Exception as e:
-            processing_time = (time.time() - start_time) * 1000
-            logging.error(f"Knowledge base search failed: {e}")
             try:
                 _tools_tracer.write(
-                    "rag_search_error",
+                    "rag_search",
+                    provider="inline_and_file_search",
                     query=query,
                     top_k=top_k,
                     policy_filter=policy_filter,
-                    error=str(e),
+                    results_returned=len(data.get("evidence", [])),
                     processing_time_ms=processing_time,
                 )
             except Exception:
                 pass
 
             return ToolResponse(
+                success=True,
+                data=data,
+                processing_time_ms=processing_time,
+                cached=False,
+                cost_info={"openai_file_search_used": bool(large_files)},
+            )
+
+        except Exception as e:
+            processing_time = (time.time() - start_time) * 1000
+            logging.error(f"RAG search failed: {e}")
+
+            return ToolResponse(
                 success=False,
                 data=None,
                 error=str(e),
                 processing_time_ms=processing_time,
-                cost_info={"error": True},
             )
 
     def get_policy_overview(self, policy_type: str) -> ToolResponse:
-        """
-        Get overview of specific policy type with key sections.
-
-        Args:
-            policy_type: Policy type (diabetes_tech, osteoarthritis, parkinson_dbs)
-
-        Returns:
-            ToolResponse with policy overview and key sections
-        """
+        """Return high-level policy information by parsing markdown headings."""
         start_time = time.time()
-
         try:
-            # Validate policy type
-            valid_policies = ["diabetes_tech", "osteoarthritis", "parkinson_dbs"]
-            if policy_type not in valid_policies:
-                return ToolResponse(
-                    success=False,
-                    data=None,
-                    error=f"Invalid policy type. Must be one of: {valid_policies}",
-                )
-
-            # Check cache
-            cached_result = None
-            if self.cache:
-                cached_result = self.cache.get(f"policy_overview_{policy_type}")
-
-                if cached_result:
-                    self.cache_hits += 1
-                    processing_time = (time.time() - start_time) * 1000
-                    try:
-                        _tools_tracer.write(
-                            "rag_policy_overview",
-                            cached=True,
-                            policy_type=policy_type,
-                            total_sections=cached_result.get("total_sections"),
-                            processing_time_ms=processing_time,
-                        )
-                    except Exception:
-                        pass
-
-                    return ToolResponse(
-                        success=True,
-                        data=cached_result,
-                        processing_time_ms=processing_time,
-                        cached=True,
-                    )
-
-            # Get policy overview
-            response = self.retriever.search_by_policy_type(
-                policy_type=policy_type,
-                query=None,  # Get all sections
-                top_k=20,
-            )
-
-            # Organize by sections
-            sections = {}
-            for result in response.results:
-                section = result.section
-                if section not in sections:
-                    sections[section] = []
-                sections[section].append(
-                    {
-                        "title": result.title,
-                        "snippet_id": result.snippet_id,
-                        "subsection": result.subsection,
-                        "content_preview": result.content[:200] + "..."
-                        if len(result.content) > 200
-                        else result.content,
-                    }
-                )
-
-            formatted_data = {
+            files = [
+                p
+                for p in self._list_kb_markdown_files()
+                if self._infer_policy_type(p) == policy_type
+            ]
+            sections: List[str] = []
+            for p in files:
+                text = self._read_text(p)
+                for line in text.splitlines():
+                    if line.lstrip().startswith("#"):
+                        heading = line.lstrip("#").strip()
+                        if heading:
+                            sections.append(heading)
+            # Deduplicate, keep order
+            seen = set()
+            ordered_sections = []
+            for s in sections:
+                if s not in seen:
+                    seen.add(s)
+                    ordered_sections.append(s)
+            data = {
                 "policy_type": policy_type,
-                "policy_name": self.retriever.kb_loader.policy_types.get(
-                    policy_type, {}
-                ).get("name", policy_type),
-                "total_sections": len(sections),
-                "sections": sections,
-                "last_updated": datetime.now().isoformat(),
+                "total_sections": len(ordered_sections),
+                "sections": ordered_sections,
             }
-
-            # Cache result
-            if self.cache:
-                self.cache.set(f"policy_overview_{policy_type}", formatted_data)
-
-            processing_time = (time.time() - start_time) * 1000
-            try:
-                _tools_tracer.write(
-                    "rag_policy_overview",
-                    cached=False,
-                    policy_type=policy_type,
-                    total_sections=formatted_data["total_sections"],
-                    processing_time_ms=processing_time,
-                )
-            except Exception:
-                pass
-
             return ToolResponse(
                 success=True,
-                data=formatted_data,
-                processing_time_ms=processing_time,
-                cached=False,
+                data=data,
+                processing_time_ms=(time.time() - start_time) * 1000,
             )
-
         except Exception as e:
-            processing_time = (time.time() - start_time) * 1000
-            logging.error(f"Policy overview failed: {e}")
-            try:
-                _tools_tracer.write(
-                    "rag_policy_overview_error",
-                    policy_type=policy_type,
-                    error=str(e),
-                    processing_time_ms=processing_time,
-                )
-            except Exception:
-                pass
-
-            return ToolResponse(
-                success=False,
-                data=None,
-                error=str(e),
-                processing_time_ms=processing_time,
-            )
-
-    def get_related_evidence(self, snippet_id: str, top_k: int = 3) -> ToolResponse:
-        """
-        Get evidence related to a specific knowledge snippet.
-
-        Args:
-            snippet_id: ID of reference knowledge snippet
-            top_k: Number of related snippets to return
-
-        Returns:
-            ToolResponse with related evidence
-        """
-        start_time = time.time()
-
-        try:
-            # Check cache
-            cached_result = None
-            if self.cache:
-                cached_result = self.cache.get(f"related_{snippet_id}_{top_k}")
-
-                if cached_result:
-                    self.cache_hits += 1
-                    processing_time = (time.time() - start_time) * 1000
-                    try:
-                        ids = [
-                            e.get("snippet_id")
-                            for e in cached_result.get("related_evidence", [])
-                        ]
-                        _tools_tracer.write(
-                            "rag_related_evidence",
-                            cached=True,
-                            reference_snippet_id=snippet_id,
-                            results_returned=len(ids),
-                            snippet_ids=ids,
-                            processing_time_ms=processing_time,
-                        )
-                    except Exception:
-                        pass
-
-                    return ToolResponse(
-                        success=True,
-                        data=cached_result,
-                        processing_time_ms=processing_time,
-                        cached=True,
-                    )
-
-            # Get related snippets
-            related_results = self.retriever.get_related_snippets(
-                snippet_id=snippet_id, top_k=top_k
-            )
-
-            if not related_results:
-                return ToolResponse(
-                    success=False,
-                    data=None,
-                    error=f"No related evidence found for snippet_id: {snippet_id}",
-                )
-
-            # Format results
-            formatted_data = {
-                "reference_snippet_id": snippet_id,
-                "related_evidence": [],
-            }
-
-            for result in related_results:
-                formatted_data["related_evidence"].append(
-                    {
-                        "snippet_id": result.snippet_id,
-                        "title": result.title,
-                        "policy_type": result.policy_type,
-                        "section": result.section,
-                        "relevance_score": result.score,
-                        "content": result.content,
-                        "citation": result.get_citation_text(),
-                    }
-                )
-
-            # Cache result
-            if self.cache:
-                self.cache.set(f"related_{snippet_id}_{top_k}", formatted_data)
-
-            processing_time = (time.time() - start_time) * 1000
-            try:
-                ids = [
-                    e.get("snippet_id")
-                    for e in formatted_data.get("related_evidence", [])
-                ]
-                payload = {
-                    "event": "rag_related_evidence",
-                    "cached": False,
-                    "reference_snippet_id": snippet_id,
-                    "results_returned": len(ids),
-                    "snippet_ids": ids,
-                    "processing_time_ms": processing_time,
-                }
-                if RAG_TRACE_CONTENT_MAX > 0:
-                    previews = []
-                    for ev in formatted_data.get("related_evidence", [])[:5]:
-                        previews.append(
-                            {
-                                "snippet_id": ev.get("snippet_id"),
-                                "title": ev.get("title"),
-                                "content_preview": (ev.get("content") or "")[
-                                    :RAG_TRACE_CONTENT_MAX
-                                ],
-                            }
-                        )
-                    payload["evidence_preview"] = previews
-                _tools_tracer.write(**payload)
-            except Exception:
-                pass
-
-            return ToolResponse(
-                success=True,
-                data=formatted_data,
-                processing_time_ms=processing_time,
-                cached=False,
-            )
-
-        except Exception as e:
-            processing_time = (time.time() - start_time) * 1000
-            logging.error(f"Related evidence search failed: {e}")
-
-            return ToolResponse(
-                success=False,
-                data=None,
-                error=str(e),
-                processing_time_ms=processing_time,
-            )
+            return ToolResponse(success=False, data=None, error=str(e))
 
     def validate_citation(self, snippet_id: str) -> ToolResponse:
-        """
-        Validate and get full citation information for a knowledge snippet.
-
-        Args:
-            snippet_id: ID of knowledge snippet to validate
-
-        Returns:
-            ToolResponse with full citation details
-        """
         start_time = time.time()
-
         try:
-            snippet = self.retriever.get_snippet_by_id(snippet_id)
-
-            if not snippet:
+            p = Path(snippet_id)
+            if not p.exists():
                 return ToolResponse(
-                    success=False, data=None, error=f"Snippet not found: {snippet_id}"
+                    success=False,
+                    data=None,
+                    error=f"Snippet {snippet_id} not found",
+                    processing_time_ms=(time.time() - start_time) * 1000,
                 )
-
+            text = self._read_text(p)
+            title = p.stem.replace("_", " ") or "KB File"
             citation_data = {
-                "snippet_id": snippet.id,
-                "title": snippet.title,
-                "policy_type": snippet.policy_type,
-                "section": snippet.section,
-                "subsection": snippet.subsection,
-                "source_file": snippet.source_file,
-                "citations": snippet.citations,
-                "metadata": snippet.metadata,
-                "formatted_citation": f"**{snippet.title}** ({snippet.policy_type}) - Section: {snippet.section}",
-                "full_content": snippet.content,
+                "snippet_id": str(p),
+                "title": title,
+                "policy_type": self._infer_policy_type(p),
+                "section": None,
+                "citation": f"{p.name}",
+                "full_content": text,
             }
-
-            processing_time = (time.time() - start_time) * 1000
-            try:
-                payload = {
-                    "event": "rag_validate_citation",
-                    "snippet_id": snippet_id,
-                    "title": snippet.title,
-                    "policy_type": snippet.policy_type,
-                    "section": snippet.section,
-                    "processing_time_ms": processing_time,
-                }
-                if RAG_TRACE_CONTENT_MAX > 0:
-                    payload["content_preview"] = (snippet.content or "")[
-                        :RAG_TRACE_CONTENT_MAX
-                    ]
-                _tools_tracer.write(**payload)
-            except Exception:
-                pass
-
             return ToolResponse(
                 success=True,
                 data=citation_data,
-                processing_time_ms=processing_time,
-                cached=False,
+                processing_time_ms=(time.time() - start_time) * 1000,
             )
-
         except Exception as e:
-            processing_time = (time.time() - start_time) * 1000
-            logging.error(f"Citation validation failed: {e}")
-
-            return ToolResponse(
-                success=False,
-                data=None,
-                error=str(e),
-                processing_time_ms=processing_time,
-            )
-
-    def _format_retrieval_response(
-        self, response: "RetrievalResponse"
-    ) -> Dict[str, Any]:
-        """Format retrieval response for agent consumption."""
-        if not response.results:
-            return {
-                "query": response.query,
-                "found_evidence": False,
-                "message": f"No relevant evidence found for: '{response.query}'",
-                "suggestions": [
-                    "Try rephrasing your query with different medical terminology",
-                    "Check if you're searching for the correct policy type",
-                    "Consider broader search terms",
-                ],
-            }
-
-        formatted_results: List[Dict[str, Any]] = []
-        for result in response.results:
-            formatted_results.append(
-                {
-                    "snippet_id": result.snippet_id,
-                    "title": result.title,
-                    "policy_type": result.policy_type,
-                    "section": result.section,
-                    "subsection": result.subsection,
-                    "relevance_score": round(result.score, 3),
-                    "content": result.content,
-                    "citations": result.citations,
-                    "formatted_citation": result.get_citation_text(),
-                    "source_file": Path(result.source_file).name,
-                }
-            )
-
-        return {
-            "query": response.query,
-            "found_evidence": True,
-            "total_results": response.total_results,
-            "results_returned": len(response.results),
-            "query_expansions": response.query_expansion,
-            "evidence": formatted_results,
-            "formatted_summary": response.get_formatted_results(include_content=False),
-            "processing_time_ms": response.processing_time_ms,
-        }
-
-    def get_usage_stats(self) -> Dict[str, Any]:
-        """Get usage statistics for cost tracking."""
-        cache_hit_rate = (
-            (self.cache_hits / self.total_retrievals * 100)
-            if self.total_retrievals > 0
-            else 0
-        )
-        stats = {
-            "total_retrievals": self.total_retrievals,
-            "cache_hits": self.cache_hits,
-            "cache_hit_rate_percent": round(cache_hit_rate, 2),
-            "knowledge_base_size": len(self.retriever.kb_loader.snippets),
-            "has_search_index": self.retriever.kb_loader.index is not None,
-        }
-        if self.cache:
-            stats["cache_stats"] = self.cache.get_stats()
-        return stats
+            return ToolResponse(success=False, data=None, error=str(e))
 
 
-# Global RAG tools instance for agent integration
-_rag_tools_instance = None
-
-
-def get_rag_tools(kb_directory: Optional[Union[str, Path]] = None) -> RAGTools:
-    """
-    Get global RAG tools instance for agent integration.
-
-    Args:
-        kb_directory: Path to knowledge base directory (for initialization)
-
-    Returns:
-        Global RAGTools instance
-    """
-    global _rag_tools_instance
-
-    if _rag_tools_instance is None:
-        if kb_directory is None:
-            # Prefer package KB under preauth_system/rag/kb with sensible fallbacks
-            candidate_paths = [
-                Path(__file__).parent.parent / "rag" / "kb",  # preauth_system/rag/kb
-                Path.cwd() / "preauth_system" / "rag" / "kb",  # CWD absolute
-                Path(__file__).parent.parent.parent / "kb",  # repo_root/kb
-                Path.cwd() / "kb",  # CWD/kb
-            ]
-            for p in candidate_paths:
-                if p.exists():
-                    kb_directory = p
-                    break
-            if kb_directory is None:
-                searched = [str(p) for p in candidate_paths]
-                raise FileNotFoundError(
-                    "Knowledge base not found. Place KB under one of: "
-                    + ", ".join(searched)
-                )
-
-        _rag_tools_instance = RAGTools(kb_directory)
-        logging.info(f"✅ Global RAG tools instance created (KB: {kb_directory})")
-
-    return _rag_tools_instance
+def get_rag_tools(kb_directory: Path) -> "RAGTools":
+    return RAGTools(kb_directory=kb_directory)
 
 
 # Agent tool function definitions (for LangGraph integration)
@@ -769,10 +457,7 @@ def search_healthcare_policies(
     query: str, top_k: int = 5, policy_filter: Optional[str] = None
 ) -> str:
     """
-    Search healthcare policy knowledge base for relevant evidence.
-
-    Use this tool to find specific policy requirements, coverage criteria,
-    or clinical guidelines relevant to a pre-authorization request.
+    Search healthcare policy knowledge base (inline for small files; file search for large files).
 
     Args:
         query: Clinical question or search terms (e.g., "diabetes CGM coverage criteria")
@@ -786,7 +471,7 @@ def search_healthcare_policies(
         f"[tool.enter] search_healthcare_policies query='{query[:120]}', top_k={top_k}, policy_filter={policy_filter}"
     )
     try:
-        rag_tools = get_rag_tools()
+        rag_tools = get_rag_tools(Path(__file__).parent.parent / "rag" / "kb")
     except Exception as e:
         logger.error(f"[tool.error] search_healthcare_policies missing KB: {e}")
         return json.dumps(
@@ -820,9 +505,6 @@ def get_policy_information(policy_type: str) -> str:
     """
     Get comprehensive overview of a specific healthcare policy.
 
-    Use this tool to understand the structure and key requirements
-    of a specific policy before searching for detailed criteria.
-
     Args:
         policy_type: Policy type - "diabetes_tech", "osteoarthritis", or "parkinson_dbs"
 
@@ -831,7 +513,7 @@ def get_policy_information(policy_type: str) -> str:
     """
     logger.info(f"[tool.enter] get_policy_information policy_type={policy_type}")
     try:
-        rag_tools = get_rag_tools()
+        rag_tools = get_rag_tools(Path(__file__).parent.parent / "rag" / "kb")
     except Exception as e:
         logger.error(f"[tool.error] get_policy_information missing KB: {e}")
         return json.dumps(
@@ -857,18 +539,15 @@ def validate_evidence_citation(snippet_id: str) -> str:
     """
     Validate and get detailed citation information for evidence.
 
-    Use this tool to verify evidence sources and get complete
-    citation details for recommendations.
-
     Args:
-        snippet_id: ID of the evidence snippet to validate
+        snippet_id: expected to be a file path to a KB markdown file
 
     Returns:
         JSON string with full citation and source information
     """
     logger.info(f"[tool.enter] validate_evidence_citation snippet_id={snippet_id}")
     try:
-        rag_tools = get_rag_tools()
+        rag_tools = get_rag_tools(Path(__file__).parent.parent / "rag" / "kb")
     except Exception as e:
         logger.error(f"[tool.error] validate_evidence_citation missing KB: {e}")
         return json.dumps(
@@ -902,11 +581,11 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         kb_path = Path(sys.argv[1])
     else:
-        kb_path = Path(__file__).parent.parent.parent / "kb"
+        kb_path = Path(__file__).parent.parent / "rag" / "kb"
 
     try:
         # Create RAG tools
-        rag_tools = RAGTools(kb_path)
+        rag_tools = get_rag_tools(kb_path)
 
         # Test search functionality
         print("🔍 Testing RAG Tools:\n")
@@ -940,11 +619,12 @@ if __name__ == "__main__":
         print(f"   Cache hit: {response.cached}")
 
         # Print usage stats
-        stats = rag_tools.get_usage_stats()
+        # The original code had get_usage_stats(), but it's not defined in the new RAGTools class.
+        # For now, we'll just print the relevant info.
         print(f"\n📊 Usage Statistics:")
-        print(f"   Total retrievals: {stats['total_retrievals']}")
-        print(f"   Cache hit rate: {stats['cache_hit_rate_percent']}%")
-        print(f"   Knowledge base size: {stats['knowledge_base_size']} snippets")
+        print(
+            f"   Knowledge base size: {len(rag_tools._list_kb_markdown_files())} snippets"
+        )
 
     except Exception as e:
         logging.error(f"❌ Failed to test RAG tools: {e}")
