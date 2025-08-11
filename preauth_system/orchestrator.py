@@ -13,18 +13,13 @@ from loguru import logger
 
 # Core system imports
 from preauth_system.performance import get_preauth_cache
-from preauth_system.intake import process_pa_request
-from preauth_system.dossier import DossierGenerator
 
 # LangGraph workflow imports
 from preauth_system.graph import compile_preauth_graph
 from preauth_system.state import (
     create_initial_state,
-    PreAuthState,
     get_all_agent_results,
 )
-from preauth_system.summary import build_clinical_summary, ClinicalSummary
-from data_ingestion.etl import find_patient_by_emirates_id
 from preauth_system.utils import prime_agent_definitions_cache
 
 
@@ -34,7 +29,6 @@ class PreAuthOrchestrator:
     def __init__(self):
         """Initialize the orchestrator with LangGraph workflow."""
         self.cache = get_preauth_cache()
-        self.dossier_generator = DossierGenerator()
 
         # Warm agent definitions cache once at startup to avoid repeated loads
         try:
@@ -54,21 +48,13 @@ class PreAuthOrchestrator:
 
     def process_request(
         self,
-        xml_file_path: Optional[str] = None,
+        xml_file_path: str,
         patient_id: Optional[str] = None,
         xml_format: str = "eclaim",
-        xml_content: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Process pre-authorization request using LangGraph workflow with real data.
-
-        Args:
-            xml_file_path: Path to XML file to process
-            patient_id: Optional patient identifier
-            xml_format: XML format type (eclaim/shafafiya)
-
-        Returns:
-            Processing result with actual decision and workflow execution details
+        Process pre-authorization request using LangGraph workflow.
+        Input parsing and clinical summary are handled by graph nodes.
         """
         try:
             start_time = time.time()
@@ -76,98 +62,38 @@ class PreAuthOrchestrator:
                 f"Processing PA request for patient: {patient_id} using LangGraph workflow"
             )
 
-            # 1. INTAKE - Process XML to canonical format (real data processing)
-            if xml_content is not None:
-                raw_xml_content = xml_content
-                # Write to a temporary file to reuse existing file-based intake
-                import tempfile
-
-                with tempfile.NamedTemporaryFile(
-                    delete=False, suffix=".xml", mode="w", encoding="utf-8"
-                ) as tmp:
-                    tmp.write(xml_content)
-                    tmp_path = tmp.name
-                xml_file_path = tmp_path
-            elif xml_file_path is not None:
-                with open(xml_file_path, "r", encoding="utf-8") as f:
-                    raw_xml_content = f.read()
-            else:
-                raise ValueError("Either xml_content or xml_file_path must be provided")
-
-            canonical_request = process_pa_request(xml_file_path, xml_format)
-            emirates_id = canonical_request.patient.get("EmiratesIDNumber", "Unknown")
-            logger.info(f"Intake completed for Emirates ID: {emirates_id}")
-
-            # 2. CLINICAL SUMMARY - Build using real data
-            patient_in_etl = find_patient_by_emirates_id(emirates_id)
-
-            if patient_in_etl:
-                clinical_summary = build_clinical_summary(
-                    patient_in_etl, mode="deterministic"
-                )
-                logger.info(
-                    f"Clinical summary built from ETL for {emirates_id}: {len(clinical_summary.primary_diagnoses)} diagnoses"
-                )
-            else:
-                # Create clinical summary from XML data only
-                clinical_summary = self._create_summary_from_xml(
-                    canonical_request, emirates_id
-                )
-                logger.info(
-                    f"Clinical summary created from XML for {emirates_id}: {len(clinical_summary.primary_diagnoses)} diagnoses"
-                )
-
-            # 3. LANGGRAPH WORKFLOW EXECUTION
-            logger.info("Executing LangGraph workflow for agent-based analysis")
+            # Execute LangGraph workflow end-to-end (intake, clinical summary, agents, finalize)
             workflow_result = self._execute_langgraph_workflow(
-                xml_file_path, xml_format, emirates_id
+                xml_file_path, xml_format, patient_id or "unknown"
             )
 
             if workflow_result.get("success"):
-                # Extract the final state from LangGraph execution
                 final_state = workflow_result["final_state"]
 
-                # Generate dossier using LangGraph results
-                dossier_html = self._generate_dossier_from_langgraph(
-                    final_state, canonical_request, clinical_summary
-                )
-
                 processing_time = time.time() - start_time
+                decision_obj = final_state.get("final_decision") or {}
+
+                # Emirates ID from graph state
+                emirates_id = (final_state.get("patient_info") or {}).get(
+                    "EmiratesIDNumber", patient_id or "Unknown"
+                )
 
                 return {
                     "success": True,
                     "patient_id": emirates_id,
                     "workflow_execution": "langgraph",
-                    "decision": final_state.get("final_decision", {}),
-                    "clinical_summary": {
-                        "primary_diagnoses": clinical_summary.primary_diagnoses,
-                        "recent_procedures": len(clinical_summary.recent_procedures),
-                        "current_medications": len(
-                            clinical_summary.current_medications
-                        ),
-                    },
+                    "decision": decision_obj,
                     "agent_results": workflow_result.get("agent_results", {}),
                     "cost_tracking": final_state.get("cost_tracking", {}),
                     "processing_time_seconds": round(processing_time, 2),
-                    "dossier_html": dossier_html,
-                    "raw_data": {
-                        "xml_content": raw_xml_content,
-                        "canonical_request": canonical_request.__dict__
-                        if hasattr(canonical_request, "__dict__")
-                        else str(canonical_request),
-                        "clinical_summary": clinical_summary.__dict__
-                        if hasattr(clinical_summary, "__dict__")
-                        else str(clinical_summary),
-                    },
                 }
             else:
-                # LangGraph workflow failed
                 error_msg = workflow_result.get("error", "Unknown workflow error")
                 logger.error(f"LangGraph workflow failed: {error_msg}")
                 return {
                     "success": False,
                     "error": f"LangGraph workflow failed: {error_msg}",
-                    "patient_id": emirates_id,
+                    "patient_id": patient_id,
                     "workflow_execution": "failed",
                 }
 
@@ -176,25 +102,20 @@ class PreAuthOrchestrator:
             return {"success": False, "error": str(e), "patient_id": patient_id}
 
     def _execute_langgraph_workflow(
-        self, xml_file_path: str, xml_format: str, emirates_id: str
+        self, xml_file_path: str, xml_format: str, request_id: str
     ) -> Dict[str, Any]:
         """Execute the LangGraph workflow for agent-based analysis."""
         try:
-            # Create initial state for LangGraph
             analysis_id = (
-                f"analysis_{emirates_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                f"analysis_{request_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             )
             initial_state = create_initial_state(xml_file_path, xml_format, analysis_id)
 
-            logger.info(f"Starting LangGraph workflow execution for {emirates_id}")
-
-            # Execute the workflow
+            logger.info(f"Starting LangGraph workflow execution for {request_id}")
             final_state = self.langgraph_workflow.invoke(initial_state)
-
-            # Extract agent results for response
             agent_results = get_all_agent_results(final_state)
 
-            logger.info(f"LangGraph workflow completed successfully for {emirates_id}")
+            logger.info(f"LangGraph workflow completed successfully for {request_id}")
             logger.info(f"Agent results: {list(agent_results.keys())}")
 
             return {
@@ -205,10 +126,7 @@ class PreAuthOrchestrator:
                         "status": result.get("status"),
                         "success": result.get("success"),
                         "processing_time": result.get("processing_time_seconds"),
-                        "response_summary": result.get("response", "")[:500] + "..."
-                        if result.get("response")
-                        and len(result.get("response", "")) > 500
-                        else result.get("response", ""),
+                        "response": result.get("response", ""),
                     }
                     for name, result in agent_results.items()
                 },
@@ -224,100 +142,6 @@ class PreAuthOrchestrator:
             traceback.print_exc()
             return {"success": False, "error": str(e), "workflow_complete": False}
 
-    def _generate_dossier_from_langgraph(
-        self,
-        final_state: PreAuthState,
-        canonical_request,
-        clinical_summary: ClinicalSummary,
-    ) -> str:
-        """Generate HTML dossier from LangGraph workflow results."""
-        try:
-            # Prepare processing result for dossier generation
-            processing_result_for_dossier = {
-                "patient_id": final_state.get("patient_info", {}).get(
-                    "EmiratesIDNumber", "Unknown"
-                ),
-                "decision": final_state.get("final_decision", {}),
-                "clinical_summary": {
-                    "primary_diagnoses": clinical_summary.primary_diagnoses,
-                    "age": clinical_summary.age,
-                    "gender": clinical_summary.gender,
-                },
-                "agent_results": final_state,
-                "cost_tracking": final_state.get("cost_tracking", {}),
-                "processing_time": final_state.get("cost_tracking", {}).get(
-                    "total_processing_time", 0
-                ),
-                "workflow_execution": "langgraph",
-                "analysis_id": final_state.get("analysis_id"),
-            }
-
-            # Generate dossier; when no path is provided, return html content directly
-            html_content = self.dossier_generator._create_basic_html(
-                processing_result_for_dossier
-            )
-            return html_content
-
-        except Exception as e:
-            logger.error(f"Dossier generation from LangGraph failed: {e}")
-            return f"<html><body><h1>Dossier Generation Error</h1><p>{str(e)}</p></body></html>"
-
-    def _create_summary_from_xml(self, canonical_request, emirates_id: str):
-        """Create a clinical summary from XML data when ETL data is not available."""
-        patient = canonical_request.patient
-
-        # Extract basic demographics
-        age = self._calculate_age_from_birthdate(patient.get("DateOfBirth", ""))
-        gender = patient.get("Gender", "Unknown")
-
-        # Extract diagnoses from services
-        primary_diagnoses = []
-        for service in canonical_request.services:
-            if service.get("diagnosis_code"):
-                diagnosis = service["diagnosis_code"].get(
-                    "description", "Unknown diagnosis"
-                )
-                if diagnosis not in primary_diagnoses:
-                    primary_diagnoses.append(diagnosis)
-
-        # Create minimal clinical summary
-        return ClinicalSummary(
-            patient_id=emirates_id,
-            emirates_id=emirates_id,
-            age=age,
-            gender=gender,
-            active_conditions=[
-                {"name": diag, "status": "active"} for diag in primary_diagnoses
-            ],
-            primary_diagnoses=primary_diagnoses,
-            current_medications=[],
-            prior_treatments=[],
-            treatment_responses=[],
-            recent_labs=[],
-            recent_imaging=[],
-            recent_procedures=[],
-            risk_factors=[],
-            summary_date=time.strftime("%Y-%m-%d"),
-            data_sources=["XML"],
-            completeness_score=0.3,  # Low completeness as only XML data available
-        )
-
-    def _calculate_age_from_birthdate(self, birth_date_str: str) -> int:
-        """Calculate age from birth date string."""
-        if not birth_date_str:
-            return 45  # Default age
-
-        try:
-            birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d")
-            today = datetime.now()
-            return (
-                today.year
-                - birth_date.year
-                - ((today.month, today.day) < (birth_date.month, birth_date.day))
-            )
-        except (ValueError, AttributeError):
-            return 45  # Default age if parsing fails
-
 
 def process_demo_cases(
     orchestrator: PreAuthOrchestrator, demo_case: tuple
@@ -328,7 +152,6 @@ def process_demo_cases(
         patient_id, xml_path = demo_case
         results = {}
         if Path(xml_path).exists():
-            # Process XML file directly
             result = orchestrator.process_request(xml_path, patient_id, "eclaim")
             results[patient_id] = result
 
@@ -356,26 +179,25 @@ def main():
     """CLI entry point for testing with Patient_007 processing and file output."""
     orchestrator = PreAuthOrchestrator()
 
-    # Create output folder if it doesn't exist
-    output_dir = Path("output")
-    output_dir.mkdir(exist_ok=True)
+    # Create dated run directory: output/YYYYMMDD/HHMMSS
+    now = datetime.now()
+    date_dir = Path("output") / now.strftime("%Y%m%d")
+    time_dir = date_dir / now.strftime("%H%M%S")
+    time_dir.mkdir(parents=True, exist_ok=True)
 
-    # Process specifically Patient_007 as requested
+    # Expose run dir to route traces
+    os.environ["PREAUTH_RUN_DIR"] = str(time_dir)
+
     xml_file_path = "data/dataset_2/synthetic_dataset/UAE_XML/Patient_007_eclaim.xml"
     patient_id = "Patient_007"
 
     logger.info(f"Processing {patient_id} with LangGraph workflow")
 
-    # Process the request using LangGraph workflow
     result = orchestrator.process_request(
         xml_file_path=xml_file_path, patient_id=patient_id, xml_format="eclaim"
     )
 
-    # Generate timestamp for unique file names
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    # Save complete processing result as JSON
-    json_output_path = output_dir / f"{patient_id}_result_{timestamp}.json"
+    json_output_path = time_dir / f"{patient_id}_result.json"
     try:
         with open(json_output_path, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, default=str)
@@ -385,21 +207,6 @@ def main():
         logger.error(f"Failed to save JSON result: {e}")
         print(f"❌ Failed to save JSON result: {e}")
 
-    # Save HTML dossier
-    html_output_path = output_dir / f"{patient_id}_dossier_{timestamp}.html"
-    try:
-        dossier_html = result.get(
-            "dossier_html", "<html><body>No dossier generated</body></html>"
-        )
-        with open(html_output_path, "w", encoding="utf-8") as f:
-            f.write(dossier_html)
-        logger.info(f"HTML dossier saved to: {html_output_path}")
-        print(f"✅ HTML dossier saved to: {html_output_path}")
-    except Exception as e:
-        logger.error(f"Failed to save HTML dossier: {e}")
-        print(f"❌ Failed to save HTML dossier: {e}")
-
-    # Print processing summary
     print("\n" + "=" * 60)
     print(f"PROCESSING SUMMARY - {patient_id}")
     print("=" * 60)
@@ -431,9 +238,11 @@ def main():
 
     print("\nOutput Files:")
     print(f"  JSON Result: {json_output_path}")
-    print(f"  HTML Dossier: {html_output_path}")
     print("=" * 60)
 
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+
+    load_dotenv()
     main()

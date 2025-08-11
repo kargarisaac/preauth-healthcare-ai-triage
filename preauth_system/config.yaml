@@ -1,0 +1,27 @@
+agents:
+  default_model: gpt-5
+  default_reasoning_effort: medium
+
+dataset:
+  base_path: data/dataset_2/synthetic_dataset
+  fhir_path: data/dataset_2/synthetic_dataset/FHIR_JSON
+  xml_path: data/dataset_2/synthetic_dataset/UAE_XML
+
+rag:
+  large_file_token_threshold: 10000
+  max_large_files: 3
+  cache:
+    ttl_minutes: 60
+  openai_file_registry_path: output/openai_files.json
+  kb_token_csv_path: preauth_system/rag/kb/kb_token_counts.csv
+
+tracing:
+  dir: output/traces
+
+pricing:
+  model_rates:
+    gpt-5:
+      input_new: 15.0
+      input_cached: 7.5
+      output: 60.0
+      reasoning: 60.0 

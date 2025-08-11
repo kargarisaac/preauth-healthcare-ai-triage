@@ -2,27 +2,40 @@
 Utility functions for the Pre-Authorization system.
 """
 
-import sys
 import json
-import asyncio
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-import traceback
-import uuid
-import os
 import xmltodict  # type: ignore
 
-from claude_code_sdk import (
-    query,
-    ClaudeCodeOptions,
-    AssistantMessage,
-    TextBlock,
-    ResultMessage,
-)
-from claude_code_sdk import ToolUseBlock, ToolResultBlock  # type: ignore
 from preauth_system.state import AgentResult, SharedContext
+import yaml  # type: ignore
+
+try:
+    from baml_client import b
+
+    BAML_AVAILABLE = True
+except ImportError:
+    BAML_AVAILABLE = False
+    b = None
+import datetime as _dt
+import re as _re
+from loguru import logger
+
+
+def get_config() -> Dict[str, Any]:
+    """Load configuration exclusively from preauth_system/config.yaml."""
+    cfg_path = Path(__file__).parent / "config.yaml"
+    if not (yaml and cfg_path.exists()):
+        return {}
+    try:
+        return yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return {}
+
+
+# Global config loaded from YAML
+_CFG = get_config()
 
 # Module-level cache for agent definitions to avoid re-loading on every agent run
 _AGENT_DEFINITIONS_CACHE: Optional[Dict[str, Dict[str, Any]]] = None
@@ -118,6 +131,8 @@ def _parse_agent_definition(content: str) -> Dict[str, Any]:
         "description": "",
         "instructions": "",
         "tools": [],
+        "model": None,
+        "reasoning_effort": None,
     }
 
     # Extract frontmatter if present
@@ -145,6 +160,13 @@ def _parse_agent_definition(content: str) -> Dict[str, Any]:
                             definition["tools"] = [
                                 t.strip() for t in tools_str.split(",") if t.strip()
                             ]
+                    elif key == "model":
+                        definition["model"] = value or None
+                    elif key == "reasoning_effort":
+                        # normalize to lower-case token expected by OpenAI Agents SDK
+                        definition["reasoning_effort"] = (
+                            value or ""
+                        ).strip().lower() or None
 
             content_lines = lines[frontmatter_end:]
         else:
@@ -279,114 +301,112 @@ def extract_patient_info(xml_data: Dict[str, Any], xml_format: str) -> Dict[str,
 
 def determine_specialty(xml_data: Dict[str, Any], patient_data: Dict[str, Any]) -> str:
     """
-    Determine medical specialty from XML and patient data.
+    Determine medical specialty from XML and patient data using LLM.
 
-    Args:
-        xml_data: Parsed XML request data
-        patient_data: Patient's complete medical history
-
-    Returns:
-        String indicating the primary medical specialty
+    Returns a lowercase/snake-case label consistent with prior behavior.
     """
-    import datetime
+    try:
+        demographics = patient_data.get("demographics", {}) or {}
+        dob_str = demographics.get("date_of_birth", "") or demographics.get("dob", "")
+        age = demographics.get("age")
 
-    # Get patient age
-    dob_str = patient_data["demographics"].get("date_of_birth", "")
-    patient_age = 30  # default
+        # Compute age from DOB if not provided (expected format: DD/MM/YYYY)
+        if age is None and dob_str:
+            try:
+                dob = _dt.datetime.strptime(dob_str, "%d/%m/%Y")
+                today = _dt.datetime.now()
+                age = (
+                    today.year
+                    - dob.year
+                    - ((today.month, today.day) < (dob.month, dob.day))
+                )
+            except Exception:
+                age = None
 
-    if dob_str:
-        try:
-            dob = datetime.datetime.strptime(dob_str, "%d/%m/%Y")
-            today = datetime.datetime.now()
-            patient_age = (
-                today.year
-                - dob.year
-                - ((today.month, today.day) < (dob.month, dob.day))
+        # Use passed XML dict structure directly (no parsing here)
+        xml_dict = xml_data.get("as_dict", {}) or {}
+        service_requests = xml_dict.get("ServiceRequests", {}).get("ServiceRequest", [])
+        if isinstance(service_requests, dict):
+            service_requests = [service_requests]
+
+        # Optional notes/justification straight from XML dict
+        notes = xml_dict.get("JustificationText", "")
+
+        # Summaries from patient_data keys
+        labs_list = patient_data.get("labs") or []
+        medications_list = patient_data.get("medications") or []
+        claims_list = patient_data.get("claims") or []
+        preauth_history_list = patient_data.get("preauth_history") or []
+        fhir_bundle_present = bool(patient_data.get("fhir_bundle"))
+
+        # put all the data into a string
+        payload = f"""
+        Patient Info: {demographics}
+        Age: {age}
+        Services: {service_requests}
+        Notes: {notes}
+        Labs: {labs_list}
+        Medications: {medications_list}
+        Claims: {claims_list}
+        Preauth History: {preauth_history_list}
+        FHIR Bundle Present: {fhir_bundle_present}
+        """
+
+        logger.info(f"Determine Specialty payload: {payload}")
+
+        if BAML_AVAILABLE and b:
+            # Call BAML function
+            result = b.DetermineSpecialty(payload)
+            logger.info(f"Determine Specialty result: {result}")
+
+            # Normalize Enum value to string label
+            specialty_enum = getattr(result, "specialty", None)
+            label = getattr(
+                specialty_enum,
+                "value",
+                str(specialty_enum) if specialty_enum is not None else "",
             )
-        except:
-            pass
+            if not label:
+                return "general"
 
-    # Pediatric check
-    if patient_age < 18:
-        return "pediatric"
+            # Convert CamelCase to snake_case then lowercase
+            snake = _re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", label).lower()
+            return snake
+        else:
+            # Fallback specialty determination when BAML is not available
+            logger.info("BAML not available, using fallback specialty determination")
 
-    # Check service descriptions for specialty keywords
-    all_text = " ".join(
-        [
-            s.get("description", "") + " " + s.get("code", "")
-            for s in xml_data.get("services", [])
-        ]
-    ).lower()
+            # Simple heuristic-based specialty determination
+            service_codes = [str(req.get("code", "")) for req in service_requests]
 
-    specialty_keywords = {
-        "diabetes": ["diabetes", "insulin", "hba1c", "glucose", "metformin"],
-        "cardiac": ["cardiac", "heart", "cardio", "catheter", "troponin"],
-        "respiratory": ["respiratory", "asthma", "copd", "lung", "breathing"],
-        "oncology": ["cancer", "oncology", "tumor", "chemotherapy"],
-        "orthopedic": ["orthopedic", "bone", "joint", "knee", "hip"],
-        "nephrology": ["kidney", "renal", "dialysis", "creatinine"],
-        "dermatology": ["skin", "dermatology", "psoriasis"],
-        "neurology": ["neurological", "brain", "parkinson"],
-        "mental_health": ["psychiatric", "depression", "anxiety"],
-    }
+            # Endocrinology indicators
+            if any(code in ["E0784", "95250", "83036"] for code in service_codes):
+                return "endocrinology"
 
-    for specialty, keywords in specialty_keywords.items():
-        if any(keyword in all_text for keyword in keywords):
-            return specialty
+            # Orthopedics indicators
+            if any(code in ["29881", "20610"] for code in service_codes):
+                return "orthopedics"
 
-    return "general"
+            # Neurology indicators
+            if any(code in ["61885"] for code in service_codes):
+                return "neurology"
 
+            # Check for diabetes-related codes
+            diabetes_keywords = ["diabetes", "insulin", "hba1c", "glucose"]
+            if any(keyword in notes.lower() for keyword in diabetes_keywords):
+                return "endocrinology"
 
-def prepare_shared_context(
-    xml_data: Dict[str, Any],
-    patient_info: Dict[str, Any],
-    patient_data: Dict[str, Any],
-    specialty: str,
-) -> SharedContext:
-    """
-    Prepare shared context for all agents.
+            return "general"
 
-    Args:
-        xml_data: Parsed XML request data
-        patient_info: Demographics and request specifics
-        patient_data: Complete medical history from ETL
-        specialty: Determined medical specialty
-
-    Returns:
-        SharedContext dict containing all relevant context data
-    """
-    return SharedContext(
-        xml_request={
-            "format": xml_data["format"],
-            "file_path": xml_data["file_path"],
-            "services_requested": patient_info["services"],
-            "total_cost": patient_info["total_cost"],
-            "raw_xml": xml_data.get("as_dict"),
-            "justification_text": patient_info.get("justification"),
-        },
-        patient_demographics=patient_data["demographics"],
-        medical_history={
-            "lab_records": len(patient_data["labs"]),
-            "medications": len(patient_data["medications"]),
-            "claims_history": len(patient_data["claims"]),
-            "preauth_history": len(patient_data["preauth_history"]),
-        },
-        clinical_data={
-            "recent_labs": patient_data["labs"][-5:] if patient_data["labs"] else [],
-            "current_medications": patient_data["medications"],
-            "recent_claims": patient_data["claims"][-3:]
-            if patient_data["claims"]
-            else [],
-        },
-        specialty=specialty,
-        analysis_timestamp=datetime.now().isoformat(),
-    )
+    except Exception:
+        # Conservative fallback if the LLM call fails
+        return "general"
 
 
 # Simple JSONL trace writer
 class _TraceWriter:
     def __init__(self, run_id: str):
-        traces_dir = Path("output") / "traces"
+        traces_dir = Path(_CFG["tracing"]["dir"]).resolve()
         traces_dir.mkdir(parents=True, exist_ok=True)
         self.path = traces_dir / f"{run_id}.jsonl"
 
@@ -400,195 +420,7 @@ class _TraceWriter:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-def execute_claude_agent(
-    agent_name: str,
-    shared_context: SharedContext,
-    previous_results: Dict[str, AgentResult],
-) -> AgentResult:
-    """
-    Execute a specific Claude Code agent.
-
-    Args:
-        agent_name: Name of the agent to execute
-        shared_context: Patient and request data context
-        previous_results: Results from previously executed agents
-
-    Returns:
-        AgentResult with execution details and response
-
-    Raises:
-        Exception: If Claude Code SDK is not available or agent execution fails
-    """
-    try:
-        start_time = datetime.now()
-        run_id = f"{agent_name}_{start_time.strftime('%Y%m%dT%H%M%S')}_{uuid.uuid4().hex[:6]}"
-        tracer = _TraceWriter(run_id)
-
-        # Load agent definitions (cached)
-        agent_definitions = (
-            get_cached_agent_definitions() or prime_agent_definitions_cache()
-        )
-        agent_def = agent_definitions.get(agent_name, {})
-
-        if not agent_def:
-            raise Exception(f"Agent definition not found for {agent_name}")
-
-        # Build agent prompt
-        prompt = _build_agent_prompt(
-            agent_name, agent_def, shared_context, previous_results
-        )
-
-        # Configure Claude Code options
-        agent_tools = agent_def.get("tools", [])
-        if not agent_tools:
-            raise Exception(f"No tools defined for agent {agent_name}")
-
-        options = ClaudeCodeOptions(
-            cwd=str(Path.cwd()),
-            max_turns=15,
-            allowed_tools=agent_tools,
-        )
-
-        tracer.write(
-            "agent_started",
-            agent=agent_name,
-            allowed_tools=agent_tools,
-            run_id=run_id,
-        )
-
-        # Execute agent synchronously using asyncio.run
-        result = asyncio.run(_execute_agent_async(prompt, options, tracer, agent_name))
-
-        end_time = datetime.now()
-        processing_time = (end_time - start_time).total_seconds()
-
-        tracer.write(
-            "agent_finished",
-            agent=agent_name,
-            run_id=run_id,
-            processing_time_seconds=processing_time,
-            usage=result.get("usage", {}),
-        )
-
-        return AgentResult(
-            agent_name=agent_name,
-            status="completed",
-            start_time=start_time.isoformat(),
-            end_time=end_time.isoformat(),
-            processing_time_seconds=processing_time,
-            response=result["response"],
-            usage=result["usage"],
-            success=True,
-            error=None,
-            traceback=None,
-        )
-
-    except Exception as e:
-        return AgentResult(
-            agent_name=agent_name,
-            status="failed",
-            start_time=start_time.isoformat() if "start_time" in locals() else None,
-            end_time=datetime.now().isoformat(),
-            processing_time_seconds=None,
-            response=None,
-            usage={},
-            success=False,
-            error=str(e),
-            traceback=traceback.format_exc(),
-        )
-
-
-async def _execute_agent_async(
-    prompt: str,
-    options: ClaudeCodeOptions,
-    tracer: Optional[_TraceWriter] = None,
-    agent_name: Optional[str] = None,
-) -> Dict[str, Any]:
-    """
-    Execute agent asynchronously with Claude Code SDK.
-
-    Args:
-        prompt: Complete prompt for the agent
-        options: Claude Code execution options
-        tracer: Optional trace writer for step/tool logging
-        agent_name: Optional agent name for trace enrichment
-
-    Returns:
-        Dict with response and usage data
-    """
-    text_responses = []
-    usage_data = {}
-    pending_tool_name: Optional[str] = None
-
-    async for message in query(prompt=prompt, options=options):
-        # Assistant text blocks
-        if isinstance(message, AssistantMessage):
-            for block in message.content:
-                if isinstance(block, TextBlock):
-                    text_responses.append(block.text)
-                    if tracer:
-                        tracer.write(
-                            "assistant_text",
-                            agent=agent_name,
-                            text_preview=block.text[:500],
-                        )
-                        # Heuristic: if a tool was just used and the next block is text, treat it as the tool result
-                        if pending_tool_name:
-                            parsed = None
-                            try:
-                                # Try to extract JSON payload from the block text
-                                idx = block.text.find("{")
-                                if idx != -1:
-                                    parsed = json.loads(block.text[idx:])
-                            except Exception:
-                                parsed = None
-                            tracer.write(
-                                "tool_result",
-                                agent=agent_name,
-                                tool=pending_tool_name,
-                                output_preview=block.text[:500],
-                                parsed=parsed
-                                if isinstance(parsed, (dict, list))
-                                else None,
-                            )
-                            pending_tool_name = None
-                # Tool use/result blocks if available in SDK
-                if ToolUseBlock and isinstance(block, ToolUseBlock):  # type: ignore
-                    pending_tool_name = getattr(block, "name", None)
-                    if tracer:
-                        tracer.write(
-                            "tool_used",
-                            agent=agent_name,
-                            tool=pending_tool_name,
-                            input=getattr(block, "input", None),
-                        )
-                if ToolResultBlock and isinstance(block, ToolResultBlock):  # type: ignore
-                    if tracer:
-                        tracer.write(
-                            "tool_result",
-                            agent=agent_name,
-                            tool=getattr(block, "name", None),
-                            output_preview=str(getattr(block, "output", None))[:500],
-                        )
-                    pending_tool_name = None
-
-        # Final result/usage
-        if isinstance(message, ResultMessage):
-            if hasattr(message, "usage") and message.usage:
-                usage_data = {
-                    "input_tokens": message.usage.get("input_tokens", 0),
-                    "output_tokens": message.usage.get("output_tokens", 0),
-                    "total_tokens": message.usage.get("input_tokens", 0)
-                    + message.usage.get("output_tokens", 0),
-                }
-            if tracer:
-                tracer.write("result_usage", agent=agent_name, usage=usage_data)
-
-    meaningful_response = (
-        "\n\n".join(text_responses) if text_responses else "Analysis completed"
-    )
-
-    return {"response": meaningful_response, "usage": usage_data}
+# Claude executor removed; execution handled in preauth_system/agents_openai.py
 
 
 def _build_agent_prompt(
@@ -598,7 +430,7 @@ def _build_agent_prompt(
     previous_results: Dict[str, AgentResult],
 ) -> str:
     """
-    Build the prompt for the Claude Code agent.
+    Build the prompt for the agent execution.
 
     Args:
         agent_name: Name of the agent
@@ -788,4 +620,296 @@ def get_latest_creatinine(patient_data: Dict[str, Any]) -> Optional[Dict[str, An
         "date": latest.get("test_date"),
         "reference_range": latest.get("reference_range", ""),
         "abnormal_flag": latest.get("abnormal_flag", "N"),
+    }
+
+
+# Unified data model functions moved from data_ingestion/unified_data.py
+
+
+def prepare_agent_execution_context(unified_record) -> Dict[str, Any]:
+    """
+    Prepare comprehensive context for agent execution using all available
+    UnifiedPatientRecord data including new FHIR resources.
+
+    Replaces the previous SharedContext which had overlapping data
+    from multiple sources. This provides clean, non-duplicated context.
+
+    Args:
+        unified_record: UnifiedPatientRecord instance
+
+    Returns:
+        AgentExecutionContext dict with no data duplication
+    """
+
+    # Get recent clinical observations (last 5)
+    recent_observations = unified_record.clinical_timeline
+
+    # Calculate total requested cost
+    total_cost = sum(
+        service.get("amount", 0) for service in unified_record.requested_services
+    )
+
+    # Extract care team information
+    primary_providers = [
+        {
+            "name": provider.get("name", [{}])[0].get("given", [""])[0]
+            + " "
+            + provider.get("name", [{}])[0].get("family", ""),
+            "qualification": provider.get("qualification", [{}])[0]
+            .get("code", {})
+            .get("coding", [{}])[0]
+            .get("display", ""),
+            "identifier": provider.get("identifier", [{}])[0].get("value", ""),
+        }
+        for provider in unified_record.care_team[:2]  # Top 2 providers
+    ]
+
+    # Extract coverage information
+    insurance_coverage = {
+        "primary_coverage": unified_record.coverage_details[0]
+        if unified_record.coverage_details
+        else {},
+        "coverage_summary": {
+            "total_plans": len(unified_record.coverage_details),
+            "active_coverage": len(
+                [
+                    c
+                    for c in unified_record.coverage_details
+                    if c.get("status") == "active"
+                ]
+            ),
+        },
+    }
+
+    # Extract questionnaire responses for clinical insights
+    clinical_assessments = [
+        {
+            "questionnaire_id": resp.get("questionnaire", ""),
+            "completion_date": resp.get("authored", ""),
+            "key_responses": [
+                item.get("answer", [{}])[0].get("valueString", "")[
+                    :200
+                ]  # First 200 chars
+                for item in resp.get("item", [])[:3]  # Top 3 responses
+            ],
+        }
+        for resp in unified_record.questionnaire_responses
+    ]
+
+    return {
+        # Patient profile (current from XML)
+        "patient_profile": unified_record.current_demographics,
+        "insurance_context": unified_record.current_insurance,
+        # Clinical context (from FHIR Bundle)
+        "recent_observations": recent_observations,
+        "current_medications": unified_record.medication_regimen,
+        "relevant_conditions": unified_record.clinical_conditions,
+        "historical_care_episodes": unified_record.care_episodes,
+        "coverage_details": insurance_coverage,
+        "care_team": primary_providers,
+        "clinical_assessments": clinical_assessments,
+        # Request context (from XML)
+        "services_requested": unified_record.requested_services,
+        "clinical_justification": unified_record.clinical_justification,
+        "total_requested_cost": total_cost,
+        # LLM-derived insights (pre-computed for efficiency)
+        "risk_assessment": unified_record.risk_assessment,
+        "data_quality_assessment": unified_record.data_quality_assessment,
+        # Processing context
+        "specialty_focus": unified_record.specialty_context,
+        "processing_mode": "hybrid",  # Can be configured
+        "analysis_timestamp": unified_record.processing_timestamp,
+        "data_sources": unified_record.data_sources,
+    }
+
+
+def assess_clinical_risk_llm(
+    timeline: List[Dict[str, Any]],
+    medications: List[Dict[str, Any]],
+    demographics: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    LLM-based clinical risk assessment using BAML.
+    """
+    if BAML_AVAILABLE and b:
+        try:
+            # Call BAML clinical risk assessment function
+            risk_result = b.AssessClinicalRisk(
+                demographics=str(demographics),
+                recent_observations=str(timeline[:10]),  # Last 10 observations
+                current_medications=str(medications),
+                observation_count=len(timeline),
+                medication_count=len(medications),
+            )
+
+            # Convert enum to string if needed
+            overall_risk = (
+                getattr(
+                    risk_result.overall_risk, "value", str(risk_result.overall_risk)
+                )
+                if hasattr(risk_result, "overall_risk")
+                else "MODERATE"
+            )
+
+            return {
+                "overall_risk": overall_risk,
+                "risk_factors": risk_result.risk_factors
+                if hasattr(risk_result, "risk_factors")
+                else [],
+                "confidence": risk_result.confidence
+                if hasattr(risk_result, "confidence")
+                else 0.7,
+                "reasoning": risk_result.reasoning
+                if hasattr(risk_result, "reasoning")
+                else "LLM-based assessment completed",
+            }
+
+        except Exception as e:
+            # Fallback if LLM call fails
+            return {
+                "overall_risk": "UNKNOWN",
+                "risk_factors": [f"Assessment failed: {str(e)}"],
+                "confidence": 0.0,
+                "reasoning": f"LLM assessment failed: {str(e)}",
+            }
+    else:
+        # Simple fallback when BAML not available
+        risk_score = "LOW"
+        risk_factors = []
+
+        # Check for diabetes indicators (basic heuristic)
+        diabetes_labs = [
+            obs
+            for obs in timeline
+            if "HbA1c" in str(obs.get("code", {}).get("text", ""))
+            and obs.get("valueQuantity", {}).get("value", 0) > 7.0
+        ]
+
+        if diabetes_labs:
+            risk_factors.append("Suboptimal diabetes control")
+            risk_score = "MODERATE"
+
+        # Check for polypharmacy
+        if len(medications) >= 3:
+            risk_factors.append("Polypharmacy considerations")
+
+        return {
+            "overall_risk": risk_score,
+            "risk_factors": risk_factors,
+            "confidence": 0.6,
+            "reasoning": "Fallback heuristic assessment (BAML not available)",
+        }
+
+
+def calculate_data_quality_llm(
+    demographics: Dict[str, Any],
+    timeline: List[Dict[str, Any]],
+    medications: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """
+    LLM-based data quality assessment using BAML.
+    """
+    if BAML_AVAILABLE and b:
+        try:
+            # Get demographics completeness analysis
+            demographics_completeness = check_demographics_completeness(demographics)
+
+            # Call BAML data quality assessment function
+            quality_result = b.CalculateDataQuality(
+                demographics_completeness=str(demographics_completeness),
+                clinical_data_richness=len(timeline),
+                medication_data_availability=len(medications),
+                total_data_points=len(timeline)
+                + len(medications)
+                + len([d for d in demographics.values() if d]),
+            )
+
+            return {
+                "overall_score": quality_result.overall_score
+                if hasattr(quality_result, "overall_score")
+                else 0.85,
+                "completeness_score": quality_result.completeness_score
+                if hasattr(quality_result, "completeness_score")
+                else 0.9,
+                "richness_score": quality_result.richness_score
+                if hasattr(quality_result, "richness_score")
+                else 0.8,
+                "accuracy_score": quality_result.accuracy_score
+                if hasattr(quality_result, "accuracy_score")
+                else 0.85,
+                "recommendations": quality_result.recommendations
+                if hasattr(quality_result, "recommendations")
+                else [],
+                "reasoning": quality_result.reasoning
+                if hasattr(quality_result, "reasoning")
+                else "LLM-based assessment completed",
+            }
+
+        except Exception as e:
+            # Fallback if LLM call fails
+            return {
+                "overall_score": 0.0,
+                "completeness_score": 0.0,
+                "richness_score": 0.0,
+                "accuracy_score": 0.0,
+                "recommendations": [f"Assessment failed: {str(e)}"],
+                "reasoning": f"LLM assessment failed: {str(e)}",
+            }
+    else:
+        # Simple fallback calculation when BAML not available
+        score = 0.0
+
+        # Demographics completeness (30%)
+        required_demo_fields = [
+            "emirates_id",
+            "first_name",
+            "last_name",
+            "date_of_birth",
+        ]
+        demo_score = sum(
+            1 for field in required_demo_fields if demographics.get(field)
+        ) / len(required_demo_fields)
+        score += demo_score * 0.3
+
+        # Clinical data richness (40%)
+        if timeline:
+            score += 0.4
+
+        # Medication data availability (30%)
+        if medications:
+            score += 0.3
+
+        return {
+            "overall_score": round(score, 2),
+            "completeness_score": demo_score,
+            "richness_score": 1.0 if timeline else 0.0,
+            "accuracy_score": 0.8,  # Assumed for fallback
+            "recommendations": ["Create BAML functions for proper assessment"],
+            "reasoning": "Fallback heuristic assessment (BAML not available)",
+        }
+
+
+def check_demographics_completeness(demographics: Dict[str, Any]) -> Dict[str, Any]:
+    """Check completeness of demographic data."""
+    required_fields = [
+        "emirates_id",
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "gender",
+    ]
+    optional_fields = ["phone", "email", "address"]
+
+    required_complete = sum(1 for field in required_fields if demographics.get(field))
+    optional_complete = sum(1 for field in optional_fields if demographics.get(field))
+
+    return {
+        "required_completeness": required_complete / len(required_fields),
+        "optional_completeness": optional_complete / len(optional_fields),
+        "missing_required": [
+            field for field in required_fields if not demographics.get(field)
+        ],
+        "missing_optional": [
+            field for field in optional_fields if not demographics.get(field)
+        ],
     }

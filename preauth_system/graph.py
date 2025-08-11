@@ -2,14 +2,15 @@
 LangGraph Workflow Definition for Pre-Authorization System
 =========================================================
 
-Defines the LangGraph workflow with nodes and edges for the UAE healthcare 
-pre-authorization analysis system. Implements the 3-phase agent execution 
-model with proper dependency management and parallel processing.
+Streamlined workflow with logical steps:
+- data_preparation → phase 1 (clinical_analysis, medication_analysis in parallel)
+- phase1_barrier → risk_assessment → phase 3 (decision_making, compliance_audit in parallel)
+- phase3_barrier → finalize_decision
 
-WORKFLOW PHASES:
-- Phase 1: Clinical & Medication Analysis (Parallel)
-- Phase 2: Risk Assessment (Sequential)  
-- Phase 3: Decision Making & Compliance (Parallel)
+Key improvements:
+- Combined intake + clinical_summary into single data_preparation node
+- Uses create_unified_patient_record for efficient data processing
+- Eliminated redundant data structures and legacy compatibility code
 """
 
 from typing import Dict, Any, Literal
@@ -27,300 +28,211 @@ from preauth_system.state import (
 from preauth_system.utils import (
     parse_xml,
     extract_patient_info,
-    determine_specialty,
-    prepare_shared_context,
-    execute_claude_agent,
     make_final_decision,
 )
-from preauth_system.intake import process_pa_request
-from preauth_system.summary import build_clinical_summary
-from preauth_system.safety import run_basic_safety_checks
+from data_ingestion.etl import create_unified_patient_record
+from preauth_system.utils import prepare_agent_execution_context
+from preauth_system.agents_openai import execute_openai_agent
+from preauth_system.pricing import calculate_cost_from_usage
+from data_ingestion.etl import find_patient_by_emirates_id
 
-from data_ingestion.etl import get_patient_data, find_patient_by_emirates_id
+
+# Helper for pricing
+def _compute_cost_usd(usage: Dict[str, Any]) -> float:
+    """Compute cost using API-based pricing module."""
+    cost_info = calculate_cost_from_usage(usage)
+    return cost_info["costs_breakdown"]["total_cost_usd"]
 
 
-def prepare_context_node(state: PreAuthState) -> Dict[str, Any]:
+def data_preparation_node(state: PreAuthState) -> Dict[str, Any]:
     """
-    Initialize shared context and prepare patient data.
+    Data preparation: Parse XML, find patient, and create unified patient record.
 
-    Phase: Initialization
-    Dependencies: None
-    Parallel: No
+    This node combines intake and clinical data preparation into a single step:
+    1. Parse XML request and extract patient information
+    2. Find patient in FHIR data using Emirates ID
+    3. Create unified patient record combining XML + FHIR data
+    4. Prepare agent execution context
 
-    Args:
-        state: Current workflow state
-
-    Returns:
-        State updates with parsed XML, patient data, and shared context
+    UNIFIED APPROACH:
+    - Uses FHIR Bundle as canonical clinical history (enriched with medical codes)
+    - XML request data provides most current demographics/insurance
+    - Single unified record eliminates overlapping data structures
     """
     try:
-        print(f"🔄 Preparing context for analysis: {state['xml_file_path']}")
-
-        # Step 1: Parse XML
+        # Step 1: Parse XML and extract patient info
         xml_data = parse_xml(state["xml_file_path"], state["xml_format"])
-        print(f"✅ Parsed XML format: {xml_data['format']}")
-
-        # Step 2: Extract patient info
         patient_info = extract_patient_info(xml_data, state["xml_format"])
-        patient_id = find_patient_by_emirates_id(patient_info["EmiratesIDNumber"])
-        print(f"✅ Found patient: {patient_id}")
 
-        # Step 3: Get patient data from ETL
-        patient_data = get_patient_data(patient_id)
-        print(
-            f"✅ Retrieved patient data: {len(patient_data['labs'])} labs, {len(patient_data['claims'])} claims"
+        # Step 2: Find patient by Emirates ID from XML request
+        patient_id = find_patient_by_emirates_id(patient_info["EmiratesIDNumber"])
+
+        if not patient_id:
+            raise ValueError(
+                f"Patient not found for Emirates ID: {patient_info['EmiratesIDNumber']}"
+            )
+
+        # Step 3: Create unified patient record (eliminates data duplication)
+        unified_patient_record = create_unified_patient_record(
+            patient_id=patient_id,
+            xml_request_data=xml_data,
+            xml_patient_info=patient_info,
         )
 
-        # Step 4: Determine specialty
-        specialty = determine_specialty(xml_data, patient_data)
-        print(f"✅ Medical specialty: {specialty}")
-
-        # Step 5: Prepare shared context
-        shared_context = prepare_shared_context(
-            xml_data, patient_info, patient_data, specialty
+        # Step 4: Prepare streamlined agent context
+        agent_execution_context = prepare_agent_execution_context(
+            unified_patient_record
         )
 
         # Update workflow control
-        workflow_control = state["workflow_control"].copy()
-        workflow_control["current_phase"] = 1
+        wf = state["workflow_control"].copy()
+        wf["current_phase"] = 1
+        wf["data_architecture"] = "unified"
 
         return {
             "xml_data": xml_data,
             "patient_info": patient_info,
-            "patient_data": patient_data,
-            "specialty": specialty,
-            "shared_context": shared_context,
-            "workflow_control": workflow_control,
+            "unified_patient_record": unified_patient_record,
+            "agent_execution_context": agent_execution_context,
+            "specialty": unified_patient_record.specialty_context,
+            "workflow_control": wf,
         }
 
     except Exception as e:
-        print(f"❌ Context preparation failed: {e}")
-        workflow_control = state["workflow_control"].copy()
-        workflow_control["errors"] = workflow_control["errors"] + [
-            f"Context preparation failed: {str(e)}"
-        ]
-
-        return {"workflow_control": workflow_control}
+        wf = state["workflow_control"].copy()
+        wf["errors"] = wf["errors"] + [f"Data preparation failed: {str(e)}"]
+        return {"workflow_control": wf}
 
 
 def clinical_analysis_node(state: PreAuthState) -> Dict[str, Any]:
-    """
-    Execute clinical analysis using Claude Code agent with healthcare tools.
-
-    Phase: 1 (Parallel with medication analysis)
-    Dependencies: prepare_context
-
-    Args:
-        state: Current workflow state
-    """
     return _execute_agent_node(state, "clinical-analyzer")
 
 
 def medication_analysis_node(state: PreAuthState) -> Dict[str, Any]:
-    """
-    Execute medication analysis using Claude Code agent with healthcare tools.
-
-    Phase: 1 (Parallel with clinical analysis)
-    Dependencies: prepare_context
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        State updates with medication analysis results
-    """
     return _execute_agent_node(state, "medication-specialist")
 
 
 def risk_assessment_node(state: PreAuthState) -> Dict[str, Any]:
-    """
-    Execute risk assessment using Claude Code agent with healthcare tools.
-
-    Phase: 2 (Sequential after Phase 1)
-    Dependencies: clinical_analysis, medication_analysis
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        State updates with risk assessment results
-    """
     return _execute_agent_node(state, "risk-assessor")
 
 
 def decision_making_node(state: PreAuthState) -> Dict[str, Any]:
-    """
-    Execute decision making using Claude Code agent with healthcare tools.
-
-    Phase: 3 (Parallel with compliance audit)
-    Dependencies: clinical_analysis, medication_analysis, risk_assessment
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        State updates with decision making results
-    """
     return _execute_agent_node(state, "decision-maker")
 
 
 def compliance_audit_node(state: PreAuthState) -> Dict[str, Any]:
-    """
-    Execute compliance audit using Claude Code agent with healthcare tools.
-
-    Phase: 3 (Parallel with decision making)
-    Dependencies: decision_making (for compliance verification)
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        State updates with compliance audit results
-    """
     return _execute_agent_node(state, "compliance-auditor")
 
 
+def phase1_barrier_node(_: PreAuthState) -> Dict[str, Any]:
+    """Barrier node after clinical and medication analyses."""
+    return {}
+
+
+def phase3_barrier_node(_: PreAuthState) -> Dict[str, Any]:
+    """Barrier node after decision_making and compliance_audit."""
+    return {}
+
+
 def finalize_decision_node(state: PreAuthState) -> Dict[str, Any]:
-    """
-    Process final decision and complete workflow.
-
-    Phase: Final
-    Dependencies: All previous agents
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        State updates with final decision and cost tracking
-    """
     try:
-        print("🏆 Finalizing authorization decision...")
-
-        # Get all agent results
         agent_results = get_all_agent_results(state)
 
-        # Make final decision
-        final_decision = make_final_decision(
-            agent_results, state["xml_data"], state["patient_data"]
-        )
-        print(f"✅ Final decision: {final_decision['decision']}")
+        # Use unified patient record
+        patient_data = state["unified_patient_record"]
 
-        # Update cost tracking
+        final_decision = make_final_decision(
+            agent_results, state["xml_data"], patient_data
+        )
         cost_tracking = state["cost_tracking"].copy()
         cost_tracking["processing_end"] = datetime.now().isoformat()
-
         if cost_tracking["processing_start"]:
             start_time = datetime.fromisoformat(cost_tracking["processing_start"])
-            end_time = datetime.now()
             cost_tracking["total_processing_time"] = (
-                end_time - start_time
+                datetime.now() - start_time
             ).total_seconds()
 
-        # Mark workflow complete
-        workflow_control = state["workflow_control"].copy()
-        workflow_control["workflow_complete"] = True
-        workflow_control["phase_3_complete"] = True
+        # Aggregate usage and compute costs using new pricing module
+        token_usage_by_agent: Dict[str, Any] = {}
+        total_cost = 0.0
+        cost_optimization_notes = []
 
+        for agent_name, res in agent_results.items():
+            usage = res.get("usage") or {}
+
+            # Use enhanced cost calculation with optimization notes
+            if usage.get("pricing_source") == "api_based":
+                # Already has accurate cost from agents_openai.py
+                cost_usd = usage.get("cost_usd", 0.0)
+                cost_breakdown = usage.get("cost_breakdown", {})
+                optimization_notes = usage.get("cost_optimization_notes", [])
+            else:
+                # Calculate cost for usage objects without pricing info
+                cost_usd = _compute_cost_usd(usage)
+                cost_breakdown = {"total_cost_usd": cost_usd}
+                optimization_notes = []
+
+            total_cost += cost_usd
+            cost_optimization_notes.extend(optimization_notes)
+
+            token_usage_by_agent[agent_name] = {
+                **usage,
+                "cost_usd": round(cost_usd, 6),
+                "cost_breakdown": cost_breakdown,
+                "optimization_notes": optimization_notes,
+            }
+
+        cost_tracking["token_usage_by_agent"] = token_usage_by_agent
+        cost_tracking["total_cost_usd"] = round(total_cost, 6)
+        cost_tracking["cost_optimization_notes"] = list(
+            set(cost_optimization_notes)
+        )  # Remove duplicates
+
+        wf = state["workflow_control"].copy()
+        wf["workflow_complete"] = True
+        wf["phase_3_complete"] = True
         return {
             "final_decision": final_decision,
             "cost_tracking": cost_tracking,
-            "workflow_control": workflow_control,
+            "workflow_control": wf,
         }
-
     except Exception as e:
-        print(f"❌ Decision finalization failed: {e}")
-        workflow_control = state["workflow_control"].copy()
-        workflow_control["errors"] = workflow_control["errors"] + [
-            f"Decision finalization failed: {str(e)}"
-        ]
-
-        return {"workflow_control": workflow_control}
+        wf = state["workflow_control"].copy()
+        wf["errors"] = wf["errors"] + [f"Finalize failed: {str(e)}"]
+        return {"workflow_control": wf}
 
 
 def _execute_agent_node(state: PreAuthState, agent_name: str) -> Dict[str, Any]:
-    """
-    Common function to execute any agent with error handling.
-
-    Args:
-        state: Current workflow state
-        agent_name: Name of the agent to execute
-
-    Returns:
-        State updates with agent results
-    """
     try:
-        print(f"🤖 Starting {agent_name} analysis...")
-        start_time = datetime.now()
+        # Use streamlined agent execution context
+        agent_context = state["agent_execution_context"]
 
-        # Execute agent
-        result = execute_claude_agent(
+        result = execute_openai_agent(
             agent_name=agent_name,
-            shared_context=state["shared_context"],
+            shared_context=agent_context,
             previous_results=get_all_agent_results(state),
         )
-
-        # Update workflow control
-        workflow_control = state["workflow_control"].copy()
-        workflow_control["completed_agents"] = workflow_control["completed_agents"] + [
-            agent_name
-        ]
-
-        # Check phase completion
+        wf = state["workflow_control"].copy()
+        wf["completed_agents"] = wf["completed_agents"] + [agent_name]
+        if agent_name == "risk-assessor":
+            wf["phase_2_complete"] = True
+            wf["current_phase"] = 3
         if agent_name in ["clinical-analyzer", "medication-specialist"]:
-            if (
-                len(
-                    [
-                        a
-                        for a in workflow_control["completed_agents"]
-                        if a in ["clinical-analyzer", "medication-specialist"]
-                    ]
-                )
-                == 2
-            ):
-                workflow_control["phase_1_complete"] = True
-                workflow_control["current_phase"] = 2
-        elif agent_name == "risk-assessor":
-            workflow_control["phase_2_complete"] = True
-            workflow_control["current_phase"] = 3
-        elif agent_name in ["decision-maker", "compliance-auditor"]:
-            if (
-                len(
-                    [
-                        a
-                        for a in workflow_control["completed_agents"]
-                        if a in ["decision-maker", "compliance-auditor"]
-                    ]
-                )
-                == 2
-            ):
-                workflow_control["phase_3_complete"] = True
-
-        # Update cost tracking
-        cost_tracking = state["cost_tracking"].copy()
-        if result.get("usage", {}).get("total_cost_usd"):
-            cost_tracking["total_cost_usd"] += result["usage"]["total_cost_usd"]
-            cost_tracking["token_usage_by_agent"][agent_name] = result["usage"]
-
-        end_time = datetime.now()
-        processing_time = (end_time - start_time).total_seconds()
-        print(f"✅ {agent_name} completed in {processing_time:.2f}s")
-
-        # Prepare state updates
+            # When both complete, phase 1 can be marked done by barrier
+            pass
+        # Enhanced token/cost tracking with optimization suggestions
         updates = set_agent_result(agent_name, result)
-        updates.update(
-            {"workflow_control": workflow_control, "cost_tracking": cost_tracking}
-        )
 
+        # Log cost optimization notes if available (tracer not available in this context)
+        # Cost optimization notes are now stored in the result and aggregated in finalize_decision_node
+
+        updates.update({"workflow_control": wf})
         return updates
-
     except Exception as e:
-        print(f"❌ {agent_name} failed: {e}")
-
-        # Create failed result
         failed_result = AgentResult(
             agent_name=agent_name,
             status="failed",
-            start_time=start_time.isoformat() if "start_time" in locals() else None,
+            start_time=None,
             end_time=datetime.now().isoformat(),
             processing_time_seconds=None,
             response=None,
@@ -329,193 +241,94 @@ def _execute_agent_node(state: PreAuthState, agent_name: str) -> Dict[str, Any]:
             error=str(e),
             traceback=traceback.format_exc(),
         )
-
-        # Update workflow control
-        workflow_control = state["workflow_control"].copy()
-        workflow_control["failed_agents"] = workflow_control["failed_agents"] + [
-            agent_name
-        ]
-        workflow_control["errors"] = workflow_control["errors"] + [
-            f"{agent_name} failed: {str(e)}"
-        ]
-
+        wf = state["workflow_control"].copy()
+        wf["failed_agents"] = wf["failed_agents"] + [agent_name]
+        wf["errors"] = wf["errors"] + [f"{agent_name} failed: {str(e)}"]
         updates = set_agent_result(agent_name, failed_result)
-        updates.update({"workflow_control": workflow_control})
-
+        updates.update({"workflow_control": wf})
         return updates
 
 
-def should_start_phase_1(state: PreAuthState) -> Literal["clinical_analysis", "error"]:
-    """
-    Conditional edge to start Phase 1 or handle errors.
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        Next node name or error handling
-    """
-    if state["shared_context"] is None:
-        return "error"
-    return "clinical_analysis"
-
-
-def should_start_phase_2(state: PreAuthState) -> Literal["risk_assessment", "wait"]:
-    """
-    Conditional edge to start Phase 2 when Phase 1 is complete.
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        Next node name based on Phase 1 completion
-    """
-    if state["workflow_control"]["phase_1_complete"]:
-        return "risk_assessment"
-    return "wait"
-
-
-def should_start_phase_3(state: PreAuthState) -> Literal["decision_making", "wait"]:
-    """
-    Conditional edge to start Phase 3 when Phase 2 is complete.
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        Next node name based on Phase 2 completion
-    """
-    if state["workflow_control"]["phase_2_complete"]:
-        return "decision_making"
-    return "wait"
-
-
-def should_finalize(state: PreAuthState) -> Literal["finalize_decision", "wait"]:
-    """
-    Conditional edge to finalize when Phase 3 is complete.
-
-    Args:
-        state: Current workflow state
-
-    Returns:
-        Next node name based on Phase 3 completion
-    """
-    # Check if both decision-making and compliance-auditor are complete
+def should_proceed_phase1(
+    state: PreAuthState,
+) -> Literal["risk_assessment", "phase1_barrier"]:
+    """Proceed to risk assessment only when both clinical and medication analyses are complete."""
     completed = state["workflow_control"]["completed_agents"]
-    decision_complete = "decision-maker" in completed
-    compliance_complete = "compliance-auditor" in completed
+    if "clinical-analyzer" in completed and "medication-specialist" in completed:
+        wf = state["workflow_control"].copy()
+        wf["phase_1_complete"] = True
+        return "risk_assessment"
+    return "phase1_barrier"
 
-    if decision_complete and compliance_complete:
+
+def should_proceed_phase3(
+    state: PreAuthState,
+) -> Literal["finalize_decision", "phase3_barrier"]:
+    """Proceed to finalize only when both decision and compliance are complete."""
+    completed = state["workflow_control"]["completed_agents"]
+    if "decision-maker" in completed and "compliance-auditor" in completed:
         return "finalize_decision"
-    return "wait"
+    return "phase3_barrier"
 
 
 def create_preauth_graph() -> StateGraph:
-    """
-    Create and configure the Pre-Authorization LangGraph workflow.
-
-    Returns:
-        StateGraph: Configured workflow graph
-    """
-    # Create graph
     workflow = StateGraph(PreAuthState)
 
-    # Add nodes
-    workflow.add_node("prepare_context", prepare_context_node)
+    # Data preparation (unified intake + clinical summary)
+    workflow.add_node("data_preparation", data_preparation_node)
+
+    # Phase 1 parallel agents
     workflow.add_node("clinical_analysis", clinical_analysis_node)
     workflow.add_node("medication_analysis", medication_analysis_node)
+    workflow.add_node("phase1_barrier", phase1_barrier_node)
+
+    # Risk assessment
     workflow.add_node("risk_assessment", risk_assessment_node)
+
+    # Phase 3 parallel agents
     workflow.add_node("decision_making", decision_making_node)
     workflow.add_node("compliance_audit", compliance_audit_node)
+    workflow.add_node("phase3_barrier", phase3_barrier_node)
+
+    # Finalization
     workflow.add_node("finalize_decision", finalize_decision_node)
 
-    # Define edges
-    # Entry point
-    workflow.add_edge(START, "prepare_context")
+    # Edges - Simplified flow
+    workflow.add_edge(START, "data_preparation")
 
-    # Phase 1: Conditional start after context preparation
+    # Start phase 1 in parallel after data preparation
+    workflow.add_edge("data_preparation", "clinical_analysis")
+    workflow.add_edge("data_preparation", "medication_analysis")
+
+    # Join phase 1
+    workflow.add_edge("clinical_analysis", "phase1_barrier")
+    workflow.add_edge("medication_analysis", "phase1_barrier")
     workflow.add_conditional_edges(
-        "prepare_context",
-        should_start_phase_1,
-        {"clinical_analysis": "clinical_analysis", "error": END},
+        "phase1_barrier",
+        should_proceed_phase1,
+        {"risk_assessment": "risk_assessment", "phase1_barrier": "phase1_barrier"},
     )
 
-    # Phase 1: Parallel execution - both go to medication analysis check
-    workflow.add_edge("clinical_analysis", "medication_analysis")
+    # After risk, start phase 3 in parallel
+    workflow.add_edge("risk_assessment", "decision_making")
+    workflow.add_edge("risk_assessment", "compliance_audit")
 
-    # Phase 2: Start risk assessment when Phase 1 complete
+    # Join phase 3
+    workflow.add_edge("decision_making", "phase3_barrier")
+    workflow.add_edge("compliance_audit", "phase3_barrier")
     workflow.add_conditional_edges(
-        "medication_analysis",
-        should_start_phase_2,
-        {
-            "risk_assessment": "risk_assessment",
-            "wait": END,  # Should not happen in normal flow
-        },
+        "phase3_barrier",
+        should_proceed_phase3,
+        {"finalize_decision": "finalize_decision", "phase3_barrier": "phase3_barrier"},
     )
 
-    # Phase 3: Start decision making when Phase 2 complete
-    workflow.add_conditional_edges(
-        "risk_assessment",
-        should_start_phase_3,
-        {
-            "decision_making": "decision_making",
-            "wait": END,  # Should not happen in normal flow
-        },
-    )
-
-    # Phase 3: Parallel execution - decision making triggers compliance audit
-    workflow.add_edge("decision_making", "compliance_audit")
-
-    # Finalization: Complete when Phase 3 done
-    workflow.add_conditional_edges(
-        "compliance_audit",
-        should_finalize,
-        {
-            "finalize_decision": "finalize_decision",
-            "wait": END,  # Should not happen in normal flow
-        },
-    )
-
-    # End workflow
     workflow.add_edge("finalize_decision", END)
-
     return workflow
 
 
 def compile_preauth_graph(**compile_kwargs) -> StateGraph:
-    """
-    Compile the Pre-Authorization workflow graph.
-
-    Args:
-        **compile_kwargs: Additional compilation arguments
-
-    Returns:
-        Compiled StateGraph ready for execution
-    """
     workflow = create_preauth_graph()
     return workflow.compile(**compile_kwargs)
 
 
 graph = create_preauth_graph()
-
-if __name__ == "__main__":
-    # Test graph creation and visualization
-    try:
-        graph = create_preauth_graph()
-        compiled_graph = compile_preauth_graph()
-
-        print("✅ Pre-Authorization LangGraph created successfully")
-        print(f"📊 Graph has {len(graph.nodes)} nodes and {len(graph.edges)} edges")
-
-        # Try to create a simple visualization
-        try:
-            # This will work if graphviz is installed
-            graph_image = compiled_graph.get_graph().draw_ascii()
-            print("\n📈 Graph Structure:")
-            print(graph_image)
-        except Exception as viz_error:
-            print(f"⚠️ Graph visualization not available: {viz_error}")
-
-    except Exception as e:
-        print(f"❌ Failed to create graph: {e}")
-        traceback.print_exc()

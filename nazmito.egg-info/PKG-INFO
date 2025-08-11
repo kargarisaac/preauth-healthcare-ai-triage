@@ -26,7 +26,6 @@ Requires-Dist: langchain>=0.3.27
 Requires-Dist: baml-py==0.203.1
 Requires-Dist: kuzu>=0.11.1
 Requires-Dist: baml-cli>=0.1.0
-Requires-Dist: claude-code-sdk>=0.0.19
 Requires-Dist: langgraph-cli[inmem]>=0.3.6
 Requires-Dist: bm25s>=0.2.13
 Requires-Dist: stemmer>=0.0.4
@@ -34,7 +33,9 @@ Requires-Dist: nltk>=3.9.1
 Requires-Dist: pystemmer>=3.0.0
 Requires-Dist: redis>=5.0.0
 Requires-Dist: psutil>=5.9.0
-Requires-Dist: mcp>=1.12.4
+Requires-Dist: openai>=1.40.0
+Requires-Dist: openai-agents>=0.2.5
+Requires-Dist: tiktoken>=0.7.0
 
 # Nazmito
 
@@ -70,10 +71,6 @@ uv run python -m tests.manual.run_single_agent --agent clinical-analyzer --xml d
 ```
 
 ### MCP Tools
-- Start MCP server (for agents):
-```bash
-uv run python -m preauth_system.tools.mcp_server
-```
 - Quick tool check (direct):
 ```bash
 uv run python tests/manual/run_mcp_tools.py

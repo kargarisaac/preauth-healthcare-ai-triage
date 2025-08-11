@@ -11,14 +11,16 @@ from loguru import logger
 
 from api.services.patient_lookup_service import get_patient_lookup_service
 from api.services.xml_processing_service import get_xml_processing_service
-from api.services.claude_analysis_service import get_claude_analysis_service
+
 from api.models import PatientInfo, UnifiedProcessResponse
 from preauth_system.orchestrator import PreAuthOrchestrator
 
 # Initialize services
 patient_lookup_service = get_patient_lookup_service()
 xml_processing_service = get_xml_processing_service()
-claude_analysis_service = get_claude_analysis_service()
+
+# Expose a module-level orchestrator for tests to patch
+workflow_orchestrator = PreAuthOrchestrator()
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -38,6 +40,9 @@ app.add_middleware(
 )
 
 from datetime import datetime
+from pathlib import Path
+import os
+import inspect
 
 
 @app.get("/api/health")
@@ -91,61 +96,119 @@ async def list_patients():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/process-xml/{patient_id}", response_model=UnifiedProcessResponse)
-async def process_xml(
-    patient_id: str,
+@app.post("/api/upload-xml")
+async def upload_xml(
     file: UploadFile = File(...),
     source: str = Form(...),
-    enable_analysis: bool = Form(True),
+    patient_id: Optional[str] = Form(None),
 ):
-    """Process XML file for a patient."""
+    """Validate and accept an uploaded XML file for a patient."""
     try:
-        # Validate inputs
-        if not file.filename or not file.filename.endswith(".xml"):
-            raise HTTPException(status_code=400, detail="Only XML files allowed")
-
         if source not in ["eclaim", "shafafiya"]:
             raise HTTPException(
-                status_code=400, detail="Source must be 'eclaim' or 'shafafiya'"
+                status_code=400,
+                detail="Invalid source. Must be 'eclaim' or 'shafafiya'",
+            )
+        if not file.filename or not file.filename.endswith(".xml"):
+            raise HTTPException(status_code=400, detail="Invalid file type. Only .xml")
+
+        # Limit 10MB
+        content = await file.read()
+        if len(content) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="File too large")
+
+        # Process via XML service when available
+        result = None
+        if hasattr(xml_processing_service, "process_xml_file"):
+            fn = getattr(xml_processing_service, "process_xml_file")
+            if inspect.iscoroutinefunction(fn):
+                result = await fn(file=file, source=source, patient_id=patient_id)
+            else:
+                result = fn(file=file, source=source, patient_id=patient_id)
+        else:
+            # Fallback to content-based
+            result = xml_processing_service.process_xml_content(
+                content=content.decode("utf-8"), filename=file.filename, source=source
             )
 
-        logger.info(f"Processing XML for patient {patient_id}: {file.filename}")
-
-        # Read file content
-        content = await file.read()
-
-        # Process XML
-        xml_result = xml_processing_service.process_xml_content(
-            content=content.decode("utf-8"), filename=file.filename, source=source
-        )
-
-        if not xml_result["success"]:
-            raise HTTPException(status_code=400, detail=xml_result.get("error"))
-
-        # Run analysis if enabled
-        analysis_result = None
-        if enable_analysis:
-            try:
-                orchestrator = PreAuthOrchestrator()
-                analysis_result = orchestrator.process_request(
-                    xml_content=content.decode("utf-8"), patient_id=patient_id
-                )
-            except Exception as e:
-                logger.warning(f"Analysis failed: {e}")
-                analysis_result = {"error": str(e)}
-
-        return UnifiedProcessResponse(
-            success=True,
-            patient_id=patient_id,
-            filename=file.filename,
-            xml_processing=xml_result,
-            claude_analysis=analysis_result,
-        )
-
+        return {
+            "success": True,
+            "patient_id": patient_id,
+            "data": result,
+            "metadata": {
+                "filename": file.filename,
+                "xml_source": source,
+            },
+        }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"XML processing failed: {e}")
+        logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/process/{patient_id}")
+async def process_patient(patient_id: str):
+    """Process the most recent XML file for a patient from their raw folder."""
+    try:
+        availability = patient_lookup_service.check_patient_data_availability(
+            patient_id
+        )
+        if not availability.get("patient_exists"):
+            raise HTTPException(
+                status_code=404, detail=f"Patient {patient_id} not found"
+            )
+        if not availability.get("raw_data_available", True):
+            raise HTTPException(
+                status_code=404, detail="No XML files found for patient"
+            )
+
+        # Find latest XML under raw_data_path or default dataset path
+        folder_paths = patient_lookup_service.get_patient_folder_paths(patient_id)
+        raw_path = Path(folder_paths.get("raw_data_path") or ".")
+        candidates = list(raw_path.glob("*.xml"))
+        if not candidates:
+            raise HTTPException(status_code=404, detail="No XML files found")
+        latest = max(candidates, key=lambda p: p.stat().st_mtime)
+        xml_content = latest.read_text(encoding="utf-8")
+
+        # Call orchestrator
+        result = workflow_orchestrator.process_request(
+            xml_content=xml_content, patient_id=patient_id, xml_format="eclaim"
+        )
+
+        return {
+            "success": True,
+            "patient_id": patient_id,
+            "data": result,
+            "metadata": {"filename": latest.name, "xml_source": "eclaim"},
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Processing failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/analyze/{patient_id}")
+async def analyze_patient(
+    patient_id: str, cost_limit_usd: float = 1.0, include_history: bool = True
+):
+    """Run agentic analysis over an existing patient context via workflow orchestrator."""
+    try:
+        if not hasattr(workflow_orchestrator, "analyze_existing_patient"):
+            raise HTTPException(status_code=501, detail="Analysis not implemented")
+        # Delegate to orchestrator (tests patch this method)
+        analysis = await workflow_orchestrator.analyze_existing_patient(
+            patient_id=patient_id,
+            cost_limit_usd=cost_limit_usd,
+            include_history=include_history,
+        )
+        return analysis
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Analysis failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

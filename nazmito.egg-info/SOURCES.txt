@@ -15,6 +15,7 @@ nazmito.egg-info/dependency_links.txt
 nazmito.egg-info/requires.txt
 nazmito.egg-info/top_level.txt
 preauth_system/__init__.py
+preauth_system/agents_openai.py
 preauth_system/compliance.py
 preauth_system/config_manager.py
 preauth_system/decision.py

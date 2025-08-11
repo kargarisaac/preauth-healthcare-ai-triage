@@ -8,26 +8,27 @@ This script provides different ways to run the FastAPI server for different envi
 import os
 import sys
 import argparse
-from pathlib import Path
 
-# Add parent directory to path to import XMLProcessor
-sys.path.append(str(Path(__file__).parent.parent))
+from preauth_system.utils import get_config
+
+
+def _get_server_cfg():
+    cfg = get_config()
+    server = cfg.get("server", {}) if isinstance(cfg, dict) else {}
+    return {
+        "host": server.get("host"),
+        "port": server.get("port"),
+        "workers": server.get("workers"),
+    }
 
 
 def run_development():
     """Run development server with auto-reload."""
     import uvicorn
 
-    # Use configuration manager if available
-    try:
-        from preauth_system.config_manager import get_config_manager
-        config_mgr = get_config_manager()
-        host = config_mgr.get('server.host', '127.0.0.1')
-        port = config_mgr.get('server.port', 8000, int)
-    except Exception:
-        # Fallback to defaults
-        host = "127.0.0.1"
-        port = 8000
+    server_cfg = _get_server_cfg()
+    host = server_cfg.get("host") or "127.0.0.1"
+    port = int(server_cfg.get("port") or 8000)
 
     print("🚀 Starting Nazmito Healthcare XML API - Development Mode")
     print(f"📖 API Documentation: http://{host}:{port}/api/docs")
@@ -73,18 +74,10 @@ def run_docker():
     """Run server optimized for Docker container."""
     import uvicorn
 
-    # Use configuration manager if available
-    try:
-        from preauth_system.config_manager import get_config_manager
-        config_mgr = get_config_manager()
-        host = config_mgr.get('server.host', '0.0.0.0')
-        port = config_mgr.get('server.port', 8000, int)
-        workers = config_mgr.get('server.workers', 1, int)
-    except Exception:
-        # Fallback to environment variables
-        host = os.getenv("HOST", "0.0.0.0")
-        port = int(os.getenv("PORT", "8000"))
-        workers = int(os.getenv("WORKERS", "1"))
+    server_cfg = _get_server_cfg()
+    host = server_cfg.get("host") or os.getenv("HOST", "0.0.0.0")
+    port = int(server_cfg.get("port") or os.getenv("PORT", "8000"))
+    workers = int(server_cfg.get("workers") or os.getenv("WORKERS", "1"))
 
     print("🐳 Starting Nazmito Healthcare XML API - Docker Mode")
     print(f"🌐 Server: http://{host}:{port}")
@@ -139,21 +132,12 @@ Examples:
 
     args = parser.parse_args()
 
-    # Ensure logs directory exists
-    os.makedirs("api/logs", exist_ok=True)
-
-    try:
-        if args.mode == "development":
-            run_development()
-        elif args.mode == "production":
-            run_production(args.host, args.port, args.workers)
-        elif args.mode == "docker":
-            run_docker()
-    except KeyboardInterrupt:
-        print("\n👋 Server stopped by user")
-    except Exception as e:
-        print(f"❌ Failed to start server: {e}")
-        sys.exit(1)
+    if args.mode == "development":
+        run_development()
+    elif args.mode == "production":
+        run_production(host=args.host, port=args.port, workers=args.workers)
+    elif args.mode == "docker":
+        run_docker()
 
 
 if __name__ == "__main__":
