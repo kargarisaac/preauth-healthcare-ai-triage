@@ -580,6 +580,6 @@ The MVP has been successfully implemented with all core components working:
 - Deterministic policy evaluation with clear criteria mapping
 - Safety screening with clinical contraindications
 - Evidence-based dossiers with guideline citations
-- OpenAI Agents SDK tool integration (replaces MCP)
+- DSPy agent integration for structured reasoning
 - UAE compliance (PDPL data handling)
 
