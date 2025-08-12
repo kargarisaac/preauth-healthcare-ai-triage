@@ -131,7 +131,7 @@ The coach will use this information to plan the following week's activities and 
 - [ ] Review accelerator application requirements and prepare materials
 - [ ] Plan Week 2 priorities based on initial outreach response rates
 
-## OpenAI Deep Research Prompts
+### OpenAI Deep Research Prompts
 
 **Query #1: UAE Health Insurance Market Analysis**
 ```
@@ -250,7 +250,7 @@ Research comprehensive market validation approaches specifically for UAE B2B hea
 Provide ready-to-implement validation tools and methodologies with UAE-specific considerations.
 ```
 
-## Expected Outputs by Week End
+### Expected Outputs by Week End
 
 1. **output/uae_market_analysis_12aug24.md** - Comprehensive market landscape from Deep Research #1
 2. **output/accelerator_database_12aug24.xlsx** - Ranked accelerator options with application details
@@ -259,3 +259,4 @@ Provide ready-to-implement validation tools and methodologies with UAE-specific 
 5. **output/pilot_partnership_proposal_12aug24.md** - Tailored proposal template for insurer meetings
 6. **output/outreach_templates_12aug24.md** - Message templates for different stakeholder types
 7. **output/citizen_interview_insights_12aug24.md** - Primary research findings from UAE interviews
+
