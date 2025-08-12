@@ -45,3 +45,7 @@ llm:
       model: openrouter/openai/gpt-oss-20b
     final_report:
       model: openrouter/openai/gpt-oss-20b
+    clinical_risk:
+      model: openrouter/openai/gpt-oss-20b
+    data_quality:
+      model: openrouter/openai/gpt-oss-20b

@@ -17,7 +17,7 @@ from preauth_system.utils import (
     extract_patient_info,
     prepare_agent_execution_context,
 )
-from data_ingestion.etl import (
+from preauth_system.etl import (
     create_unified_patient_record,
     find_patient_by_emirates_id,
 )
@@ -36,6 +36,7 @@ from preauth_system.llms.final_report import FinalReport
 from preauth_system.llms.clinical_summary import (
     ClinicalSummary as ClinicalSummaryModule,
 )
+from preauth_system.dspy_config import configure_dspy_default
 
 
 class PreAuthOrchestrator:
@@ -43,6 +44,8 @@ class PreAuthOrchestrator:
 
     def __init__(self):
         """Initialize orchestrator with all agents and LLM modules"""  # Warm agent definitions cache once at startup to avoid repeated loads
+        # Ensure a default LM is globally configured to avoid early 'No LM is loaded' errors
+        configure_dspy_default()
 
         # Initialize agents
         self.agents = {

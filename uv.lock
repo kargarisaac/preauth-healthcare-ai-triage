@@ -506,18 +506,6 @@ wheels = [
 ]
 
 [[package]]
-name = "dspy-ai"
-version = "2.6.27"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "dspy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d8/86/bd275fd5e779749ec65ba8f40893b9f2501b4eb1f4be78615895b63af2c6/dspy_ai-2.6.27.tar.gz", hash = "sha256:93d363e2ceb3745554133c8849e3eea356653707a6760eadfb9533d7d9e5f330", size = 1112, upload_time = "2025-06-03T17:47:22.669Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fb/3e/47ae39dca48913b755c8ae4ffabd9c9ecc92365065a4461f2bdc3a81e603/dspy_ai-2.6.27-py3-none-any.whl", hash = "sha256:e7d4d3328dd05098efbedbd72d1c324a2317e4693638eb8755926c9ff0f64861", size = 1107, upload_time = "2025-06-03T17:47:21.399Z" },
-]
-
-[[package]]
 name = "elementpath"
 version = "5.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1330,7 +1318,6 @@ dependencies = [
     { name = "bm25s" },
     { name = "chardet" },
     { name = "dspy" },
-    { name = "dspy-ai" },
     { name = "fastapi" },
     { name = "fastparquet" },
     { name = "fuzzywuzzy" },
@@ -1365,7 +1352,6 @@ requires-dist = [
     { name = "bm25s", specifier = ">=0.2.13" },
     { name = "chardet", specifier = ">=5.0.0" },
     { name = "dspy", specifier = ">=2.6.27" },
-    { name = "dspy-ai", specifier = ">=2.4.0" },
     { name = "fastapi", specifier = ">=0.104.0" },
     { name = "fastparquet", specifier = ">=0.8.0" },
     { name = "fuzzywuzzy", specifier = ">=0.18.0" },

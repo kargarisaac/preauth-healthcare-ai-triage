@@ -79,11 +79,10 @@ def with_dspy_lm(lm: dspy.LM):
     """Context manager to scope dspy.configure to a specific LM without global side effects."""
     try:
         if BAMLAdapter is not None:
-            with dspy.configure(lm=lm, adapter=BAMLAdapter()):
-                yield
+            dspy.configure(lm=lm, adapter=BAMLAdapter())
         else:
-            with dspy.configure(lm=lm):
-                yield
+            dspy.configure(lm=lm)
+        yield
     finally:
         pass
 

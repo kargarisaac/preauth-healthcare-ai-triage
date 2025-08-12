@@ -8,9 +8,6 @@ from typing import Dict, Any, List
 import xmltodict  # type: ignore
 import yaml  # type: ignore
 from loguru import logger
-from preauth_system.llms.specialty_determination import SpecialtyDetermination
-from preauth_system.llms.clinical_summary import ClinicalRisk
-from preauth_system.llms.clinical_summary import DataQuality
 
 
 def get_config() -> Dict[str, Any]:
@@ -112,6 +109,10 @@ def extract_patient_info(xml_data: Dict[str, Any], xml_format: str) -> Dict[str,
 def determine_specialty(xml_data: Dict[str, Any], patient_data: Dict[str, Any]) -> str:
     """Determine specialty using DSPy SpecialtyDetermination with fallback heuristic."""
     try:
+        from preauth_system.llms.specialty_determination import (
+            SpecialtyDetermination,
+        )
+
         # Prepare requested services from XML for the LLM
         xml_dict = (xml_data or {}).get("as_dict", {}) or {}
         service_reqs = xml_dict.get("ServiceRequests", {}).get("ServiceRequest", [])
@@ -221,6 +222,8 @@ def assess_clinical_risk_llm(
 ) -> Dict[str, Any]:
     """Clinical risk assessment via DSPy LLM with graceful fallback."""
     try:
+        from preauth_system.llms.clinical_summary import ClinicalRisk
+
         risk_llm = ClinicalRisk()
         result = risk_llm(
             timeline=timeline, medications=medications, demographics=demographics
@@ -262,6 +265,8 @@ def calculate_data_quality_llm(
 ) -> Dict[str, Any]:
     """Data quality assessment via DSPy LLM with graceful fallback."""
     try:
+        from preauth_system.llms.clinical_summary import DataQuality
+
         dq_llm = DataQuality()
         result = dq_llm(
             demographics=demographics, timeline=timeline, medications=medications
