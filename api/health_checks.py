@@ -10,12 +10,11 @@ import time
 import json
 import psutil
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Tuple
 from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
 
-from fastapi import Request
 from loguru import logger
 
 from api.config import get_config

@@ -93,6 +93,23 @@ class FinalReportOutput(BaseModel):
     content: Optional[str] = None
 
 
+# Additional module outputs
+class ClinicalRiskOutput(BaseModel):
+    overall_risk: Optional[str] = None
+    risk_factors: Optional[List[str]] = None
+    confidence: Optional[float] = None
+    reasoning: Optional[str] = None
+
+
+class DataQualityOutput(BaseModel):
+    overall_score: Optional[float] = None
+    completeness_score: Optional[float] = None
+    richness_score: Optional[float] = None
+    accuracy_score: Optional[float] = None
+    recommendations: Optional[List[str]] = None
+    reasoning: Optional[str] = None
+
+
 # -----------------------------
 # Shared input signature
 # -----------------------------
@@ -228,4 +245,39 @@ class FinalReportSignature(dspy.Signature):
     agent_results = dspy.InputField(desc="All agent analysis results")
     final_report: FinalReportOutput = dspy.OutputField(
         desc="Comprehensive final report output"
+    )
+
+
+class ClinicalRiskSignature(dspy.Signature):
+    """Assess clinical risk from recent timeline, medications, and demographics."""
+
+    timeline: List[Dict[str, Any]] = dspy.InputField(
+        desc="Recent clinical observations/events"
+    )
+    medications: List[Dict[str, Any]] = dspy.InputField(
+        desc="Current and recent medications list"
+    )
+    demographics: Dict[str, Any] = dspy.InputField(
+        desc="Patient demographics including age and gender"
+    )
+    clinical_risk: ClinicalRiskOutput = dspy.OutputField(
+        desc="JSON matching ClinicalRiskOutput: overall_risk, risk_factors, confidence, reasoning."
+    )
+
+
+class DataQualitySignature(dspy.Signature):
+    """Assess data quality (completeness, richness, accuracy) and provide recommendations."""
+
+    demographics: Dict[str, Any] = dspy.InputField(
+        desc="Patient demographics for completeness check"
+    )
+    timeline: List[Dict[str, Any]] = dspy.InputField(
+        desc="Clinical timeline/observations"
+    )
+    medications: List[Dict[str, Any]] = dspy.InputField(desc="Medication history")
+    data_quality: DataQualityOutput = dspy.OutputField(
+        desc=(
+            "JSON matching DataQualityOutput: overall_score, completeness_score, richness_score, "
+            "accuracy_score, recommendations, reasoning."
+        )
     )

@@ -12,13 +12,12 @@ import time
 import statistics
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, asdict
 from enum import Enum
 import yaml
 
 from preauth_system.orchestrator import PreAuthOrchestrator
-from preauth_system.decision import DecisionOutcome
 
 
 class EvaluationResult(Enum):
@@ -112,13 +111,13 @@ class EvaluationHarness:
                 # Determine result
                 if self._is_passing_result(metrics, test_case):
                     passed += 1
-                    print(f"  ✓ PASS")
+                    print("  ✓ PASS")
                 elif self._is_warning_result(metrics, test_case):
                     warnings += 1
-                    print(f"  ⚠ WARNING")
+                    print("  ⚠ WARNING")
                 else:
                     failed += 1
-                    print(f"  ✗ FAIL")
+                    print("  ✗ FAIL")
                     
             except Exception as e:
                 print(f"  ✗ SKIP - Error: {str(e)}")
@@ -178,10 +177,10 @@ class EvaluationHarness:
                 # More stringent criteria for demo cases
                 if self._is_demo_case_passing(metrics, test_case):
                     passed += 1
-                    print(f"  ✓ DEMO PASS")
+                    print("  ✓ DEMO PASS")
                 else:
                     failed += 1
-                    print(f"  ✗ DEMO FAIL")
+                    print("  ✗ DEMO FAIL")
                     self._print_detailed_failure(metrics, test_case)
                     
             except Exception as e:
@@ -231,7 +230,7 @@ class EvaluationHarness:
         with open(regression_path, 'w') as f:
             json.dump(regression_analysis, f, indent=2, default=str)
         
-        print(f"\nRegression Analysis:")
+        print("\nRegression Analysis:")
         print(f"Overall score change: {regression_analysis['overall_score_change']:+.3f}")
         print(f"Recommendation: {regression_analysis['recommendation']}")
         
@@ -478,13 +477,13 @@ class EvaluationHarness:
         print(f"Skipped: {report.skipped} ({report.skipped/report.total_cases:.1%})")
         print(f"Overall Score: {report.overall_score:.3f}")
         
-        print(f"\nPerformance Metrics:")
+        print("\nPerformance Metrics:")
         perf = report.performance_metrics
         print(f"  Mean Processing Time: {perf.get('mean_time', 0):.2f}s")
         print(f"  P95 Processing Time: {perf.get('p95_time', 0):.2f}s")
         print(f"  Max Processing Time: {perf.get('max_time', 0):.2f}s")
         
-        print(f"\nCost Analysis:")
+        print("\nCost Analysis:")
         cost = report.cost_analysis
         print(f"  Total Cost: ${cost.get('total_cost', 0):.3f}")
         print(f"  Mean Cost per Case: ${cost.get('mean_cost', 0):.3f}")
@@ -492,7 +491,7 @@ class EvaluationHarness:
         
         if report.regression_analysis:
             reg = report.regression_analysis
-            print(f"\nRegression Analysis:")
+            print("\nRegression Analysis:")
             print(f"  Overall Score Change: {reg['overall_score_change']:+.3f}")
             print(f"  Recommendation: {reg['recommendation']}")
     

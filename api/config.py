@@ -9,7 +9,7 @@ import os
 import secrets
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from loguru import logger
 import yaml

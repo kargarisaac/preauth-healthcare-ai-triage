@@ -42,11 +42,11 @@ def temp_xml_file():
     def create_temp_xml(content: str, filename: str = "test.xml") -> str:
         """Create a temporary XML file with given content."""
         temp_file = tempfile.NamedTemporaryFile(
-            mode='w',
-            suffix='.xml',
-            prefix=filename.replace('.xml', '_'),
+            mode="w",
+            suffix=".xml",
+            prefix=filename.replace(".xml", "_"),
             delete=False,
-            encoding='utf-8',
+            encoding="utf-8",
         )
         temp_file.write(content)
         temp_file.close()
@@ -76,11 +76,11 @@ def temp_csv_file():
     def create_temp_csv(content: str, filename: str = "test.csv") -> str:
         """Create a temporary CSV file with given content."""
         temp_file = tempfile.NamedTemporaryFile(
-            mode='w',
-            suffix='.csv',
-            prefix=filename.replace('.csv', '_'),
+            mode="w",
+            suffix=".csv",
+            prefix=filename.replace(".csv", "_"),
             delete=False,
-            encoding='utf-8',
+            encoding="utf-8",
         )
         temp_file.write(content)
         temp_file.close()
@@ -111,7 +111,7 @@ def mock_schema_validator():
     Returns:
         Mock object configured to simulate schema validation
     """
-    with patch('xmlschema.XMLSchema11') as mock_schema_class:
+    with patch("xmlschema.XMLSchema11") as mock_schema_class:
         mock_schema = Mock(spec=xmlschema.XMLSchema11)
         mock_schema.is_valid.return_value = True
         mock_schema.iter_errors.return_value = []
@@ -127,7 +127,7 @@ def failing_schema_validator():
     Returns:
         Mock object configured to simulate schema validation failures
     """
-    with patch('xmlschema.XMLSchema11') as mock_schema_class:
+    with patch("xmlschema.XMLSchema11") as mock_schema_class:
         mock_schema = Mock(spec=xmlschema.XMLSchema11)
         mock_schema.is_valid.return_value = False
 
@@ -253,16 +253,16 @@ def test_data_factory():
                 else:
                     amount_text = str(service.get("RequestedAmount", "0.00"))
 
-                service_xml += f'''
+                service_xml += f"""
         <ServiceRequest>
             <ct:ActivityCode>{service.get("ct:ActivityCode", "83036")}</ct:ActivityCode>
             <ct:DiagnosisCode>{service.get("ct:DiagnosisCode", "E11.9")}</ct:DiagnosisCode>
             <ct:ActivityDateTime>{service.get("ct:ActivityDateTime", "28/07/2025 09:00")}</ct:ActivityDateTime>
             <ct:ActivityInstructions>{service.get("ct:ActivityInstructions", "Instructions")}</ct:ActivityInstructions>
             <RequestedAmount {amount_attr}>{amount_text}</RequestedAmount>
-        </ServiceRequest>'''
+        </ServiceRequest>"""
 
-            return f'''<?xml version="1.0" encoding="UTF-8"?>
+            return f"""<?xml version="1.0" encoding="UTF-8"?>
 <PriorAuthorizationRequest xmlns:ct="http://www.eclaimlink.ae/DHD/ValidationSchema">
     <Header>
         <SenderID>{header["SenderID"]}</SenderID>
@@ -273,7 +273,7 @@ def test_data_factory():
     <JustificationText>{justification}</JustificationText>
     <ServiceRequests>{service_xml}
     </ServiceRequests>
-</PriorAuthorizationRequest>'''
+</PriorAuthorizationRequest>"""
 
         def create_shafafiya_xml(
             self,
@@ -303,15 +303,15 @@ def test_data_factory():
                 obs_xml = ""
                 if "observations" in activity:
                     for obs in activity["observations"]:
-                        obs_xml += f'''
+                        obs_xml += f"""
             <Observation>
                 <Type>{obs.get("Type", "ICD10")}</Type>
                 <Code>{obs.get("Code", "E11.9")}</Code>
                 <Value>{obs.get("Value", "Description")}</Value>
                 <ValueType>{obs.get("ValueType", "text")}</ValueType>
-            </Observation>'''
+            </Observation>"""
 
-                activity_xml += f'''
+                activity_xml += f"""
         <Activity>
             <ID>{activity.get("ID", "1")}</ID>
             <Type>{activity.get("Type", "3")}</Type>
@@ -319,9 +319,9 @@ def test_data_factory():
             <Quantity>{activity.get("Quantity", "1")}</Quantity>
             <Net>{activity.get("Net", "120.00")}</Net>
             <PaymentAmount>{activity.get("PaymentAmount", "90.00")}</PaymentAmount>{obs_xml}
-        </Activity>'''
+        </Activity>"""
 
-            return f'''<?xml version="1.0" encoding="UTF-8"?>
+            return f"""<?xml version="1.0" encoding="UTF-8"?>
 <Prior.Authorization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Header>
         <SenderID>{header["SenderID"]}</SenderID>
@@ -339,7 +339,7 @@ def test_data_factory():
         <Limit>{auth_defaults["Limit"]}</Limit>
         <Comments>{auth_defaults["Comments"]}</Comments>{activity_xml}
     </Authorization>
-</Prior.Authorization>'''
+</Prior.Authorization>"""
 
     return TestDataFactory()
 
@@ -549,12 +549,12 @@ def create_test_xml_files(tmp_path, test_data_factory):
     # Invalid files
     malformed_file = tmp_path / "malformed.xml"
     malformed_file.write_text(
-        '''<?xml version="1.0" encoding="UTF-8"?>
+        """<?xml version="1.0" encoding="UTF-8"?>
 <PriorAuthorizationRequest>
     <Header>
         <SenderID>PROV12345
     </Header>
-</PriorAuthorizationRequest>''',
+</PriorAuthorizationRequest>""",
         encoding="utf-8",
     )
     files["malformed"] = str(malformed_file)
@@ -570,10 +570,10 @@ def create_test_xml_files(tmp_path, test_data_factory):
     # Unsupported root element
     unsupported_file = tmp_path / "unsupported.xml"
     unsupported_file.write_text(
-        '''<?xml version="1.0" encoding="UTF-8"?>
+        """<?xml version="1.0" encoding="UTF-8"?>
 <UnsupportedElement>
     <Data>Some data</Data>
-</UnsupportedElement>''',
+</UnsupportedElement>""",
         encoding="utf-8",
     )
     files["unsupported"] = str(unsupported_file)
@@ -581,8 +581,8 @@ def create_test_xml_files(tmp_path, test_data_factory):
     # Empty file
     empty_file = tmp_path / "empty.xml"
     empty_file.write_text(
-        '''<?xml version="1.0" encoding="UTF-8"?>
-<root></root>''',
+        """<?xml version="1.0" encoding="UTF-8"?>
+<root></root>""",
         encoding="utf-8",
     )
     files["empty"] = str(empty_file)
@@ -752,6 +752,14 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "bundle: mark test as FHIR Bundle testing")
 
 
+def pytest_ignore_collect(path):
+    """Ignore generated tests under the output/ directory."""
+    try:
+        return "output/" in str(path)
+    except Exception:
+        return False
+
+
 def pytest_collection_modifyitems(config, items):
     """Add markers to tests based on their names and content."""
     for item in items:
@@ -844,10 +852,10 @@ def assert_error_details(
     if expected_file_path:
         assert exception.file_path == expected_file_path
 
-    if expected_field_name and hasattr(exception, 'field_name'):
+    if expected_field_name and hasattr(exception, "field_name"):
         assert exception.field_name == expected_field_name
 
-    if expected_details and hasattr(exception, 'details'):
+    if expected_details and hasattr(exception, "details"):
         for key in expected_details:
             assert key in exception.details
 

@@ -7,8 +7,7 @@ Usage:
 
 import argparse
 from preauth_system.state import AgentResult, SharedContext
-from preauth_system.utils import prepare_shared_context
-from preauth_system.agents_openai import execute_openai_agent
+from preauth_system.dspy_agents import execute_dspy_agent
 
 
 def main():
@@ -26,7 +25,7 @@ def main():
         "analysis_timestamp": "",
     }
 
-    result: AgentResult = execute_openai_agent(args.agent, shared, previous_results={})
+    result: AgentResult = execute_dspy_agent(args.agent, shared_context=shared, previous_results={})
     print(result)
 
 

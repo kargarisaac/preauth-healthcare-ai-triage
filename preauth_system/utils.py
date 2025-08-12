@@ -4,13 +4,13 @@ Utility functions for the Pre-Authorization system.
 
 import json
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-from datetime import datetime
+from typing import Dict, Any, List
 import xmltodict  # type: ignore
 import yaml  # type: ignore
-
-import datetime as _dt
 from loguru import logger
+from preauth_system.llms.specialty_determination import SpecialtyDetermination
+from preauth_system.llms.clinical_summary import ClinicalRisk
+from preauth_system.llms.clinical_summary import DataQuality
 
 
 def get_config() -> Dict[str, Any]:
@@ -22,10 +22,6 @@ def get_config() -> Dict[str, Any]:
         return yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
     except Exception:
         return {}
-
-
-# Global config loaded from YAML
-_CFG = get_config()
 
 
 def parse_xml(xml_file_path: str, xml_format: str) -> Dict[str, Any]:
@@ -114,101 +110,37 @@ def extract_patient_info(xml_data: Dict[str, Any], xml_format: str) -> Dict[str,
 
 
 def determine_specialty(xml_data: Dict[str, Any], patient_data: Dict[str, Any]) -> str:
-    """
-    Determine medical specialty from XML and patient data using simple rule-based logic.
-    Returns a lowercase/snake-case label (e.g., 'diabetes', 'cardiac', 'general').
-    """
+    """Determine specialty using DSPy SpecialtyDetermination with fallback heuristic."""
     try:
-        demographics = patient_data.get("demographics", {}) or {}
-        dob_str = demographics.get("date_of_birth", "") or demographics.get("dob", "")
-        age = demographics.get("age")
-        if age is None and dob_str:
-            try:
-                dob = _dt.datetime.strptime(dob_str, "%d/%m/%Y")
-                today = _dt.datetime.now()
-                age = (
-                    today.year
-                    - dob.year
-                    - ((today.month, today.day) < (dob.month, dob.day))
-                )
-            except Exception:
-                age = None
+        # Prepare requested services from XML for the LLM
+        xml_dict = (xml_data or {}).get("as_dict", {}) or {}
+        service_reqs = xml_dict.get("ServiceRequests", {}).get("ServiceRequest", [])
+        if isinstance(service_reqs, dict):
+            service_reqs = [service_reqs]
 
-        xml_dict = xml_data.get("as_dict", {}) or {}
-        service_requests = xml_dict.get("ServiceRequests", {}).get("ServiceRequest", [])
-        if isinstance(service_requests, dict):
-            service_requests = [service_requests]
-        notes = xml_dict.get("JustificationText", "")
+        sd = SpecialtyDetermination()
+        res = sd(patient_data=patient_data or {}, requested_services=service_reqs)
+        # Module returns a string or an object depending on implementation
+        if isinstance(res, str):
+            return res
+        specialty = getattr(res, "specialty", None)
+        if isinstance(specialty, str):
+            return specialty
+        if specialty and hasattr(specialty, "specialty"):
+            return getattr(specialty, "specialty") or "general"
+    except Exception as e:
+        logger.warning(f"SpecialtyDetermination LLM unavailable, using fallback: {e}")
 
-        labs_list = patient_data.get("labs") or []
-        medications_list = patient_data.get("medications") or []
-        claims_list = patient_data.get("claims") or []
-        preauth_history_list = patient_data.get("preauth_history") or []
-        fhir_bundle_present = bool(patient_data.get("fhir_bundle"))
-
-        payload = f"""
-        Patient Info: {demographics}
-        Age: {age}
-        Services: {service_requests}
-        Notes: {notes}
-        Labs: {labs_list}
-        Medications: {medications_list}
-        Claims: {claims_list}
-        Preauth History: {preauth_history_list}
-        FHIR Bundle Present: {fhir_bundle_present}
-        """
-        logger.info(f"Determine Specialty payload: {payload}")
-
-        payload_lower = payload.lower()
-        if any(
-            word in payload_lower
-            for word in ["diabetes", "insulin", "glucose", "diabetic"]
-        ):
-            return "diabetes"
-        if any(
-            word in payload_lower
-            for word in ["heart", "cardiac", "cardiology", "chest pain"]
-        ):
-            return "cardiac"
-        if any(
-            word in payload_lower
-            for word in ["lung", "respiratory", "asthma", "copd", "breathing"]
-        ):
-            return "respiratory"
-        if any(
-            word in payload_lower
-            for word in ["cancer", "oncology", "tumor", "chemotherapy"]
-        ):
-            return "oncology"
-        if any(
-            word in payload_lower
-            for word in ["bone", "orthopedic", "joint", "fracture", "surgery"]
-        ):
-            return "orthopedic"
-        if any(
-            word in payload_lower
-            for word in ["kidney", "nephrology", "dialysis", "renal"]
-        ):
-            return "nephrology"
-        if any(
-            word in payload_lower for word in ["skin", "dermatology", "rash", "acne"]
-        ):
-            return "dermatology"
-        if any(
-            word in payload_lower
-            for word in ["brain", "neurology", "seizure", "stroke", "neurologic"]
-        ):
-            return "neurology"
-        if any(
-            word in payload_lower
-            for word in ["mental", "psychiatry", "depression", "anxiety"]
-        ):
-            return "mental_health"
-        if age and age < 18:
-            return "pediatric"
-        return "general"
-    except Exception:
-        return "general"
+    # Fallback heuristic based on justification text keywords
+    notes = ((xml_data or {}).get("as_dict", {}) or {}).get("JustificationText", "")
+    text = f"{notes} {json.dumps(patient_data or {}, ensure_ascii=False)}".lower()
+    if any(k in text for k in ["diabetes", "insulin", "glucose", "diabetic"]):
+        return "diabetes"
+    if any(k in text for k in ["cardiac", "cardiology", "heart"]):
+        return "cardiac"
+    if any(k in text for k in ["asthma", "lung", "respiratory", "copd"]):
+        return "respiratory"
+    return "general"
 
 
 def prepare_agent_execution_context(unified_record) -> Dict[str, Any]:
@@ -287,41 +219,39 @@ def assess_clinical_risk_llm(
     medications: List[Dict[str, Any]],
     demographics: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Rule-based clinical risk assessment (kept simple)."""
+    """Clinical risk assessment via DSPy LLM with graceful fallback."""
+    try:
+        risk_llm = ClinicalRisk()
+        result = risk_llm(
+            timeline=timeline, medications=medications, demographics=demographics
+        )
+        out = getattr(result, "clinical_risk", None)
+        if out:
+            return {
+                "overall_risk": out.overall_risk,
+                "risk_factors": out.risk_factors or [],
+                "confidence": out.confidence,
+                "reasoning": out.reasoning,
+            }
+    except Exception as e:
+        logger.warning(f"ClinicalRisk LLM unavailable, using fallback: {e}")
+    # Fallback: simple heuristic
     risk_factors: List[str] = []
-    high_risk_medications = ["warfarin", "insulin", "chemotherapy", "immunosuppressant"]
-
     age = demographics.get("age", 0)
-    if age > 65:
+    if age and age > 65:
         risk_factors.append("Advanced age (>65)")
-    elif age and age < 18:
-        risk_factors.append("Pediatric patient")
-
-    for med in medications:
-        med_name = med.get("medication_name", "").lower()
-        if any(h in med_name for h in high_risk_medications):
-            risk_factors.append(
-                f"High-risk medication: {med.get('medication_name', '')}"
-            )
-
-    for obs in timeline[:10]:
-        if "critical" in (obs.get("abnormal_flag", "").lower()):
-            risk_factors.append(
-                f"Critical lab result: {obs.get('test_name', '').lower()}"
-            )
-
-    if len(risk_factors) >= 3:
-        overall_risk, confidence = "HIGH", 0.8
-    elif len(risk_factors) >= 1:
-        overall_risk, confidence = "MODERATE", 0.7
-    else:
-        overall_risk, confidence = "LOW", 0.75
-
+    if any(
+        "critical" in (obs.get("abnormal_flag", "").lower()) for obs in timeline[:10]
+    ):
+        risk_factors.append("Recent critical lab results")
+    overall_risk = (
+        "HIGH" if len(risk_factors) >= 2 else ("MODERATE" if risk_factors else "LOW")
+    )
     return {
         "overall_risk": overall_risk,
         "risk_factors": risk_factors,
-        "confidence": confidence,
-        "reasoning": "Rule-based assessment based on age, medications, and clinical observations",
+        "confidence": 0.7,
+        "reasoning": "Fallback heuristic",
     }
 
 
@@ -330,41 +260,47 @@ def calculate_data_quality_llm(
     timeline: List[Dict[str, Any]],
     medications: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """Rule-based data quality assessment."""
-    demographics_completeness = check_demographics_completeness(demographics)
-    completeness_score = demographics_completeness["required_completeness"]
-
-    richness_factors: List[float] = []
-    if len(timeline) > 5:
-        richness_factors.append(0.4)
-    elif len(timeline) > 0:
-        richness_factors.append(0.2)
-    if len(medications) > 0:
-        richness_factors.append(0.3)
-    if demographics.get("age") and demographics.get("gender"):
-        richness_factors.append(0.3)
-
-    richness_score = sum(richness_factors)
-    accuracy_score = 0.9
-    overall_score = (
-        completeness_score * 0.4 + richness_score * 0.4 + accuracy_score * 0.2
+    """Data quality assessment via DSPy LLM with graceful fallback."""
+    try:
+        dq_llm = DataQuality()
+        result = dq_llm(
+            demographics=demographics, timeline=timeline, medications=medications
+        )
+        out = getattr(result, "data_quality", None)
+        if out:
+            return {
+                "overall_score": out.overall_score,
+                "completeness_score": out.completeness_score,
+                "richness_score": out.richness_score,
+                "accuracy_score": out.accuracy_score,
+                "recommendations": out.recommendations or [],
+                "reasoning": out.reasoning,
+            }
+    except Exception as e:
+        logger.warning(f"DataQuality LLM unavailable, using fallback: {e}")
+    # Fallback: simple heuristic
+    completeness = check_demographics_completeness(demographics).get(
+        "required_completeness", 0.5
     )
-
-    recommendations: List[str] = []
-    if completeness_score < 0.8:
-        recommendations.append("Complete missing demographic information")
+    richness = (0.4 if len(timeline) > 5 else (0.2 if len(timeline) > 0 else 0.0)) + (
+        0.3 if medications else 0.0
+    )
+    accuracy = 0.9
+    overall = completeness * 0.4 + richness * 0.4 + accuracy * 0.2
+    recs: List[str] = []
+    if completeness < 0.8:
+        recs.append("Complete missing demographic information")
     if len(timeline) < 3:
-        recommendations.append("Request additional clinical history")
-    if len(medications) == 0:
-        recommendations.append("Verify current medication status")
-
+        recs.append("Request additional clinical history")
+    if not medications:
+        recs.append("Verify current medication status")
     return {
-        "overall_score": round(overall_score, 2),
-        "completeness_score": round(completeness_score, 2),
-        "richness_score": round(richness_score, 2),
-        "accuracy_score": accuracy_score,
-        "recommendations": recommendations,
-        "reasoning": "Rule-based assessment of data completeness, richness, and accuracy",
+        "overall_score": round(overall, 2),
+        "completeness_score": round(completeness, 2),
+        "richness_score": round(richness, 2),
+        "accuracy_score": accuracy,
+        "recommendations": recs,
+        "reasoning": "Fallback heuristic",
     }
 
 

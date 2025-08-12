@@ -10,7 +10,7 @@ for Claude pre-authorization analysis.
 
 import json
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from loguru import logger
 
 # Simplified config - removed complex config_loader

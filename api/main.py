@@ -11,13 +11,15 @@ from loguru import logger
 
 from api.services.patient_lookup_service import get_patient_lookup_service
 from api.services.xml_processing_service import get_xml_processing_service
+from api.services import claude_analysis_service as claude_analysis_service
 
-from api.models import PatientInfo, UnifiedProcessResponse
+from api.models import PatientInfo
 from preauth_system.orchestrator import PreAuthOrchestrator
 
 # Initialize services
 patient_lookup_service = get_patient_lookup_service()
 xml_processing_service = get_xml_processing_service()
+claude_analysis_service = claude_analysis_service  # expose module symbol for tests
 
 # Expose a module-level orchestrator for tests to patch
 workflow_orchestrator = PreAuthOrchestrator()
@@ -41,17 +43,26 @@ app.add_middleware(
 
 from datetime import datetime
 from pathlib import Path
-import os
 import inspect
 
 
 @app.get("/api/health")
 async def health_check():
     """Simple health check endpoint."""
+    xml_available = hasattr(xml_processing_service, "process_xml_file") or hasattr(
+        xml_processing_service, "process_xml_content"
+    )
+    patient_index_ready = hasattr(patient_lookup_service, "get_all_patients")
+    claude_available = hasattr(claude_analysis_service, "get_claude_analysis_service")
+    status = "healthy" if (xml_available and patient_index_ready) else "degraded"
     return {
-        "status": "healthy",
+        "status": status,
         "version": "2.0.0",
         "timestamp": datetime.utcnow().isoformat(),
+        "xml_processing_available": xml_available,
+        "patient_index_ready": patient_index_ready,
+        "claude_available": claude_available,
+        "claude_analysis_available": claude_available,
     }
 
 
