@@ -8,7 +8,27 @@ client<llm> GPT5Mini {
   }
 }
 
-client<llm> CustomGPT4oMini {
+client<llm> GptOss20b {
+  provider "openai-generic"
+  options {
+    base_url "https://openrouter.ai/api/v1"
+    api_key env.OPENROUTER_API_KEY
+    model "openai/gpt-oss-20b"
+  }
+}
+
+client<llm> GptOss120b {
+  provider "openai-generic"
+  options {
+    base_url "https://openrouter.ai/api/v1"
+    api_key env.OPENROUTER_API_KEY
+    model "openai/gpt-oss-120b"
+  }
+}
+
+
+
+client<llm> GPT4oMini {
   provider openai
   retry_policy Exponential
   options {
@@ -17,13 +37,6 @@ client<llm> CustomGPT4oMini {
   }
 }
 
-client<llm> CustomSonnet {
-  provider anthropic
-  options {
-    model "claude-3-5-sonnet-20241022"
-    api_key env.ANTHROPIC_API_KEY
-  }
-}
 
 
 client<llm> CustomHaiku {
@@ -40,7 +53,7 @@ client<llm> CustomFast {
   provider round-robin
   options {
     // This will alternate between the two clients
-    strategy [CustomGPT4oMini, CustomHaiku]
+    strategy [GPT4oMini, CustomHaiku]
   }
 }
 
@@ -49,7 +62,7 @@ client<llm> OpenaiFallback {
   provider fallback
   options {
     // This will try the clients in order until one succeeds
-    strategy [CustomGPT4oMini, CustomGPT4oMini]
+    strategy [GptOss120b, GptOss20b]
   }
 }
 

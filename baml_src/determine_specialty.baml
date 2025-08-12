@@ -18,7 +18,9 @@ class SpecialtyDecision {
 }
 
 function DetermineSpecialty(input: string) -> SpecialtyDecision {
-  client "openai/gpt-4o-mini"
+  // client GPT4oMini
+  // client GptOss20b
+  client OpenaiFallback
   prompt #"
     You classify the medical specialty for a pre-authorization case.
 

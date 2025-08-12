@@ -13,7 +13,7 @@ Nazmito is an AI-powered pre-authorization platform for UAE healthcare insurance
 - **Clear Code**: Use descriptive names, keep functions short (<50 lines), limit file size (<500 lines)
 - **Temporary Files**: IF you create any temporary files which are not part of the feature or not supposed to be pushed to git, like .md, .py, .json, etc. then always put them in the `output/` folder with a <name_date_time> name, so i know they are temporary and not for the project to be pushed on git. if there is any file that needs to be kept, do not put it in the `output/` folder.
 - **Package Importing**: Always import packages from root, and not local and relative importing
-- Never use try/except block for imports. If a necessary library is not installed, it should fail.
+- Never use try/except block for importing a package. The required packages SHOULD be installed and if not,the system should fail.
 
 ## Sub-agent Usage Strategy
 

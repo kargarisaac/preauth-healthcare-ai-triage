@@ -40,6 +40,12 @@ class LlmResponseParser:
         result = self.__options.merge_options(baml_options).parse_response(function_name="DetermineSpecialty", llm_response=llm_response, mode="request")
         return typing.cast(types.SpecialtyDecision, result)
 
+    def FinalizePreAuthDecision(
+        self, llm_response: str, baml_options: BamlCallOptions = {},
+    ) -> types.FinalPreAuthDecision:
+        result = self.__options.merge_options(baml_options).parse_response(function_name="FinalizePreAuthDecision", llm_response=llm_response, mode="request")
+        return typing.cast(types.FinalPreAuthDecision, result)
+
     
 
 class LlmStreamParser:
@@ -65,5 +71,11 @@ class LlmStreamParser:
     ) -> stream_types.SpecialtyDecision:
         result = self.__options.merge_options(baml_options).parse_response(function_name="DetermineSpecialty", llm_response=llm_response, mode="stream")
         return typing.cast(stream_types.SpecialtyDecision, result)
+
+    def FinalizePreAuthDecision(
+        self, llm_response: str, baml_options: BamlCallOptions = {},
+    ) -> stream_types.FinalPreAuthDecision:
+        result = self.__options.merge_options(baml_options).parse_response(function_name="FinalizePreAuthDecision", llm_response=llm_response, mode="stream")
+        return typing.cast(stream_types.FinalPreAuthDecision, result)
 
     

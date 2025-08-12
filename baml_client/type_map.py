@@ -16,15 +16,23 @@ from . import stream_types
 
 type_map = {
 
+    "types.AgentAnalysis": types.AgentAnalysis,
+    "stream_types.AgentAnalysis": stream_types.AgentAnalysis,
+
     "types.ClinicalRiskAssessment": types.ClinicalRiskAssessment,
     "stream_types.ClinicalRiskAssessment": stream_types.ClinicalRiskAssessment,
 
     "types.DataQualityAssessment": types.DataQualityAssessment,
     "stream_types.DataQualityAssessment": stream_types.DataQualityAssessment,
 
+    "types.FinalPreAuthDecision": types.FinalPreAuthDecision,
+    "stream_types.FinalPreAuthDecision": stream_types.FinalPreAuthDecision,
+
     "types.SpecialtyDecision": types.SpecialtyDecision,
     "stream_types.SpecialtyDecision": stream_types.SpecialtyDecision,
 
+
+    "types.PreAuthDecision": types.PreAuthDecision,
 
     "types.RiskLevel": types.RiskLevel,
 

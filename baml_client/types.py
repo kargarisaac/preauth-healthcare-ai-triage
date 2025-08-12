@@ -37,8 +37,13 @@ def get_checks(checks: typing.Dict[CheckName, Check]) -> typing.List[Check]:
 def all_succeeded(checks: typing.Dict[CheckName, Check]) -> bool:
     return all(check.status == "succeeded" for check in get_checks(checks))
 # #########################################################################
-# Generated enums (2)
+# Generated enums (3)
 # #########################################################################
+
+class PreAuthDecision(str, Enum):
+    APPROVED = "APPROVED"
+    DENIED = "DENIED"
+    REQUIRES_REVIEW = "REQUIRES_REVIEW"
 
 class RiskLevel(str, Enum):
     LOW = "LOW"
@@ -60,8 +65,15 @@ class Specialty(str, Enum):
     General = "General"
 
 # #########################################################################
-# Generated classes (3)
+# Generated classes (5)
 # #########################################################################
+
+class AgentAnalysis(BaseModel):
+    agent_name: str
+    success: bool
+    response: typing.Optional[str] = None
+    confidence: typing.Optional[float] = None
+    error: typing.Optional[str] = None
 
 class ClinicalRiskAssessment(BaseModel):
     overall_risk: RiskLevel
@@ -76,6 +88,16 @@ class DataQualityAssessment(BaseModel):
     accuracy_score: float
     recommendations: typing.List[str]
     reasoning: str
+
+class FinalPreAuthDecision(BaseModel):
+    decision: PreAuthDecision
+    confidence: float
+    rationale: str
+    key_factors: typing.List[str]
+    conditions: typing.List[str]
+    risk_assessment: str
+    policy_compliance: str
+    recommendation: str
 
 class SpecialtyDecision(BaseModel):
     specialty: Specialty

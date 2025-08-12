@@ -36,6 +36,14 @@ from preauth_system.agents_openai import execute_openai_agent
 from preauth_system.pricing import calculate_cost_from_usage
 from data_ingestion.etl import find_patient_by_emirates_id
 
+# Import BAML client for final decision making
+try:
+    from baml_client import b
+    BAML_AVAILABLE = True
+except ImportError:
+    BAML_AVAILABLE = False
+    b = None
+
 
 # Helper for pricing
 def _compute_cost_usd(usage: Dict[str, Any]) -> float:
@@ -134,16 +142,109 @@ def phase3_barrier_node(_: PreAuthState) -> Dict[str, Any]:
     return {}
 
 
+def _convert_agent_result_to_baml_format(agent_name: str, result: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert agent result to BAML AgentAnalysis format."""
+    return {
+        "agent_name": agent_name,
+        "success": result.get("success", False),
+        "response": result.get("response") if result.get("success") else None,
+        "confidence": result.get("confidence"),
+        "error": result.get("error") if not result.get("success") else None
+    }
+
+
+def _prepare_patient_context_for_baml(unified_patient_record, xml_data: Dict[str, Any]) -> tuple[str, str, str]:
+    """Extract and format patient context for BAML function."""
+    # Extract patient demographics
+    patient_info = unified_patient_record.patient_info if hasattr(unified_patient_record, 'patient_info') else {}
+    demographics = f"""
+Patient ID: {patient_info.get('patient_id', 'Unknown')}
+Emirates ID: {patient_info.get('emirates_id', 'Unknown')}
+Name: {patient_info.get('first_name', '')} {patient_info.get('last_name', '')}
+Age: {patient_info.get('age', 'Unknown')} | DOB: {patient_info.get('date_of_birth', 'Unknown')}
+Gender: {patient_info.get('gender', 'Unknown')}
+Nationality: {patient_info.get('nationality', 'Unknown')}
+""".strip()
+    
+    # Extract requested services from XML
+    services = xml_data.get('services', [])
+    requested_services = "\n".join([
+        f"- {service.get('ActivityCode', 'N/A')}: {service.get('ActivityInstructions', 'No description')} (Cost: {service.get('RequestedAmount', {}).get('#text', 'N/A')} {service.get('RequestedAmount', {}).get('@currency', 'AED')})"
+        for service in services[:5]  # Limit to first 5 services
+    ]) if services else "No services specified"
+    
+    # Extract clinical context
+    clinical_notes = getattr(unified_patient_record, 'clinical_summary', 'No clinical summary available')
+    recent_labs = getattr(unified_patient_record, 'recent_labs', [])
+    current_meds = getattr(unified_patient_record, 'current_medications', [])
+    
+    clinical_context = f"""
+Clinical Summary: {clinical_notes}
+
+Recent Lab Results: {len(recent_labs)} available
+Current Medications: {len(current_meds)} active medications
+Specialty Context: {getattr(unified_patient_record, 'specialty_context', 'General')}
+""".strip()
+    
+    return demographics, requested_services, clinical_context
+
+
 def finalize_decision_node(state: PreAuthState) -> Dict[str, Any]:
     try:
         agent_results = get_all_agent_results(state)
 
         # Use unified patient record
         patient_data = state["unified_patient_record"]
-
-        final_decision = make_final_decision(
-            agent_results, state["xml_data"], patient_data
-        )
+        
+        # Use BAML function for final decision if available
+        if BAML_AVAILABLE and b:
+            # Convert agent results to BAML format
+            required_agents = ["clinical-analyzer", "medication-specialist", "risk-assessor", "decision-maker", "compliance-auditor"]
+            baml_agents = {}
+            
+            for agent_name in required_agents:
+                result = agent_results.get(agent_name, {})
+                baml_agents[agent_name.replace("-", "_")] = _convert_agent_result_to_baml_format(agent_name, result)
+            
+            # Prepare patient context
+            demographics, requested_services, clinical_context = _prepare_patient_context_for_baml(
+                patient_data, state["xml_data"]
+            )
+            
+            # Call BAML function
+            baml_decision = b.FinalizePreAuthDecision(
+                clinical_analysis=baml_agents["clinical_analyzer"],
+                medication_analysis=baml_agents["medication_specialist"], 
+                risk_assessment=baml_agents["risk_assessor"],
+                decision_making=baml_agents["decision_maker"],
+                compliance_audit=baml_agents["compliance_auditor"],
+                patient_demographics=demographics,
+                requested_services=requested_services,
+                clinical_context=clinical_context
+            )
+            
+            # Convert BAML result to expected format
+            file_path = state["xml_data"].get("file_path", "default")
+            auth_number = f"AUTH-2025-{datetime.now().strftime('%Y%m%d')}-{abs(hash(file_path)) % 10000:04d}"
+            
+            final_decision = {
+                "decision": baml_decision.decision.name,  # APPROVED, DENIED, REQUIRES_REVIEW
+                "confidence": baml_decision.confidence,
+                "authorization_number": auth_number,
+                "valid_days": 90,
+                "conditions": baml_decision.conditions,
+                "rationale": baml_decision.rationale,
+                "agent_based": True,
+                "key_factors": baml_decision.key_factors,
+                "risk_assessment": baml_decision.risk_assessment,
+                "policy_compliance": baml_decision.policy_compliance,
+                "recommendation": baml_decision.recommendation
+            }
+        else:
+            # Fallback to original logic if BAML not available
+            final_decision = make_final_decision(
+                agent_results, state["xml_data"], patient_data
+            )
         cost_tracking = state["cost_tracking"].copy()
         cost_tracking["processing_end"] = datetime.now().isoformat()
         if cost_tracking["processing_start"]:

@@ -13,7 +13,9 @@ function CalculateDataQuality(
   medication_data_availability: int,
   total_data_points: int
 ) -> DataQualityAssessment {
-  client "openai/gpt-4o-mini"
+  // client GPT4oMini
+  // client GptOss20b
+  client OpenaiFallback
   prompt #"
     You are a healthcare data quality analyst. Assess the quality of patient data for clinical decision-making.
 

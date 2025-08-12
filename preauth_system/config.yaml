@@ -1,6 +1,17 @@
 agents:
-  default_model: gpt-5
+  # Default model for agents when not specified in agent .md files
+  default_model: openai/gpt-oss-120b
   default_reasoning_effort: medium
+  # Provider selection (manual): openai | openrouter
+  # - openai: uses native OpenAI API (OPENAI_API_KEY), e.g., models like gpt-5, gpt-4o
+  # - openrouter: uses OpenRouter's OpenAI-compatible API (OPENROUTER_API_KEY)
+  provider: openrouter
+  openrouter:
+    base_url: https://openrouter.ai/api/v1
+    # API key should be provided via environment variable OPENROUTER_API_KEY
+    # Optional attribution headers (may appear on OpenRouter leaderboards)
+    site_url: null
+    app_name: null
 
 dataset:
   base_path: data/dataset_2/synthetic_dataset

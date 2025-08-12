@@ -3,7 +3,7 @@ name = "nazmito"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "xmlschema>=4.1.0",
     "xmltodict>=0.14.2",
@@ -46,4 +46,5 @@ packages = [
   "preauth_system",
   "data_ingestion",
   "api",
+  "baml_client",
 ]

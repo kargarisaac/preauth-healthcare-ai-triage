@@ -23,8 +23,15 @@ class StreamState(BaseModel, typing.Generic[StreamStateValueT]):
     value: StreamStateValueT
     state: typing_extensions.Literal["Pending", "Incomplete", "Complete"]
 # #########################################################################
-# Generated classes (3)
+# Generated classes (5)
 # #########################################################################
+
+class AgentAnalysis(BaseModel):
+    agent_name: typing.Optional[str] = None
+    success: typing.Optional[bool] = None
+    response: typing.Optional[str] = None
+    confidence: typing.Optional[float] = None
+    error: typing.Optional[str] = None
 
 class ClinicalRiskAssessment(BaseModel):
     overall_risk: typing.Optional[types.RiskLevel] = None
@@ -39,6 +46,16 @@ class DataQualityAssessment(BaseModel):
     accuracy_score: typing.Optional[float] = None
     recommendations: typing.List[str]
     reasoning: typing.Optional[str] = None
+
+class FinalPreAuthDecision(BaseModel):
+    decision: typing.Optional[types.PreAuthDecision] = None
+    confidence: typing.Optional[float] = None
+    rationale: typing.Optional[str] = None
+    key_factors: typing.List[str]
+    conditions: typing.List[str]
+    risk_assessment: typing.Optional[str] = None
+    policy_compliance: typing.Optional[str] = None
+    recommendation: typing.Optional[str] = None
 
 class SpecialtyDecision(BaseModel):
     specialty: typing.Optional[types.Specialty] = None

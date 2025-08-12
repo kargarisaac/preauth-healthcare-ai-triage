@@ -10,14 +10,8 @@ import xmltodict  # type: ignore
 
 from preauth_system.state import AgentResult, SharedContext
 import yaml  # type: ignore
+from baml_client import b
 
-try:
-    from baml_client import b
-
-    BAML_AVAILABLE = True
-except ImportError:
-    BAML_AVAILABLE = False
-    b = None
 import datetime as _dt
 import re as _re
 from loguru import logger
@@ -354,49 +348,23 @@ def determine_specialty(xml_data: Dict[str, Any], patient_data: Dict[str, Any]) 
 
         logger.info(f"Determine Specialty payload: {payload}")
 
-        if BAML_AVAILABLE and b:
-            # Call BAML function
-            result = b.DetermineSpecialty(payload)
-            logger.info(f"Determine Specialty result: {result}")
+        # Call BAML function
+        result = b.DetermineSpecialty(payload)
+        logger.info(f"Determine Specialty result: {result}")
 
-            # Normalize Enum value to string label
-            specialty_enum = getattr(result, "specialty", None)
-            label = getattr(
-                specialty_enum,
-                "value",
-                str(specialty_enum) if specialty_enum is not None else "",
-            )
-            if not label:
-                return "general"
-
-            # Convert CamelCase to snake_case then lowercase
-            snake = _re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", label).lower()
-            return snake
-        else:
-            # Fallback specialty determination when BAML is not available
-            logger.info("BAML not available, using fallback specialty determination")
-
-            # Simple heuristic-based specialty determination
-            service_codes = [str(req.get("code", "")) for req in service_requests]
-
-            # Endocrinology indicators
-            if any(code in ["E0784", "95250", "83036"] for code in service_codes):
-                return "endocrinology"
-
-            # Orthopedics indicators
-            if any(code in ["29881", "20610"] for code in service_codes):
-                return "orthopedics"
-
-            # Neurology indicators
-            if any(code in ["61885"] for code in service_codes):
-                return "neurology"
-
-            # Check for diabetes-related codes
-            diabetes_keywords = ["diabetes", "insulin", "hba1c", "glucose"]
-            if any(keyword in notes.lower() for keyword in diabetes_keywords):
-                return "endocrinology"
-
+        # Normalize Enum value to string label
+        specialty_enum = getattr(result, "specialty", None)
+        label = getattr(
+            specialty_enum,
+            "value",
+            str(specialty_enum) if specialty_enum is not None else "",
+        )
+        if not label:
             return "general"
+
+        # Convert CamelCase to snake_case then lowercase
+        snake = _re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", label).lower()
+        return snake
 
     except Exception:
         # Conservative fallback if the LLM call fails
@@ -731,73 +699,44 @@ def assess_clinical_risk_llm(
     """
     LLM-based clinical risk assessment using BAML.
     """
-    if BAML_AVAILABLE and b:
-        try:
-            # Call BAML clinical risk assessment function
-            risk_result = b.AssessClinicalRisk(
-                demographics=str(demographics),
-                recent_observations=str(timeline[:10]),  # Last 10 observations
-                current_medications=str(medications),
-                observation_count=len(timeline),
-                medication_count=len(medications),
-            )
 
-            # Convert enum to string if needed
-            overall_risk = (
-                getattr(
-                    risk_result.overall_risk, "value", str(risk_result.overall_risk)
-                )
-                if hasattr(risk_result, "overall_risk")
-                else "MODERATE"
-            )
+    try:
+        # Call BAML clinical risk assessment function
+        risk_result = b.AssessClinicalRisk(
+            demographics=str(demographics),
+            recent_observations=str(timeline[:10]),  # Last 10 observations
+            current_medications=str(medications),
+            observation_count=len(timeline),
+            medication_count=len(medications),
+        )
 
-            return {
-                "overall_risk": overall_risk,
-                "risk_factors": risk_result.risk_factors
-                if hasattr(risk_result, "risk_factors")
-                else [],
-                "confidence": risk_result.confidence
-                if hasattr(risk_result, "confidence")
-                else 0.7,
-                "reasoning": risk_result.reasoning
-                if hasattr(risk_result, "reasoning")
-                else "LLM-based assessment completed",
-            }
-
-        except Exception as e:
-            # Fallback if LLM call fails
-            return {
-                "overall_risk": "UNKNOWN",
-                "risk_factors": [f"Assessment failed: {str(e)}"],
-                "confidence": 0.0,
-                "reasoning": f"LLM assessment failed: {str(e)}",
-            }
-    else:
-        # Simple fallback when BAML not available
-        risk_score = "LOW"
-        risk_factors = []
-
-        # Check for diabetes indicators (basic heuristic)
-        diabetes_labs = [
-            obs
-            for obs in timeline
-            if "HbA1c" in str(obs.get("code", {}).get("text", ""))
-            and obs.get("valueQuantity", {}).get("value", 0) > 7.0
-        ]
-
-        if diabetes_labs:
-            risk_factors.append("Suboptimal diabetes control")
-            risk_score = "MODERATE"
-
-        # Check for polypharmacy
-        if len(medications) >= 3:
-            risk_factors.append("Polypharmacy considerations")
+        # Convert enum to string if needed
+        overall_risk = (
+            getattr(risk_result.overall_risk, "value", str(risk_result.overall_risk))
+            if hasattr(risk_result, "overall_risk")
+            else "MODERATE"
+        )
 
         return {
-            "overall_risk": risk_score,
-            "risk_factors": risk_factors,
-            "confidence": 0.6,
-            "reasoning": "Fallback heuristic assessment (BAML not available)",
+            "overall_risk": overall_risk,
+            "risk_factors": risk_result.risk_factors
+            if hasattr(risk_result, "risk_factors")
+            else [],
+            "confidence": risk_result.confidence
+            if hasattr(risk_result, "confidence")
+            else 0.7,
+            "reasoning": risk_result.reasoning
+            if hasattr(risk_result, "reasoning")
+            else "LLM-based assessment completed",
+        }
+
+    except Exception as e:
+        # Fallback if LLM call fails
+        return {
+            "overall_risk": "UNKNOWN",
+            "risk_factors": [f"Assessment failed: {str(e)}"],
+            "confidence": 0.0,
+            "reasoning": f"LLM assessment failed: {str(e)}",
         }
 
 
@@ -809,83 +748,50 @@ def calculate_data_quality_llm(
     """
     LLM-based data quality assessment using BAML.
     """
-    if BAML_AVAILABLE and b:
-        try:
-            # Get demographics completeness analysis
-            demographics_completeness = check_demographics_completeness(demographics)
+    try:
+        # Get demographics completeness analysis
+        demographics_completeness = check_demographics_completeness(demographics)
 
-            # Call BAML data quality assessment function
-            quality_result = b.CalculateDataQuality(
-                demographics_completeness=str(demographics_completeness),
-                clinical_data_richness=len(timeline),
-                medication_data_availability=len(medications),
-                total_data_points=len(timeline)
-                + len(medications)
-                + len([d for d in demographics.values() if d]),
-            )
-
-            return {
-                "overall_score": quality_result.overall_score
-                if hasattr(quality_result, "overall_score")
-                else 0.85,
-                "completeness_score": quality_result.completeness_score
-                if hasattr(quality_result, "completeness_score")
-                else 0.9,
-                "richness_score": quality_result.richness_score
-                if hasattr(quality_result, "richness_score")
-                else 0.8,
-                "accuracy_score": quality_result.accuracy_score
-                if hasattr(quality_result, "accuracy_score")
-                else 0.85,
-                "recommendations": quality_result.recommendations
-                if hasattr(quality_result, "recommendations")
-                else [],
-                "reasoning": quality_result.reasoning
-                if hasattr(quality_result, "reasoning")
-                else "LLM-based assessment completed",
-            }
-
-        except Exception as e:
-            # Fallback if LLM call fails
-            return {
-                "overall_score": 0.0,
-                "completeness_score": 0.0,
-                "richness_score": 0.0,
-                "accuracy_score": 0.0,
-                "recommendations": [f"Assessment failed: {str(e)}"],
-                "reasoning": f"LLM assessment failed: {str(e)}",
-            }
-    else:
-        # Simple fallback calculation when BAML not available
-        score = 0.0
-
-        # Demographics completeness (30%)
-        required_demo_fields = [
-            "emirates_id",
-            "first_name",
-            "last_name",
-            "date_of_birth",
-        ]
-        demo_score = sum(
-            1 for field in required_demo_fields if demographics.get(field)
-        ) / len(required_demo_fields)
-        score += demo_score * 0.3
-
-        # Clinical data richness (40%)
-        if timeline:
-            score += 0.4
-
-        # Medication data availability (30%)
-        if medications:
-            score += 0.3
+        # Call BAML data quality assessment function
+        quality_result = b.CalculateDataQuality(
+            demographics_completeness=str(demographics_completeness),
+            clinical_data_richness=len(timeline),
+            medication_data_availability=len(medications),
+            total_data_points=len(timeline)
+            + len(medications)
+            + len([d for d in demographics.values() if d]),
+        )
 
         return {
-            "overall_score": round(score, 2),
-            "completeness_score": demo_score,
-            "richness_score": 1.0 if timeline else 0.0,
-            "accuracy_score": 0.8,  # Assumed for fallback
-            "recommendations": ["Create BAML functions for proper assessment"],
-            "reasoning": "Fallback heuristic assessment (BAML not available)",
+            "overall_score": quality_result.overall_score
+            if hasattr(quality_result, "overall_score")
+            else 0.85,
+            "completeness_score": quality_result.completeness_score
+            if hasattr(quality_result, "completeness_score")
+            else 0.9,
+            "richness_score": quality_result.richness_score
+            if hasattr(quality_result, "richness_score")
+            else 0.8,
+            "accuracy_score": quality_result.accuracy_score
+            if hasattr(quality_result, "accuracy_score")
+            else 0.85,
+            "recommendations": quality_result.recommendations
+            if hasattr(quality_result, "recommendations")
+            else [],
+            "reasoning": quality_result.reasoning
+            if hasattr(quality_result, "reasoning")
+            else "LLM-based assessment completed",
+        }
+
+    except Exception as e:
+        # Fallback if LLM call fails
+        return {
+            "overall_score": 0.0,
+            "completeness_score": 0.0,
+            "richness_score": 0.0,
+            "accuracy_score": 0.0,
+            "recommendations": [f"Assessment failed: {str(e)}"],
+            "reasoning": f"LLM assessment failed: {str(e)}",
         }
 
 

@@ -106,6 +106,13 @@ class BamlSyncClient:
             "input": input,
         })
         return typing.cast(types.SpecialtyDecision, result.cast_to(types, types, stream_types, False, __runtime__))
+    def FinalizePreAuthDecision(self, clinical_analysis: types.AgentAnalysis,medication_analysis: types.AgentAnalysis,risk_assessment: types.AgentAnalysis,decision_making: types.AgentAnalysis,compliance_audit: types.AgentAnalysis,patient_demographics: str,requested_services: str,clinical_context: str,
+        baml_options: BamlCallOptions = {},
+    ) -> types.FinalPreAuthDecision:
+        result = self.__options.merge_options(baml_options).call_function_sync(function_name="FinalizePreAuthDecision", args={
+            "clinical_analysis": clinical_analysis,"medication_analysis": medication_analysis,"risk_assessment": risk_assessment,"decision_making": decision_making,"compliance_audit": compliance_audit,"patient_demographics": patient_demographics,"requested_services": requested_services,"clinical_context": clinical_context,
+        })
+        return typing.cast(types.FinalPreAuthDecision, result.cast_to(types, types, stream_types, False, __runtime__))
     
 
 
@@ -151,6 +158,18 @@ class BamlStreamClient:
           lambda x: typing.cast(types.SpecialtyDecision, x.cast_to(types, types, stream_types, False, __runtime__)),
           ctx,
         )
+    def FinalizePreAuthDecision(self, clinical_analysis: types.AgentAnalysis,medication_analysis: types.AgentAnalysis,risk_assessment: types.AgentAnalysis,decision_making: types.AgentAnalysis,compliance_audit: types.AgentAnalysis,patient_demographics: str,requested_services: str,clinical_context: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[stream_types.FinalPreAuthDecision, types.FinalPreAuthDecision]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(function_name="FinalizePreAuthDecision", args={
+            "clinical_analysis": clinical_analysis,"medication_analysis": medication_analysis,"risk_assessment": risk_assessment,"decision_making": decision_making,"compliance_audit": compliance_audit,"patient_demographics": patient_demographics,"requested_services": requested_services,"clinical_context": clinical_context,
+        })
+        return baml_py.BamlSyncStream[stream_types.FinalPreAuthDecision, types.FinalPreAuthDecision](
+          result,
+          lambda x: typing.cast(stream_types.FinalPreAuthDecision, x.cast_to(types, types, stream_types, True, __runtime__)),
+          lambda x: typing.cast(types.FinalPreAuthDecision, x.cast_to(types, types, stream_types, False, __runtime__)),
+          ctx,
+        )
     
 
 class BamlHttpRequestClient:
@@ -180,6 +199,13 @@ class BamlHttpRequestClient:
             "input": input,
         }, mode="request")
         return result
+    def FinalizePreAuthDecision(self, clinical_analysis: types.AgentAnalysis,medication_analysis: types.AgentAnalysis,risk_assessment: types.AgentAnalysis,decision_making: types.AgentAnalysis,compliance_audit: types.AgentAnalysis,patient_demographics: str,requested_services: str,clinical_context: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="FinalizePreAuthDecision", args={
+            "clinical_analysis": clinical_analysis,"medication_analysis": medication_analysis,"risk_assessment": risk_assessment,"decision_making": decision_making,"compliance_audit": compliance_audit,"patient_demographics": patient_demographics,"requested_services": requested_services,"clinical_context": clinical_context,
+        }, mode="request")
+        return result
     
 
 class BamlHttpStreamRequestClient:
@@ -207,6 +233,13 @@ class BamlHttpStreamRequestClient:
     ) -> baml_py.baml_py.HTTPRequest:
         result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="DetermineSpecialty", args={
             "input": input,
+        }, mode="stream")
+        return result
+    def FinalizePreAuthDecision(self, clinical_analysis: types.AgentAnalysis,medication_analysis: types.AgentAnalysis,risk_assessment: types.AgentAnalysis,decision_making: types.AgentAnalysis,compliance_audit: types.AgentAnalysis,patient_demographics: str,requested_services: str,clinical_context: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.baml_py.HTTPRequest:
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="FinalizePreAuthDecision", args={
+            "clinical_analysis": clinical_analysis,"medication_analysis": medication_analysis,"risk_assessment": risk_assessment,"decision_making": decision_making,"compliance_audit": compliance_audit,"patient_demographics": patient_demographics,"requested_services": requested_services,"clinical_context": clinical_context,
         }, mode="stream")
         return result
     

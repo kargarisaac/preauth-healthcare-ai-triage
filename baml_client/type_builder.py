@@ -20,14 +20,18 @@ from .globals import DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIM
 class TypeBuilder(type_builder.TypeBuilder):
     def __init__(self):
         super().__init__(classes=set(
-          ["ClinicalRiskAssessment","DataQualityAssessment","SpecialtyDecision",]
+          ["AgentAnalysis","ClinicalRiskAssessment","DataQualityAssessment","FinalPreAuthDecision","SpecialtyDecision",]
         ), enums=set(
-          ["RiskLevel","Specialty",]
+          ["PreAuthDecision","RiskLevel","Specialty",]
         ), runtime=DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME)
 
     # #########################################################################
-    # Generated enums 2
+    # Generated enums 3
     # #########################################################################
+
+    @property
+    def PreAuthDecision(self) -> "PreAuthDecisionViewer":
+        return PreAuthDecisionViewer(self)
 
     @property
     def RiskLevel(self) -> "RiskLevelViewer":
@@ -39,8 +43,12 @@ class TypeBuilder(type_builder.TypeBuilder):
 
 
     # #########################################################################
-    # Generated classes 3
+    # Generated classes 5
     # #########################################################################
+
+    @property
+    def AgentAnalysis(self) -> "AgentAnalysisViewer":
+        return AgentAnalysisViewer(self)
 
     @property
     def ClinicalRiskAssessment(self) -> "ClinicalRiskAssessmentViewer":
@@ -51,14 +59,64 @@ class TypeBuilder(type_builder.TypeBuilder):
         return DataQualityAssessmentViewer(self)
 
     @property
+    def FinalPreAuthDecision(self) -> "FinalPreAuthDecisionViewer":
+        return FinalPreAuthDecisionViewer(self)
+
+    @property
     def SpecialtyDecision(self) -> "SpecialtyDecisionViewer":
         return SpecialtyDecisionViewer(self)
 
 
 
 # #########################################################################
-# Generated enums 2
+# Generated enums 3
 # #########################################################################
+
+class PreAuthDecisionAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.enum("PreAuthDecision")
+        self._values: typing.Set[str] = set([  "APPROVED",  "DENIED",  "REQUIRES_REVIEW",  ])
+        self._vals = PreAuthDecisionValues(self._bldr, self._values)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def values(self) -> "PreAuthDecisionValues":
+        return self._vals
+
+
+class PreAuthDecisionViewer(PreAuthDecisionAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_values(self) -> typing.List[typing.Tuple[str, type_builder.EnumValueViewer]]:
+        return [(name, type_builder.EnumValueViewer(self._bldr.value(name))) for name in self._values]
+    
+
+class PreAuthDecisionValues:
+    def __init__(self, enum_bldr: baml_py.EnumBuilder, values: typing.Set[str]):
+        self.__bldr = enum_bldr
+        self.__values = values # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    
+    
+    @property
+    def APPROVED(self) -> type_builder.EnumValueViewer:
+        return type_builder.EnumValueViewer(self.__bldr.value("APPROVED"))
+    
+    @property
+    def DENIED(self) -> type_builder.EnumValueViewer:
+        return type_builder.EnumValueViewer(self.__bldr.value("DENIED"))
+    
+    @property
+    def REQUIRES_REVIEW(self) -> type_builder.EnumValueViewer:
+        return type_builder.EnumValueViewer(self.__bldr.value("REQUIRES_REVIEW"))
+    
+    
+
 
 class RiskLevelAst:
     def __init__(self, tb: type_builder.TypeBuilder):
@@ -190,8 +248,63 @@ class SpecialtyValues:
 
 
 # #########################################################################
-# Generated classes 3
+# Generated classes 5
 # #########################################################################
+
+class AgentAnalysisAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("AgentAnalysis")
+        self._properties: typing.Set[str] = set([  "agent_name",  "success",  "response",  "confidence",  "error",  ])
+        self._props = AgentAnalysisProperties(self._bldr, self._properties)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "AgentAnalysisProperties":
+        return self._props
+
+
+class AgentAnalysisViewer(AgentAnalysisAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, type_builder.ClassPropertyViewer]]:
+        return [(name, type_builder.ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+    
+
+
+class AgentAnalysisProperties:
+    def __init__(self, bldr: baml_py.ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    
+    
+    @property
+    def agent_name(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("agent_name"))
+    
+    @property
+    def success(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("success"))
+    
+    @property
+    def response(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("response"))
+    
+    @property
+    def confidence(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("confidence"))
+    
+    @property
+    def error(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("error"))
+    
+    
+
 
 class ClinicalRiskAssessmentAst:
     def __init__(self, tb: type_builder.TypeBuilder):
@@ -299,6 +412,73 @@ class DataQualityAssessmentProperties:
     @property
     def reasoning(self) -> type_builder.ClassPropertyViewer:
         return type_builder.ClassPropertyViewer(self.__bldr.property("reasoning"))
+    
+    
+
+
+class FinalPreAuthDecisionAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("FinalPreAuthDecision")
+        self._properties: typing.Set[str] = set([  "decision",  "confidence",  "rationale",  "key_factors",  "conditions",  "risk_assessment",  "policy_compliance",  "recommendation",  ])
+        self._props = FinalPreAuthDecisionProperties(self._bldr, self._properties)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "FinalPreAuthDecisionProperties":
+        return self._props
+
+
+class FinalPreAuthDecisionViewer(FinalPreAuthDecisionAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, type_builder.ClassPropertyViewer]]:
+        return [(name, type_builder.ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+    
+
+
+class FinalPreAuthDecisionProperties:
+    def __init__(self, bldr: baml_py.ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    
+    
+    @property
+    def decision(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("decision"))
+    
+    @property
+    def confidence(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("confidence"))
+    
+    @property
+    def rationale(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("rationale"))
+    
+    @property
+    def key_factors(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("key_factors"))
+    
+    @property
+    def conditions(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("conditions"))
+    
+    @property
+    def risk_assessment(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("risk_assessment"))
+    
+    @property
+    def policy_compliance(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("policy_compliance"))
+    
+    @property
+    def recommendation(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("recommendation"))
     
     
 

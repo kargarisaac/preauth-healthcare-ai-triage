@@ -21,3 +21,7 @@ output/
 # Runtime cache files
 preauth_cache/
 nazmito.egg-info/*
+nazmito.egg-info/PKG-INFO
+nazmito.egg-info/requires.txt
+nazmito.egg-info/SOURCES.txt
+nazmito.egg-info/top_level.txt

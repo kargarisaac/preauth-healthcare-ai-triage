@@ -19,7 +19,9 @@ function AssessClinicalRisk(
   observation_count: int,
   medication_count: int
 ) -> ClinicalRiskAssessment {
-  client "openai/gpt-4o-mini"
+  // client GPT4oMini
+  // client GptOss20b
+  client OpenaiFallback
   prompt #"
     You are a clinical risk assessment specialist. Analyze the provided patient data to determine clinical risk level.
 
