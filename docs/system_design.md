@@ -575,34 +575,34 @@ flowchart LR
 
 ##### Aug 14 — Scope lock, module skeletons, config
 - [x] Update this section with “MVP v1.0” scope (done via this edit).
-- [ ] Create `preauth_system/pipeline_module.py` with `class PreAuthPipeline(dspy.Module)` and a `forward(...)` stub returning a typed dict.
-- [ ] Add minimal decision schema constants (APPROVE/DENY/REVIEW; reason codes).
-- [ ] Ensure `uv` env ready; add DSPy dependency.
-  - [ ] `uv add dspy`
-- [ ] Wire `configure_dspy_default()` to read `llm.default_model` from `preauth_system/config.yaml`.
+- [x] Create `preauth_system/pipeline_module.py` with `class PreAuthPipeline(dspy.Module)` and a `forward(...)` stub returning a typed dict.
+- [x] Add minimal decision schema constants (APPROVE/DENY/REVIEW; reason codes).
+- [x] Ensure `uv` env ready; add DSPy dependency.
+  - [x] `uv add dspy`
+- [x] Wire `configure_dspy_default()` to read `llm.default_model` from `preauth_system/config.yaml`.
 
-Acceptance: `import preauth_system.pipeline_module:PreAuthPipeline` succeeds; `PreAuthPipeline().forward(... )` exists.
+Acceptance: `import preauth_system.pipeline_module:PreAuthPipeline` succeeds; `PreAuthPipeline().forward(... )` exists. ✅
 
 ##### Aug 15 — Intake adapter and context mapping
-- [ ] Harden `utils.parse_xml` / `extract_patient_info` to always return fields used downstream.
-- [ ] Implement `prepare_pipeline_patient_data(unified_record) -> signatures.PatientData`.
-- [ ] Test with `Patient_007_eclaim.xml` fixture.
+- [x] Harden `utils.parse_xml` / `extract_patient_info` to always return fields used downstream.
+- [x] Implement `prepare_pipeline_patient_data(unified_record) -> signatures.PatientData`.
+ - [x] Test with `Patient_007_eclaim.xml` fixture.
 
-Acceptance: `PreAuthPipeline.forward(xml_path)` returns a dict with an intake/context block populated.
+Acceptance: `PreAuthPipeline.forward(xml_path)` returns a dict with an intake/context block populated. ✅
 
 ##### Aug 16 — ClinicalSummarizer (LLM) with structured output
-- [ ] Implement `ClinicalSummarizer(dspy.Module)` using `dspy.ChainOfThought(ClinicalAnalysis)` and `ClinicalAnalysisOutput`.
-- [ ] Add a post‑processor that validates fields and clamps confidence 0–1.
-- [ ] Swap orchestrator Phase 1 to call this module (or route via `PreAuthPipeline`).
+- [x] Implement `ClinicalSummarizer(dspy.Module)` using `dspy.ChainOfThought(ClinicalAnalysis)` and `ClinicalAnalysisOutput`.
+- [x] Add a post‑processor that validates fields and clamps confidence 0–1.
+- [x] Swap orchestrator Phase 1 to call this module (or route via `PreAuthPipeline`).
 
-Acceptance: Summary returns executive_summary + recommendations; JSON serializable.
+Acceptance: Summary returns executive_summary + recommendations; JSON serializable. ✅
 
 ##### Aug 17 — EvidenceRetriever (ReAct over simple tools)
-- [ ] Define a `ReAct` program with tools from `preauth_system/dspy_tools.py` (full‑file loaders only).
-- [ ] Cap to 2 tool calls; return list of snippets + source names.
-- [ ] Truncate long files; prioritize the exact YAML policy file for the request category.
+- [x] Define a `ReAct` program with tools from `preauth_system/dspy_tools.py` (full‑file loaders only).
+- [x] Cap to 2 tool calls; return list of snippets + source names.
+- [x] Truncate long files; prioritize the exact YAML policy file for the request category.
 
-Acceptance: For CGM, it loads `diabetes_technology.yaml` and returns ≥1 relevant excerpt.
+Acceptance: For CGM, it loads `diabetes_technology.yaml` and returns ≥1 relevant excerpt. ✅
 
 ##### Aug 18 — PolicyEvaluator (LLM) with checklist schema
 - [ ] Implement `PolicyEvaluator(dspy.Module)` emitting strict checklist schema.
