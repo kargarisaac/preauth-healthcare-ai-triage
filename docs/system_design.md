@@ -9,6 +9,181 @@ This document outlines a best-in-class, production-grade, AI-driven prior author
 - **Explainable**: Each recommendation includes criteria mapping, citations (guidelines/policies), and evidence.
 - **Standard**: Uses UAE formats (eClaimLink, Shafafiya) and global vocabularies (FHIR, ICD-10, CPT/HCPCS, LOINC, RxNorm, SNOMED CT) with local mappings.
 - **Secure/Compliant**: PDPL-compliant data flows, consent management, audit trails, policy versioning.
+- **Deterministic‑first**: Core decisions are driven by explicit rules first (eligibility/benefits, coding edits, network status, policy criteria); LLMs summarize and explain with citations.
+- **Insightful**: Built-in analytics show turnaround times, approval/denial reasons, and emerging patterns (e.g., overutilization), helping payers refine policies and providers improve submissions.
+- **Trustworthy**: Proactive fraud/waste/abuse (FWA) signals with plain-language explanations support reviewers without blocking appropriate care.
+
+---
+
+### System Modules: From Request to Decision
+
+The Nazmito AI Platform orchestrates a sophisticated dance of specialized modules, agents, and Large Language Models (LLMs), each playing a distinct role in transforming prior authorization requests into explainable, auditable decisions. This modular architecture represents a paradigm shift from monolithic healthcare systems to a composable intelligence framework—one that mirrors how expert medical reviewers actually think, but with the consistency and speed that only AI can provide.
+
+Imagine each module as a specialized expert in a virtual medical review committee. The system begins with a meticulous intake specialist who validates and normalizes incoming requests, followed by administrative gatekeepers who verify coverage and network status. Clinical experts then synthesize patient histories and retrieve relevant guidelines, while policy analysts apply deterministic rules with mathematical precision. Safety officers flag potential risks, and finally, a synthesis engine combines all perspectives into a coherent decision that can be explained to both providers and payers.
+
+What makes this architecture particularly powerful for AI applications is its careful balance between deterministic rule-based processing and intelligent agent reasoning. Where possible, the system relies on explicit, auditable rules—ensuring consistency and regulatory compliance. Where nuanced clinical judgment is required, AI agents step in with carefully constrained roles, always grounding their reasoning in retrievable evidence and maintaining clear audit trails.
+
+#### The Modular Journey: 15 Specialized Components
+
+**1. Intake & Normalization**
+- **Type:** Module (deterministic processing)
+- **Objective:** Validate UAE XML formats, normalize to canonical structures, extract key clinical facts from attachments, and surface missing essentials early in the pipeline.
+- **The Challenge:** Healthcare data arrives in diverse formats—eClaimLink XML from Dubai, Shafafiya XML from Abu Dhabi, PDF lab reports, scanned clinic notes. Each format has its own quirks, required fields, and validation rules. Without proper normalization, downstream modules would need to handle multiple data schemas, creating complexity and potential errors.
+- **How It Works:** This module acts as the system's intelligent front door. It performs rigorous XML schema validation against UAE standards, then converts everything into a consistent FHIR-based canonical structure. Its most sophisticated capability is the intelligent processing of attached clinical documents. Using OCR and targeted extraction algorithms, it identifies and extracts only the most pertinent clinical facts—like "HbA1c 9.2% (elevated)" from a complex lab report or "6 weeks of physical therapy completed" from a clinic note. This ensures downstream modules receive precise, relevant data without drowning in document noise.
+- **Real-World Example:** A provider submits a diabetes device request via eClaimLink with a 12-page endocrinology report attached. The module validates the XML structure, extracts the patient demographics and procedure codes, then scans the PDF to identify and extract only the relevant facts: recent HbA1c value, current medications, and prior therapy attempts. It flags that a required field (insurance member ID) is missing and provides a precise error message, preventing delays later in the process.
+- **Inputs:** eClaimLink/Shafafiya XML payloads, PDF/image attachments, FHIR context for cross-referencing
+- **Outputs:** Canonical PA object (FHIR-structured), extracted clinical facts with provenance, early document completeness checklist
+- **Tools:** XML schema validators, OCR engines, redaction utilities for PHI protection
+
+**2. Eligibility & Benefits**
+- **Type:** Module (deterministic with API integration)
+- **Objective:** Confirm active insurance coverage, determine PA necessity, snapshot benefit limits and accumulators with full audit trails.
+- **The Challenge:** Before diving into clinical analysis, fundamental questions must be answered: Is the patient covered? Does this specific service require prior authorization under their plan? Have they reached annual limits? Processing requests for ineligible members or non-PA-required services wastes resources and creates provider frustration.
+- **How It Works:** This module integrates with payer eligibility APIs to verify real-time coverage status. It maintains an intelligent cache with short time-to-live (TTL) to balance accuracy with performance. Beyond basic eligibility, it computes whether prior authorization is actually required for the specific service-plan combination, checks benefit accumulators (like annual device limits), and detects duplicate or recently active authorizations for the same member and service.
+- **Real-World Example:** A request comes in for a continuous glucose monitor for a patient. The module queries the payer API and discovers the patient's insurance is active, but their plan includes a "diabetes management devices" benefit with a limit of one device per year. The system finds an approved CGM request from 3 months ago and flags this as a potential duplicate, routing the case for review rather than automatic processing.
+- **Inputs:** Member ID, plan information, service date, payer eligibility/benefits data
+- **Outputs:** Eligibility status, PA-required flag, benefit accumulators, comprehensive audit log, duplicate/open authorization alerts
+- **Tools:** Eligibility API clients, short-TTL caching system, episode detection rules and indexing
+
+**3. Network & Credentialing**
+- **Type:** Module (deterministic with registry lookups)
+- **Objective:** Verify provider network status, licensure compliance, and site-of-care appropriateness for the requested service.
+- **The Challenge:** Insurers strongly prefer in-network providers for cost control and quality assurance. Some procedures require specific facility types or certifications. Approving out-of-network services or inappropriate sites can lead to coverage disputes and quality concerns.
+- **How It Works:** This module cross-references provider identifiers against the payer's network registry and licensing databases. It verifies that both the requesting provider and the service facility are properly credentialed and that the proposed site is appropriate for the requested service. When issues are detected, it can suggest alternative in-network providers or more suitable facilities.
+- **Real-World Example:** A cardiologist requests approval for a complex cardiac procedure at a small outpatient clinic. The module verifies the cardiologist is in-network but flags that the proposed facility lacks the required cardiac surgery certification. It suggests three nearby in-network hospitals with appropriate cardiac capabilities and provides their contact information.
+- **Inputs:** Provider/facility identifiers, requested service codes, geographic location
+- **Outputs:** Network status determination, licensure validation, site suitability assessment, alternative facility suggestions
+- **Tools:** Network registries, licensure databases, site-of-care appropriateness rules
+
+**4. Coding Validation & Payment Integrity**
+- **Type:** Module (deterministic rule engine)
+- **Objective:** Validate diagnosis-procedure relationships, detect billing irregularities, ensure modifier compliance, and verify code version accuracy.
+- **The Challenge:** Medical coding errors are a leading cause of claim denials and delays. Diagnosis codes must logically support procedure codes, certain procedures cannot be billed together (bundling rules), and specific modifiers may be required. Catching these issues early prevents avoidable denials and appeals.
+- **How It Works:** This module applies sophisticated edit rules to validate coding accuracy. It checks that diagnosis codes (ICD-10) appropriately support the requested procedures (CPT/HCPCS), identifies "unbundling" violations where component services are inappropriately billed separately, and ensures required modifiers are present. It also validates that all codes are from current, accepted versions.
+- **Real-World Example:** A provider submits a request for knee arthroscopy (CPT 29881) along with a separate code for surgical wound closure (12031). The module flags this as inappropriate unbundling since wound closure is included in the arthroscopy procedure. It also notices the diagnosis code is for shoulder pain (M25.511) rather than knee pain, flagging a diagnosis-procedure mismatch. The system provides corrected codes and clear explanations.
+- **Inputs:** Diagnosis codes (ICD-10), procedure codes (CPT/HCPCS), modifiers, service location, dates
+- **Outputs:** Coding validation report with pass/fail status, identified errors with suggested corrections
+- **Tools:** Coding edit rules engine, modifier validation helpers, code version verification tables
+
+**5. Formulary & Step-Therapy**
+- **Type:** Module (deterministic with plan-specific rules)
+- **Objective:** Verify formulary coverage, assess step-therapy compliance, validate quantity limits, and propose acceptable alternatives when appropriate.
+- **The Challenge:** Insurance plans maintain formularies—carefully curated lists of covered medications and devices with associated rules. Many require "step therapy," where patients must try lower-cost alternatives before accessing premium options. Quantity and day-supply limits add another layer of complexity.
+- **How It Works:** For medication and device requests, this module consults the patient's specific plan formulary to determine coverage status. It checks whether step-therapy requirements have been met by analyzing prior treatment history. It also validates that requested quantities fall within plan limits and suggests covered alternatives when appropriate.
+- **Real-World Example:** A provider requests a GLP-1 diabetes medication (semaglutide) for a patient. The module checks the formulary and finds this drug is covered but requires step therapy—the patient must have tried metformin for at least 3 months. Reviewing the clinical history, it finds the patient was prescribed metformin 2 months ago. The system flags the unmet step requirement and calculates that step therapy will be satisfied in 4 weeks, providing the exact date when resubmission would be appropriate.
+- **Inputs:** Requested medications/devices, quantities and duration, plan-specific formulary, patient's prior therapy history
+- **Outputs:** Formulary coverage status, unmet step-therapy requirements with timelines, acceptable alternatives
+- **Tools:** Formulary databases, step-therapy rule engines, therapeutic substitution lists
+
+**6. Clinical Summarization**
+- **Type:** Agent (LLM with structured outputs)
+- **Objective:** Synthesize complex patient histories into concise, structured clinical snapshots that highlight information most relevant to the authorization decision.
+- **The Challenge:** Modern patients often have extensive medical histories spanning multiple conditions, treatments, and providers. Downstream modules need essential clinical context without being overwhelmed by irrelevant details. The challenge is identifying what's clinically significant for the specific request at hand.
+- **How It Works:** This intelligent agent processes the patient's FHIR history, claims data, and facts extracted from attachments to create a focused clinical narrative. It identifies key conditions, documents prior treatment attempts and their outcomes, highlights relevant risk factors, and summarizes the most recent diagnostic results. The output follows a structured format that downstream modules can reliably parse and utilize.
+- **Real-World Example:** For a knee replacement request, the agent reviews a patient's 5-year history and extracts the essential elements: progressive osteoarthritis documented over 18 months, failed conservative treatments (NSAIDs for 6 months, physical therapy for 12 weeks, intra-articular injection 3 months ago), current pain level 8/10, and recent X-rays showing severe joint space narrowing. It ignores unrelated conditions like well-controlled hypertension and focuses on factors directly relevant to the orthopedic request.
+- **Inputs:** FHIR patient history, canonical PA request, extracted facts from attachments
+- **Outputs:** Structured clinical summary with key problems, prior therapy responses, relevant lab/imaging results, specialty-specific context
+- **Tools:** FHIR query capabilities, limited knowledge base access for medical terminology, structured output formatting
+
+**7. Guideline Retrieval**
+- **Type:** Agent (RAG-powered with knowledge graphs)
+- **Objective:** Identify and retrieve the most relevant policy sections and clinical guidelines with precise citations to ground authorization decisions in evidence.
+- **The Challenge:** Clinical guidelines and insurance policies can span hundreds of pages. Human reviewers must locate relevant sections quickly and accurately. Manual searching is time-consuming and prone to missing important criteria or citing outdated information.
+- **How It Works:** This agent employs Retrieval-Augmented Generation (RAG) combined with knowledge graph entity linking to efficiently locate relevant guidance. It processes the request details and clinical context to generate targeted queries, then searches across policy documents, clinical guidelines, and regulatory requirements. Results are ranked by relevance and returned with precise, clickable citations.
+- **Real-World Example:** For a request for deep brain stimulation in Parkinson's disease, the agent searches across multiple sources and retrieves: (1) the specific policy section requiring "failure of optimal medical therapy for ≥6 months," (2) relevant American Academy of Neurology guidelines defining "optimal therapy," and (3) local DHA requirements for neurological procedures. Each excerpt includes the exact document, section, and page number for verification.
+- **Inputs:** Requested procedure codes, diagnosis codes, structured clinical summary
+- **Outputs:** Ranked, relevant policy and guideline excerpts with precise citations and confidence scores
+- **Tools:** Vector/BM25 retrieval engines, knowledge graph entity linking, citation management system
+
+**8. Policy Evaluation**
+- **Type:** Module (deterministic rule engine)
+- **Objective:** Apply explicit policy criteria from payers and regulatory bodies, generating clear checklists of met/unmet/uncertain requirements with supporting rationale.
+- **The Challenge:** Insurance policies contain complex, interconnected criteria that must be evaluated systematically. Human reviewers may inconsistently interpret requirements or miss subtle dependencies between criteria. The goal is algorithmic consistency while maintaining transparency.
+- **How It Works:** This module functions as a sophisticated rules engine, applying deterministic logic to evaluate policy criteria against the case facts. It processes temporal requirements ("at least 6 weeks of therapy"), clinical thresholds ("HbA1c >8.0%"), and prerequisite conditions. Each criterion is evaluated as met, unmet, or uncertain, with detailed rationale and identification of any missing documentation needed for complete evaluation.
+- **Real-World Example:** For a diabetes device request, the module evaluates multiple criteria: (1) Type 1 or Type 2 diabetes diagnosis (MET - ICD-10 E11.9 present), (2) HbA1c ≥7.0% (MET - recent value 9.2%), (3) Multiple daily glucose checks (UNCERTAIN - patient reports checking but no log provided), (4) Diabetes education completion (UNMET - no certificate on file). It generates a precise list of missing items needed to satisfy uncertain/unmet criteria.
+- **Inputs:** Canonical PA request, eligibility snapshot, coding validation results, clinical summary, retrieved policy excerpts
+- **Outputs:** Criteria evaluation checklist (met/unmet/uncertain), missing documentation list, detailed rationale for each assessment
+- **Tools:** Deterministic rule engine, temporal reasoning modules, evidence requirement mapping
+
+**9. Safety & Risk Assessment**
+- **Type:** Module (deterministic with optional AI synthesis)
+- **Objective:** Identify contraindications, assess patient-specific risk factors, and recommend appropriate safety mitigations before proceeding with requested services.
+- **The Challenge:** Patient safety is paramount, but risk assessment requires considering multiple factors: current medications, lab values, comorbidities, age, and the specific risks of the proposed intervention. Missing a significant contraindication could result in patient harm.
+- **How It Works:** This module primarily relies on deterministic safety databases and rules to flag known contraindications and risk factors. It checks for drug interactions, laboratory value thresholds (like kidney function before contrast studies), age-related risks, and procedure-specific contraindications. For complex cases with multiple risk factors, an optional small LLM can synthesize the overall risk profile.
+- **Real-World Example:** A patient with diabetes and chronic kidney disease requests a CT scan with contrast. The module flags: (1) LOW kidney function (eGFR 35 ml/min) creating HIGH risk for contrast-induced nephropathy, (2) concurrent metformin use requiring temporary discontinuation, (3) age >65 adding additional risk. It recommends pre-hydration protocols and suggests considering alternative imaging (MRI without contrast) if clinically appropriate.
+- **Inputs:** Current medications, laboratory values (especially eGFR, liver function), comorbidities, patient age, requested procedure details
+- **Outputs:** Risk level assessment (LOW/MODERATE/HIGH/CRITICAL), specific safety flags with explanations, recommended mitigation strategies
+- **Tools:** Drug/procedure safety databases, laboratory threshold rules, small LLM for complex risk synthesis
+
+**10. Alternatives & Site-of-Care Optimization**
+- **Type:** Module (deterministic with cost/outcome modeling)
+- **Objective:** Identify clinically equivalent alternatives that may offer better safety profiles, lower costs, or improved convenience while maintaining therapeutic effectiveness.
+- **The Challenge:** Multiple treatment options often exist for the same condition. The requested approach may not be the most cost-effective or carry unnecessary risks. However, any alternative suggestions must be clinically appropriate and policy-compliant.
+- **How It Works:** When policy guidelines permit, this module identifies alternative treatments, procedures, or sites of care that could achieve similar outcomes. It considers factors like clinical effectiveness, safety profile, cost differentials, and site-of-care appropriateness. All suggestions include clear explanations of trade-offs and confirmation of policy acceptability.
+- **Real-World Example:** A patient requests MRI of the lumbar spine at a hospital facility ($2,400). The module identifies three alternatives: (1) same MRI at an in-network imaging center ($800) with equivalent quality, (2) CT scan with similar diagnostic yield for this indication ($400), and (3) initial trial of physical therapy as recommended by guidelines before imaging ($200 for 6 weeks). Each option includes clinical rationale and cost comparison.
+- **Inputs:** Requested service details, network fee schedules, safety assessment results, policy acceptability guidelines
+- **Outputs:** Ranked alternative options with clinical rationale, cost comparisons, and trade-off analysis
+- **Tools:** Fee schedule databases, network registries, clinical guideline knowledge base, cost-effectiveness algorithms
+
+**11. Compliance & Documentation**
+- **Type:** Module (deterministic with regulatory rule sets)
+- **Objective:** Ensure adherence to UAE privacy laws (PDPL), verify documentation completeness, and provide guidance on information redaction when necessary.
+- **The Challenge:** Healthcare data is subject to strict privacy regulations, and incomplete documentation is a major cause of authorization delays. The system must balance thorough review with privacy protection while providing clear guidance on what additional information is needed.
+- **How It Works:** This module applies UAE Personal Data Protection Law (PDPL) requirements and insurer-specific documentation standards. It verifies that all required clinical documentation is present and complete, identifies any missing items with specific descriptions, and provides redaction guidance for sensitive information when documents must be shared.
+- **Real-World Example:** For a psychiatric medication request, the module identifies that a specialist evaluation is required but missing. It specifies exactly what's needed: "Psychiatrist evaluation within past 90 days including current symptom assessment, prior medication trials with specific names and durations, and treatment response documentation." It also flags that any psychiatric notes must be redacted to remove non-essential personal information before submission.
+- **Inputs:** Case documentation, policy-specific requirements, eligibility information
+- **Outputs:** Compliance status assessment, precise missing documentation list, redaction advisories for PHI protection
+- **Tools:** PDPL compliance checklists, documentation requirement matrices, privacy protection guidelines
+
+**12. Decision Synthesis (Combiner)**
+- **Type:** Module (deterministic logic engine)
+- **Objective:** Integrate all upstream assessments into a final authorization decision (APPROVE/DENY/REVIEW) with transparent reasoning and specific conditions.
+- **The Challenge:** Multiple modules provide different perspectives on the same request—eligibility, clinical appropriateness, safety, compliance. These must be synthesized into a coherent decision that can be explained and defended. The logic must be consistent and auditable.
+- **How It Works:** This module operates as a sophisticated decision tree, applying deterministic logic to combine all upstream signals. If all gates are satisfied (eligibility confirmed, network appropriate, coding valid, policy criteria met, safety acceptable), it generates an APPROVE with specific conditions like authorization duration. Clear violations result in DENY with precise reasons. Uncertain or borderline cases route to REVIEW with specific action items.
+- **Real-World Example:** For a knee replacement request: Eligibility ✓, Network ✓, Coding ✓, Policy criteria 80% met (missing recent X-ray), Safety LOW risk. Decision: REVIEW. Specific requirement: "Submit knee X-rays from past 60 days showing severe joint space narrowing. Once provided, case can be auto-approved." The authorization is held pending this single, specific item.
+- **Inputs:** Results from all upstream modules (eligibility, network, coding, formulary, clinical summary, policy evaluation, safety assessment, compliance check)
+- **Outputs:** Final decision (APPROVE/DENY/REVIEW), confidence score, specific conditions or requirements, detailed reason codes
+- **Tools:** Deterministic decision logic engine, reason code mapping system, confidence calculation algorithms
+
+**13. Dossier Writer**
+- **Type:** LLM (narrative generation with structured inputs)
+- **Objective:** Transform structured decision data into comprehensive, human-readable reports that explain the authorization decision to both providers and payers in clear, professional language.
+- **The Challenge:** Structured module outputs are precise but not easily digestible by human reviewers. Medical directors, providers, and patients need clear explanations of why decisions were made, what evidence was considered, and what steps are needed next.
+- **How It Works:** This LLM-powered module takes the structured outputs from all previous modules and synthesizes them into professional narrative reports. It generates executive summaries, detailed criteria evaluations, clinical rationales, and actionable next steps. Importantly, the LLM explains and contextualizes decisions but does not make them—all core determinations come from upstream modules.
+- **Real-World Example:** The system generates a comprehensive dossier stating: "This continuous glucose monitor request is APPROVED for 90 days based on documented Type 1 diabetes (E10.9) with HbA1c of 9.2% indicating suboptimal control. The patient meets all coverage criteria including diabetes education completion and multiple daily glucose monitoring. No safety contraindications identified. Prior authorization number: UAE-2024-001234. Device must be obtained from in-network durable medical equipment provider within 30 days."
+- **Inputs:** Final decision object, clinical summary, policy evaluation results, retrieved evidence citations
+- **Outputs:** Professional dossier with executive summary, detailed rationale, clinical context, and next steps; provider-facing summary with key points
+- **Tools:** Medical narrative templates, citation formatting, bilingual generation capabilities (Arabic/English)
+
+**14. Appeals & Next Steps**
+- **Type:** Agent (context-aware guidance generation)
+- **Objective:** Generate precise, actionable guidance for providers when requests require additional information or appeal processes, using exact policy language and case-specific context.
+- **The Challenge:** When authorizations cannot be immediately approved, providers need specific guidance on next steps. Generic form letters create frustration and delays. The guidance must be precise, actionable, and reference the exact policy requirements.
+- **How It Works:** This agent analyzes unmet criteria and missing documentation to generate tailored guidance. It can create specific checklists of required actions, draft appeal letters using exact policy language, and provide timelines for resubmission. All guidance is grounded in the specific case context and relevant policy excerpts.
+- **Real-World Example:** For a partially denied request, the agent generates: "To proceed with this authorization, please provide: (1) Documentation of 6 weeks physical therapy with specific dates and therapy notes, (2) Current pain scale assessment, (3) Orthopedic surgeon evaluation confirming surgical candidacy. Based on policy section 4.2.1, resubmit within 60 days to maintain priority review status." It also drafts an appeal template if the provider disagrees with clinical requirements.
+- **Inputs:** Unmet policy criteria, missing documentation list, provider specialty information, relevant policy excerpts
+- **Outputs:** Specific action checklists, appeal letter templates, resubmission guidance with timelines
+- **Tools:** Policy citation system, template libraries, context-aware content generation
+
+**15. Policy Assistant (Provider/Payer)**
+- **Type:** Agent (grounded Q&A with strict citation requirements)
+- **Objective:** Provide real-time, grounded answers to policy questions from both providers and payers, ensuring all responses include verifiable citations and avoiding any speculative information.
+- **The Challenge:** Providers and payers frequently have questions about coverage policies, documentation requirements, and coding guidelines. Phone calls and email inquiries create delays and inconsistent responses. Staff may provide outdated or incorrect information.
+- **How It Works:** This chat-based assistant answers questions by searching approved policy documents, user guides, and coding references. It provides answers only when grounded in authoritative sources and always includes precise citations. It can also perform quick actions like identifying missing requirements or composing appeals based on the specific case context.
+- **Real-World Example:** Provider asks: "What documentation is required for continuous glucose monitors in pediatric patients?" Assistant responds: "According to Policy Manual Section 12.4.3 (Updated March 2024), pediatric CGM requests require: (1) Pediatric endocrinologist evaluation, (2) Parent/caregiver diabetes education certificate, (3) Documentation of multiple daily finger stick logs, (4) HbA1c ≥7.0% for patients >6 years. Source: UAE Health Insurance Policy Manual v2024.1, pages 847-849."
+- **Inputs:** Policy knowledge base, user guide libraries, coding reference materials, optional case context for personalized guidance
+- **Outputs:** Precisely cited answers to policy questions, quick action summaries (missing items, appeal guidance)
+- **Tools:** Retrieval system with citation guardrails, approved document repositories, quick action generators
+
+#### The Orchestrated Flow: How Modules Work Together
+
+This modular architecture creates a sophisticated workflow where each component contributes its specialized expertise while maintaining clear boundaries and responsibilities. The intake module ensures clean, standardized data flows to all downstream components. Administrative modules (eligibility, network, coding) act as efficient gatekeepers, resolving straightforward issues before expensive clinical analysis begins.
+
+The clinical and policy modules form the analytical core, combining AI-powered summarization with deterministic rule application. Safety and compliance modules provide essential guardrails, while the decision synthesis module brings all perspectives together with mathematical precision.
+
+Finally, the presentation layer (dossier writer, appeals guidance, policy assistant) transforms technical outputs into human-readable formats that facilitate communication between all stakeholders.
+
+This design ensures that each authorization request follows a consistent, auditable path while allowing for the nuanced clinical reasoning that complex cases require. The result is a system that can process routine requests in seconds while providing thoughtful analysis for challenging cases—all with complete transparency and regulatory compliance.
 
 ---
 
@@ -18,21 +193,23 @@ This document outlines a best-in-class, production-grade, AI-driven prior author
   - Claims store (historical approvals/denials, provider, site-of-care, LOS, cost).
   - UAE coding adapters: eClaimLink/Shafafiya → canonical model; mapping tables for ICD-10, CPT/HCPCS, LOINC, RxNorm, SNOMED CT.
   - Provider network and site-of-care registry; fee schedules and contracted rates.
+  - Eligibility & benefits connectors and a short‑TTL cache (member active coverage, plan, accumulators, PA‑required flags).
+  - Formulary & step‑therapy rules by plan; benefit accumulators and frequency limits.
+  - Coding edit tables and bundling rules (UAE‑aligned), modifier and site‑of‑service helpers.
 
 - **Data Sources to Nazmito Platform**
-
 ```mermaid
-%%{init: {'flowchart': {'curve': 'orthogonal', 'htmlLabels': true, 'nodeSpacing': 40, 'rankSpacing': 60}}}%%
-flowchart LR
-  %% Groups
+%%{init: {'flowchart': {'curve': 'orthogonal', 'htmlLabels': true, 'nodeSpacing': 90, 'rankSpacing': 90}}}%%
+flowchart TB
+
+  subgraph HIE["📋 Patient Health Records (Government‑Controlled)<br/>• MALAFFI (Abu Dhabi HIE)<br/>• NABIDH (Dubai Unified Records)<br/>• EHR Systems (Cerner, Epic, Salama)<br/>• Lab Centers & Pharmacy Records<br/>• Hospital Systems<br/>⚠️ No direct access to Nazmito – UAE Health Data Law"]
+  end
+
   subgraph GOV["🏛️ Government Authorities"]
     direction TB
     GovToProviders["📤 TO PROVIDERS<br/>• Clinical Treatment Guidelines<br/>• Drug Formulary Updates<br/>• Regulatory Requirements<br/>• Quality Standards<br/>• Licensing Renewals"]:::box
     GovToInsurers["📤 TO INSURERS<br/>• Provider Network Lists<br/>• Licensed Facility Registry<br/>• Regulatory Compliance Status<br/>• Policy Coverage Guidelines"]:::box
     GovFromNazmito["📥 FROM NAZMITO<br/>• Compliance Reports<br/>• Healthcare Analytics<br/>• Quality Metrics<br/>• Population Health Insights"]:::box
-  end
-
-  subgraph HIE["📋 Patient Health Records (Government‑Controlled)<br/>• MALAFFI (Abu Dhabi HIE)<br/>• NABIDH (Dubai Unified Records)<br/>• EHR Systems (Cerner, Epic, Salama)<br/>• Lab Centers & Pharmacy Records<br/>• Hospital Systems<br/>⚠️ No direct access to Nazmito – UAE Health Data Law"]
   end
 
   subgraph EX["📚 External Knowledge"]
@@ -54,57 +231,18 @@ flowchart LR
   subgraph NAZMITO["🤖 NAZMITO AI PLATFORM<br/>• Data Integration Layer<br/>• FHIR Canonical Store<br/>• Policy Engine<br/>• Clinical AI Agents<br/>• Decision Engine<br/>• Audit & Compliance"]
   end
 
-  %% Flows (kept simple to avoid crossing)
-  GovToInsurers --> InsurersIn
   GovToProviders --> ProvidersIn
-
+  GovToInsurers --> InsurersIn
   extBody --> NAZMITO
-
   ProvidersIn --> NAZMITO
   InsurersIn --> NAZMITO
-
   HIE -.->|Filtered data via| InsurersIn
   HIE -.->|Clinical summaries via| ProvidersIn
-
   NAZMITO --> InsurersOut
   NAZMITO --> ProvidersOut
   NAZMITO --> GovFromNazmito
-
-  %% Styling
   classDef box fill:#0f172a,stroke:#475569,stroke-width:1px,color:#e2e8f0,rx:6,ry:6;
 ```
-
-  **Actual UAE Healthcare Data Flow (Based on UAE Health Data Law 2024):**
-
-  **Input to Nazmito:**
-  - **Insurance Companies**: Member eligibility, policy terms, claims history, provider networks, drug formularies (filtered patient data from MALAFFI/NABIDH via government-approved access)
-  - **Healthcare Providers**: Pre-auth requests via eClaimLink/Shafafiya, clinical documentation summaries, treatment plans, provider credentials (clinical summaries extracted from EHRs, not raw patient records)
-  - **External Knowledge**: Clinical decision support databases, drug interaction references, evidence-based medicine, UAE coding standards (direct API access)
-
-  **Government Authority Data Distribution:**
-  - **To Insurance Companies**: Provider network lists, licensed facility registry, regulatory compliance status, policy coverage guidelines
-  - **To Healthcare Providers**: Clinical treatment guidelines, drug formulary updates, regulatory requirements, quality standards, licensing renewals
-  - **From Nazmito**: Compliance reports, healthcare analytics, quality metrics, population health insights
-
-  **Patient Records Reality:**
-  - **No Direct Access**: UAE Health Information Exchanges (MALAFFI/NABIDH) are government-controlled and cannot directly connect to third-party systems like Nazmito
-  - **Indirect Access Only**: Patient data reaches Nazmito through:
-    - Insurance companies (filtered data for claims verification under UAE Health Data Law)
-    - Healthcare providers (clinical summaries submitted with pre-authorization requests)
-  - **Regulatory Compliance**: All data transfers must comply with UAE Health Data Law data localization requirements
-
-- **Knowledge Sources**
-  - Policy rule base: Payer-specific medical policies (DHA, DOH, insurer internal policies) compiled to machine-executable rules with provenance and effective dates.
-  - Clinical guidelines KB: ACR Appropriateness Criteria, NCCN, ADA, GOLD, ACC/AHA, etc., stored with citation granularity.
-  - Drug knowledge: Interactions, contraindications, dosing (e.g., RxNorm+Micromedex/DrugBank integration), renal/hepatic adjustments.
-  - Medical Knowledge Graph (KG): Nodes (conditions, procedures, drugs, labs, indications, policy criteria, contraindications), edges (treats, indicated_for, contraindicated_with, requires, equivalent_to), versioned with sources.
-  - Vector/RAG index: For guideline paragraphs, policy sections, and literature snippets tied to KG entities.
-
-- **Execution Substrate**
-  - Rule engine for medical policy evaluation & eligibility (deterministic, explainable decision trees).
-  - RAG service over KB/KG with hybrid search (BM25+dense), section-level citations.
-  - LLM router: small models for extraction/classification; larger models only when required.
-  - Cost/usage accounting, caching (request-level, patient-level, retrieval cache), and replayable audit logs.
 
 ---
 
@@ -196,96 +334,11 @@ This architecture ensures that regardless of whether patient data originates fro
 
 ---
 
-### Agent Taxonomy (What each agent does and the tools it needs)
-
-1) **Intake & Normalization Agent**
-- **Purpose**: Ingest eClaimLink/Shafafiya payloads, validate schema, map to canonical FHIR/canonical PA request.
-- **Inputs**: Raw XML/JSON; provider metadata.
-- **Outputs**: Canonical PA Request object; validation report (missing fields, codes normalization).
-- **Tools**: XML schema validator, UAE mapping tables, code normalizer, FHIR profile validator.
-
-2) **Eligibility & Benefits Agent**
-- **Purpose**: Verify active coverage, plan rules (prior auth requirements, exclusions), network status.
-- **Inputs**: Coverage data (payer APIs), member eligibility, provider network.
-- **Outputs**: Eligibility status, PA requirement flag, plan constraints.
-- **Tools**: Payer eligibility API connector, provider network service.
-
-3) **Clinical Consolidation & Summarization Agent**
-- **Purpose**: Aggregate patient history from EHR/FHIR, claims, labs, imaging; produce clinically-relevant summary.
-- **Inputs**: FHIR store, claims history, labs/imaging.
-- **Outputs**: Structured summary (problems, prior treatments, response/failure, risk factors, recent pertinent labs/imaging).
-- **Tools**: FHIR query, ICD/CPT/RxNorm/LOINC canonicalizers; small LLM for abstractive summarization with token budget.
-
-4) **Guideline Retrieval Agent (RAG)**
-- **Purpose**: Retrieve guideline sections and UAE policy excerpts relevant to the requested service and indications.
-- **Inputs**: Requested CPT/HCPCS, diagnosis (ICD-10), clinical summary.
-- **Outputs**: Ranked, de-duplicated evidence snippets with citations.
-- **Tools**: Vector search, KG entity linking, policy/guideline KB, citation packager.
-
-5) **Policy Evaluation Agent (Deterministic Rule Engine)**
-- **Purpose**: Execute payer policy rules and DHA/DOH requirements on the case data.
-- **Inputs**: Canonical request, eligibility, clinical summary, guideline snippets.
-- **Outputs**: Criteria checklist (met/unmet/uncertain), missing-docs list, policy score, rationale per criterion.
-- **Tools**: Rule engine (compiled policies), temporal reasoning helpers (e.g., “failed conservative therapy for ≥6 weeks”).
-
-6) **Safety & Risk Agent**
-- **Purpose**: Medication/procedure safety, interactions, contraindications, site-of-care risk, radiation exposure.
-- **Inputs**: Med list, labs (e.g., eGFR), comorbidities, prior procedures, age.
-- **Outputs**: Risk assessment (LOW/MODERATE/HIGH/CRITICAL), specific safety flags and mitigations.
-- **Tools**: Drug DB, procedure risk tables, KG for contraindications; deterministic checks first, LLM only for edge synthesis.
-
-7) **Alternatives & Cost-Optimization Agent**
-- **Purpose**: Suggest clinically-equivalent alternatives that lower cost or risk (e.g., MRI vs. CT if appropriate), site-of-care optimization.
-- **Inputs**: Requested service, guideline options, network/fee schedules, patient factors.
-- **Outputs**: Ranked alternatives with trade-offs (cost, accuracy, availability, safety) and policy acceptability.
-- **Tools**: Fee schedules, provider network, guideline KB; small LLM to articulate trade-offs with citations.
-
-8) **Compliance & Documentation Agent**
-- **Purpose**: Validate DHA/DOH compliance, PDPL privacy, documentation completeness.
-- **Inputs**: Full dossier, policy outputs.
-- **Outputs**: Compliance status, missing documents list, privacy redaction advisories.
-- **Tools**: Compliance rule base, checklists, redaction/PHI detector.
-
-9) **Decision Synthesis & Explainability Agent**
-- **Purpose**: Merge all agent outputs into a final recommendation (APPROVE/DENY/REVIEW), confidence, and a reader-friendly dossier.
-- **Inputs**: Criteria checklist, risk & safety, alternatives, compliance, guideline citations.
-- **Outputs**: Structured decision object + rendered PDF/HTML dossier with sectioned evidence, criteria mapping, and links.
-- **Tools**: Lightweight decision function over structured scores; LLM (brief) to write an executive summary using cited snippets.
-
-10) **Appeals & Next-Steps Agent**
-- **Purpose**: If criteria unmet/uncertain, generate precise next steps (missing labs, specific notes, peer-to-peer options).
-- **Inputs**: Policy gaps, missing data, provider specialty, SLA.
-- **Outputs**: Actionable checklist for provider; pre-filled appeal letter templates with citations.
-- **Tools**: Policy engine deltas, template library; small LLM for letter drafting.
-
-11) **Feedback & Learning Agent**
-- **Purpose**: Capture outcomes (final human decisions, patient outcomes, audit notes), calibrate models, update KG and rules.
-- **Inputs**: Post-decision labels, denials/overrides, retrospective audits.
-- **Outputs**: Model calibration metrics, drift alerts, proposed rule/guideline updates for review.
-- **Tools**: Offline analytics pipeline, labeling UI, approval workflow for policy updates.
-
----
-
-### End-to-End Workflow (Happy Path)
-1. Intake → normalize request → FHIR/canonical PA → validate.
-2. Eligibility & benefits check (payer APIs) → determine PA necessity.
-3. Clinical data aggregation & summarization (strict token budget, structured output).
-4. Guideline retrieval (RAG) + KG linking → top n sections with citations.
-5. Policy evaluation (deterministic): criteria checklist, missing docs.
-6. Safety & risk checks (deterministic + DBs).
-7. Alternatives & cost optimization (deterministic + brief LLM reasoning where needed).
-8. Compliance & documentation checks.
-9. Decision synthesis: combine scores → decision + confidence + dossier with citations.
-10. Provider receives either approval or a precise, minimal missing-info request; otherwise route to clinician reviewer.
-11. Feedback capture; continuous improvement.
-
----
 
 ### Decision Logic (Deterministic first, LLM when necessary)
-- Approve if: policy criteria met AND risk acceptable AND compliant.
-- Deny if: clear policy non-coverage OR safety contraindication OR non-compliance.
-- Review if: uncertain criterion(s) or missing critical documentation;
-- The LLM drafts readable justifications and summaries with embedded citations; it does not own the final decision when deterministic signals are strong.
+- Approve if: eligibility/benefits confirmed AND policy criteria met AND coding valid AND in‑network/site suitable (or exception coded) AND risk acceptable AND compliant.
+- Deny if: clear policy non‑coverage OR safety contraindication OR non‑compliance OR hard coding/network violations.
+- Review if: uncertain criterion(s), borderline risk, or missing critical documentation. The LLM drafts readable justifications and summaries with embedded citations; it does not own the final decision when deterministic signals are strong.
 
 ---
 
@@ -302,45 +355,43 @@ This architecture ensures that regardless of whether patient data originates fro
 ```mermaid
 %%{init: {'flowchart': {'curve': 'orthogonal', 'htmlLabels': true, 'nodeSpacing': 40, 'rankSpacing': 70}}}%%
 flowchart LR
-  %% Actors
   subgraph Providers["🏥 Providers"]
     A1["Clinician"]:::actor -->|Submit PA| A2["eClaimLink/Shafafiya Payload"]:::box
   end
 
-  %% Intake & Canonicalization
   subgraph Intake["Ingestion & Canonicalization"]
     direction LR
     B1["Intake & Normalization Agent"]:::proc
     B2["Canonical PA + FHIR"]:::data
     B3["Schema & Code Validation"]:::proc
+    B4["Attachments & Evidence Extraction"]:::proc
   end
 
-  %% Payer Systems
   subgraph Payer["Payer Systems"]
     direction TB
     P1["Eligibility API"]:::svc
     P2["Benefits & Plan Rules"]:::svc
     P3["Policy Repository"]:::svc
+    P4["Formulary Service"]:::svc
   end
 
-  %% Data Stores
   subgraph Data["Clinical & Claims Data"]
     direction TB
     D1["FHIR Store"]:::db
     D2["Claims History"]:::db
     D3["Provider Network & Fees"]:::db
+    D4["Coding Edit Tables"]:::db
   end
 
-  %% Knowledge & Reasoning
   subgraph Knowledge["Knowledge & Reasoning"]
     direction TB
     K1["Policy Rule Engine"]:::svc
     K2["Guideline KB + Vector Index"]:::db
     K3["Medical Knowledge Graph"]:::db
     K4["Drug/Proc Safety DB"]:::db
+    K5["FWA Signals & Analytics"]:::db
   end
 
-  %% Agents
   subgraph Agents["Reasoning Agents"]
     direction TB
     E1["Eligibility & Benefits Agent"]:::agent
@@ -353,52 +404,56 @@ flowchart LR
     E8["Decision Synthesis & Explainability Agent"]:::agent
     E9["Appeals & Next‑Steps Agent"]:::agent
     E10["Feedback & Learning Agent"]:::agent
+    E11["Coding Validation Agent"]:::agent
+    E12["Network & Credentialing Agent"]:::agent
+    E13["Attachments & Evidence Agent"]:::agent
+    E14["Formulary & Step‑Therapy Agent"]:::agent
   end
 
-  %% Intake flow
-  A2 --> B1 --> B2 --> B3
+  Asst["Grounded Assistant (Provider/Payer)"]:::proc
 
-  %% Agent wiring from canonical data
+  A2 --> B1 --> B2 --> B3
+  A2 --> B4 --> B2
+
   B2 --> D1
   B2 --> E1
+  B2 --> E11
+  B2 --> E12
 
-  %% Eligibility
   E1 -->|Coverage/Plan| P1
   E1 --> P2
 
-  %% Clinical Summary → Retrieval
+  E11 --> D4
+  E12 --> D3
+
   D1 --> E2 -->|Structured Summary| E3
   E3 --> K2
   E3 --> K3
 
-  %% Policy Evaluation
+  E14 --> P4
+
   E4 --> K1
   E4 --> P3
   E4 -->|Criteria Checklist| E8
 
-  %% Safety & Risk
   E5 --> K4
   E5 --> K3
 
-  %% Alternatives
   E6 --> D3
   E6 --> K2
 
-  %% Compliance
   E7 --> P3
 
-  %% Decisions & Outputs
   E8 -->|Decision + Dossier| Providers
   E8 -->|Decision + Audit| Payer
   E8 --> E9
+  E8 --> K5
   E9 -->|Missing Info / Appeal Advice| Providers
 
-  %% Feedback
-  E10 -->|Labels/Outcomes| K1
-  E10 --> K3
-  E10 --> K2
+  Asst --> K2
+  Asst --> P3
+  Asst --> D4
 
-  %% Styling
   classDef box fill:#0f172a,stroke:#475569,stroke-width:1px,color:#e2e8f0,rx:6,ry:6;
   classDef actor fill:#0b3,stroke:#065f46,color:#ecfdf5,rx:6,ry:6;
   classDef proc fill:#334155,stroke:#64748b,stroke-width:1px,color:#e2e8f0,rx:6,ry:6;
@@ -414,42 +469,18 @@ flowchart LR
 - Aligns with DHA/DOH rules while supporting payer-specific policies and local coding.
 - Deterministic policy execution ensures repeatability and auditability; LLMs are used for summarization, retrieval justification, and dossier generation with citations, not opaque decisions.
 - Built-in PDPL controls and documentation completeness checks reduce back-and-forth and denials.
+- Operational analytics and explainable FWA signals help payers detect overutilization early and adjust policies proactively without penalizing appropriate care.
 - Over time, the feedback loop calibrates confidence thresholds and reduces manual review load.
 
 ### Implementation Notes (high level)
 - Start with a slim path: Intake → Eligibility → Clinical Summary → Policy Evaluation → Decision Synthesis.
 - Wire RAG+KG for guideline citations; plug Drug DB for safety.
+- Add Coding Validation, Network/Credentialing, Formulary checks to strengthen deterministic decisions.
 - Add Alternatives & Appeals agents for incremental value.
 - Maintain versioned policies & prompts; unit-test criteria trees; evaluate with historical adjudication data.
 
 ---
 
-### Patient Journey (end-to-end, full system)
-1) Provider submits a prior authorization (PA) request via eClaimLink/Shafafiya with patient identifiers, requested service codes, diagnosis, and justification. Optional attachments (clinic notes, labs, imaging) are included.
-
-2) Intake & Normalization validates the payload, maps codes to the canonical model, and builds a FHIR/PA request object. Any missing critical fields are flagged early with a precise error (e.g., missing diagnosis or justification text).
-
-3) Eligibility & Benefits checks the member’s active coverage, plan rules, and in-network status. If PA is not required for this plan-service combination, a fast pass is returned; otherwise continue.
-
-4) Clinical Consolidation gathers the patient’s relevant history (problems, prior treatments and outcomes, risk factors, latest labs and imaging) from the FHIR store and claims history. A concise, structured clinical summary is produced.
-
-5) Guideline Retrieval (RAG) finds the most relevant policy and guideline excerpts based on the requested service and clinical context. Retrieved snippets are linked to entities in the medical knowledge graph and carry citations.
-
-6) Policy Evaluation (rule engine) executes payer/DHA/DOH criteria against the case: conservative therapy tried, indication present, time thresholds, prior failures, documentation adequacy. It outputs a criteria checklist (met / unmet / uncertain) and any missing documentation.
-
-7) Safety & Risk checks highlight contraindications and risk factors: e.g., low eGFR before contrast imaging, known drug interactions, age-based risk, site-of-care considerations. It records risk level and mitigation suggestions.
-
-8) Alternatives & Cost Optimization proposes clinically equivalent options (if appropriate) that reduce risk or cost (e.g., MRI vs CT, outpatient vs hospital outpatient department), with brief trade-off explanations and policy acceptability.
-
-9) Compliance & Documentation verifies PDPL/privacy, DHA/DOH documentation standards, and payer-specific documentation requirements. Missing items are precisely listed (e.g., “upload recent HbA1c and endocrinology note”).
-
-10) Decision Synthesis combines policy checklist, safety/risk, eligibility, and (when used) guideline snippets to generate a recommendation: APPROVE, DENY, or REVIEW. The rationale cites specific criteria and evidence, and any conditions (e.g., authorization duration, monitoring).
-
-11) Dossier Rendering produces a readable report for the insurer’s medical director: executive summary, criteria table, retrieved citations, clinical summary, safety flags, alternatives, and a clearly marked recommendation. A short provider-facing summary is also produced.
-
-12) Response & Provider Next Steps: The provider receives APPROVE (with authorization number and conditions) or DENY/REVIEW with actionable next steps (missing docs, alternative acceptable paths, or peer-to-peer scheduling info).
-
-13) Feedback & Learning: The insurer’s final adjudication and any appeals outcomes are fed back to continuously calibrate rules, retrieval relevance, and prompting. Versioned policies and prompts ensure reproducibility and auditability.
 
 ### Glossary (plain-English explanations)
 - **Prior Authorization (PA)**: Advance approval from an insurer before a service/drug is provided, to confirm it is covered and medically necessary.
@@ -498,88 +529,182 @@ flowchart LR
 
 ---
 
-### MVP Subproject
+### MVP v1.0
 
-Goal: Build a convincing, running demo that proves end‑to‑end value: input a UAE PA request, output an explainable decision (approve/deny/review) with a clear, cited dossier. Optimize for speed-to-demo, reliability, and low cost; defer deep breadth.
+#### MVP definition (simplified, high‑signal)
+- **Goal**: Demonstrate end‑to‑end, explainable prior authorization on 2–3 exemplar policies using the existing XML → unified record → LLM analysis → decision → dossier flow.
+- **Must‑have outcomes**
+  - **Input**: eClaimLink XML from `data/dataset_2/synthetic_dataset/UAE_XML/`
+  - **Core steps**: Intake → Clinical summary → Evidence lookup (load full KB/policies) → Policy checklist (LLM) → Decision combine → Dossier
+  - **Output**: Structured decision object + readable dossier with cited snippets (policy/KB filenames + sections)
+  - **Latency target**: <8s on a laptop; **Cost**: <$0.10/request
+- **Deferred** (post‑MVP)
+  - Real eligibility/network connectors; code‑edits engine; step‑therapy engine; vector/BM25/KG retrieval; full compliance module
 
-MVP Scope (Must‑Have)
-- Hybrid-by-default: deterministic rules + LLM agents with agentic RAG; final decision remains deterministic; dossier includes LLM rationale and citations.
-- Intake & Canonicalization: Parse eClaimLink (1 format path) to a minimal canonical PA object; validate required fields; map codes (basic tables only).
-- Clinical Summary: Aggregate synthetic FHIR+claims, and generate a short, structured summary; LLM clinical synthesis with citations via tools (KB search, FHIR fetch).
-- Minimal Policy Engine (3 exemplar policies):
-  - Diabetes technology coverage (CGM 95250, insulin pump E0784)
-  - Osteoarthritis knee intervention (arthroscopy 29881; hyaluronic injection 20610)
-  - Parkinson’s deep brain stimulation (DBS) evaluation (61885)
-- Guideline Retrieval (Agentic RAG): Local KB snippets for the 3 policies with citations; agent calls tools to retrieve and ground claims; no external calls.
-- Safety Check (Basic): Red flags, eGFR threshold for contrast imaging, simple drug rules for diabetes therapies.
-- Decision Synthesis: Deterministic mapping (policy checklist + safety + eligibility stub) → APPROVED / DENIED / REVIEW; include LLM support text and citations in dossier.
-- Compliance/Docs Checklist: Minimal completeness check (missing notes/labs/diagnosis code) and next steps.
-- API + Demo Script: FastAPI endpoints + CLI to run N sample cases and render dossiers.
+#### Architecture changes (preserve code, add clarity)
+- **Keep** the asyncio orchestrator and current agents.
+- **Add** a unified `dspy.Module` wrapper so the entire pipeline is callable/optimizable like a PyTorch model: `PreAuthPipeline(dspy.Module)`.
+- **Use** DSPy where it makes sense:
+  - `dspy.Predict` / `dspy.ChainOfThought` for Clinical summarization, Policy checklisting, Dossier
+  - `dspy.ReAct` for tool‑use (load whole KB/policy files via functions in `preauth_system/dspy_tools.py`)
+- **Simplify** agent scope for MVP:
+  - Rename `clinical_analyzer` → ClinicalSummarizer with structured outputs
+  - Add `PolicyEvaluator` (LLM) that converts “policy text + case” → criteria checklist (met/unmet/uncertain + rationale + citations)
+  - Make `DecisionCombiner` deterministic over LLM outputs (no free‑form decision by LLM)
+  - Keep `FinalReport` as DossierWriter, fed only structured inputs + citations
 
-Non‑Goals (For later)
-- Full Shafafiya path; comprehensive payer integrations; broad policy library; deep cost optimization/site-of-care; production-grade security/HA.
+#### Proposed `dspy.Module` composition
+- `PreAuthPipeline.forward(xml_path: str, xml_format="eclaim") -> Dict`
+  - IntakeNormalizer (existing utils/etl) → canonical context
+  - ClinicalSummarizer: `dspy.ChainOfThought(ClinicalAnalysis)` using the prepared context
+  - EvidenceRetriever: `dspy.ReAct` selecting tools in `preauth_system/dspy_tools.py` to load full files (no retrieval infra)
+  - PolicyEvaluator: `dspy.ChainOfThought(AuthorizationDecision)` but emitting a strict checklist schema:
+    - `criteria: [{id, text, status: met|unmet|uncertain, rationale, citations:[source_id]}]`
+    - `missing_documents: [text]`
+  - DecisionCombiner: Python rules to map checklist → APPROVE/DENY/REVIEW + conditions
+  - DossierWriter: `dspy.Predict(FinalReportSignature)` to render narrative from structured inputs
+- Keep `PreAuthOrchestrator` as an adapter calling `PreAuthPipeline` so current CLI/tests keep working.
 
-Architecture (MVP Modules)
-- preauth_system/
-  - intake.py: eClaimLink→canonical mapping, validation, code normalization (ICD-10, CPT-ish).
-  - summary.py: FHIR/claims aggregation and structured clinical summary; calls agentic LLM synthesis with citations via tools.
-  - policy/
-    - rules_engine.py: deterministic checks; composable criteria trees.
-    - policies/
-      - diabetes_technology.yaml
-      - osteoarthritis_knee_intervention.yaml
-      - parkinsons_dbs.yaml
-  - rag/
-  - kb_loader.py: load local guideline/policy snippets.
-  - retrieve.py: BM25S-based retrieval over local KB; return top‑k sections + citations (used by agent tools).
-  - safety.py: basic safety checks (eGFR, simple drug flags), returns structured warnings.
-  - decision.py: combine policy checklist + safety + eligibility stub into decision + rationale + conditions.
-  - dossier.py: render HTML/PDF with sections, citations, and criteria mapping.
-  - api.py: FastAPI endpoints: /analyze, /dossier, /health.
-  - demo.py: CLI batch runner over sample cases.
-- data_ingestion/: use existing synthetic dataset_2.
-- baml_src/: optional schemas for structured outputs; keep minimal to avoid extra calls.
-- kb/: local guideline/policy snippets (markdown or jsonl) for the 3 exemplar policies.
+#### Success criteria/KPIs
+- ≥2 exemplar policies end‑to‑end with cited dossier: `diabetes_technology.yaml`, `osteoarthritis_knee_intervention.yaml` (DBS optional)
+- Structured checklist quality: ≥80% correct vs hand‑curated expectations on demo cases
+- Deterministic DecisionCombiner reproducibility: 100% for same inputs
+- Observability: per‑phase timings + token/cost summary in output object
 
-Data Flow (MVP)
-1) Intake: eClaimLink XML → canonical PA request (service codes, diagnosis, justification, patient identifiers, provider info).
-2) Fetch: patient history from synthetic FHIR + claims.
-3) Summarize: produce concise structured clinical snapshot (deterministic template + tiny LLM if needed).
-4) Retrieve: guideline/policy snippets from local KB tied to requested service/diagnosis.
-5) Evaluate: run policy rules (met/unmet/uncertain), record missing documentation.
-6) Safety: run basic checks (e.g., eGFR<30 → contrast caution; med safety stubs).
-7) Decide: deterministic function → APPROVED/DENIED/REVIEW with rationale.
-8) Dossier: assemble HTML/PDF with citations, criteria table, and next steps.
+#### Day‑by‑day plan (Aug 14 onward)
 
-### MVP Implementation Completed
+##### Aug 14 — Scope lock, module skeletons, config
+- [x] Update this section with “MVP v1.0” scope (done via this edit).
+- [ ] Create `preauth_system/pipeline_module.py` with `class PreAuthPipeline(dspy.Module)` and a `forward(...)` stub returning a typed dict.
+- [ ] Add minimal decision schema constants (APPROVE/DENY/REVIEW; reason codes).
+- [ ] Ensure `uv` env ready; add DSPy dependency.
+  - [ ] `uv add dspy`
+- [ ] Wire `configure_dspy_default()` to read `llm.default_model` from `preauth_system/config.yaml`.
 
-The MVP has been successfully implemented with all core components working:
+Acceptance: `import preauth_system.pipeline_module:PreAuthPipeline` succeeds; `PreAuthPipeline().forward(... )` exists.
 
-**✅ Implemented Components:**
-- **Intake System**: eClaimLink XML → canonical PA validation (`preauth_system/intake.py`)
-- **Policy Engine**: 3 clinical policies with YAML rules (`preauth_system/policy/`)
-- **RAG System**: Local knowledge base with BM25S retrieval (`preauth_system/rag/`)
-- **Safety Checks**: eGFR thresholds and drug interaction basics (`preauth_system/safety.py`)
-- **Decision Engine**: Deterministic mapping with hybrid LLM support (`preauth_system/decision.py`)
-- **Dossier Generation**: HTML reports with citations (`preauth_system/dossier.py`)
-- **FastAPI Backend**: 8 endpoints including `/analyze`, `/dossier`, `/health` (`api/main.py`)
-- **Demo Interface**: 3 test cases with different outcomes
+##### Aug 15 — Intake adapter and context mapping
+- [ ] Harden `utils.parse_xml` / `extract_patient_info` to always return fields used downstream.
+- [ ] Implement `prepare_pipeline_patient_data(unified_record) -> signatures.PatientData`.
+- [ ] Test with `Patient_007_eclaim.xml` fixture.
 
-**✅ Working Demo Cases:**
-- **Patient_007**: Diabetes CGM → APPROVED (criteria met)
-- **Patient_005**: Osteoarthritis → REVIEW (missing documentation)  
-- **Patient_011**: Parkinson's DBS → DENY (insufficient therapy duration)
+Acceptance: `PreAuthPipeline.forward(xml_path)` returns a dict with an intake/context block populated.
 
-**✅ Performance Metrics:**
-- Processing time: <5 seconds per case
-- Cost per case: <$0.10 in hybrid mode
-- Deterministic path: $0 (no LLM calls)
+##### Aug 16 — ClinicalSummarizer (LLM) with structured output
+- [ ] Implement `ClinicalSummarizer(dspy.Module)` using `dspy.ChainOfThought(ClinicalAnalysis)` and `ClinicalAnalysisOutput`.
+- [ ] Add a post‑processor that validates fields and clamps confidence 0–1.
+- [ ] Swap orchestrator Phase 1 to call this module (or route via `PreAuthPipeline`).
 
-**✅ Key Features Delivered:**
-- Multi-format XML processing (eClaimLink/Shafafiya support)
-- Deterministic policy evaluation with clear criteria mapping
-- Safety screening with clinical contraindications
-- Evidence-based dossiers with guideline citations
-- DSPy agent integration for structured reasoning
-- UAE compliance (PDPL data handling)
+Acceptance: Summary returns executive_summary + recommendations; JSON serializable.
 
+##### Aug 17 — EvidenceRetriever (ReAct over simple tools)
+- [ ] Define a `ReAct` program with tools from `preauth_system/dspy_tools.py` (full‑file loaders only).
+- [ ] Cap to 2 tool calls; return list of snippets + source names.
+- [ ] Truncate long files; prioritize the exact YAML policy file for the request category.
+
+Acceptance: For CGM, it loads `diabetes_technology.yaml` and returns ≥1 relevant excerpt.
+
+##### Aug 18 — PolicyEvaluator (LLM) with checklist schema
+- [ ] Implement `PolicyEvaluator(dspy.Module)` emitting strict checklist schema.
+- [ ] Validator to enforce schema and normalize statuses.
+- [ ] Prompts must cite filename/section from EvidenceRetriever.
+
+Acceptance: Checklist is consistent across runs and cites provided sources.
+
+##### Aug 19 — DecisionCombiner (deterministic) and audit fields
+- [ ] Implement minimal rules:
+  - APPROVE if all mandatory criteria met and no safety block
+  - DENY if explicit non‑coverage criterion present
+  - REVIEW for uncertain/unmet non‑mandatory or missing docs
+- [ ] Map checklist → reason codes, conditions.
+- [ ] Log per‑phase timings and token/cost usage.
+
+Acceptance: Decision is deterministic and reproducible.
+
+##### Aug 20 — DossierWriter (LLM) and output contract
+- [ ] Implement `DossierWriter` using `dspy.Predict(FinalReportSignature)` from structured inputs.
+- [ ] Template: executive summary, criteria results, decision, conditions, citations.
+- [ ] Bilingual toggle placeholder (English now).
+
+Acceptance: Dossier includes clear decision + bullet criteria with citation filenames.
+
+##### Aug 21 — Orchestrator adapter + CLI/JSON outputs
+- [ ] Update `PreAuthOrchestrator` to call `PreAuthPipeline` (feature flag `use_pipeline=True`).
+- [ ] Persist `output/YYYYMMDD/HHMMSS/<patient>_result.json` including: context → summary → checklist → decision → dossier → cost.
+
+Acceptance: `python -m preauth_system.orchestrator` processes `Patient_007` end‑to‑end.
+
+##### Aug 22 — Tests, fixtures, and guardrails
+- [ ] Unit tests per module; deterministic tests for `DecisionCombiner`.
+- [ ] 2–3 demo fixtures per policy; assert stable checklists (minor text variance allowed).
+- [ ] Add rate‑limit/backoff and token caps in `dspy_config.py`.
+
+Acceptance: All tests pass locally with `uv run pytest -q`.
+
+##### Aug 23 — MVP demo polish and docs
+- [ ] README “Run the MVP” with one‑liner commands, expected outputs, screenshots.
+- [ ] Update this document with “MVP v1.0 implemented” checklist + “Next iteration” backlog.
+- [ ] Batch script to run 5 demo cases and print decisions + latencies + cost.
+
+Acceptance: One command produces decisions and a clean dossier for each demo case.
+
+#### Concrete todos (by component)
+- **PreAuthPipeline module**
+  - [ ] Create `PreAuthPipeline(dspy.Module)` with `forward(xml_path, xml_format="eclaim")`
+  - [ ] Return a single dict: intake, clinical_summary, evidence, checklist, decision, dossier, timings, cost
+- **ClinicalSummarizer**
+  - [ ] Implement CoT with `ClinicalAnalysis` signature
+  - [ ] JSON post‑validation, confidence normalization
+- **EvidenceRetriever**
+  - [ ] ReAct with tools from `dspy_tools.DEFAULT_TOOLS`
+  - [ ] Limit to 2 calls; return snippets + file identifiers
+- **PolicyEvaluator**
+  - [ ] Prompt to emit strict checklist schema
+  - [ ] Validate/normalize statuses; tie citations to filenames
+- **DecisionCombiner**
+  - [ ] Encode minimal rules; produce decision + reasons + conditions
+  - [ ] Log which criteria drove the decision
+- **DossierWriter**
+  - [ ] Generate clean sections; include citations; English now, Arabic later
+- **Orchestrator/CLI**
+  - [ ] Add feature flag to run MVP path
+  - [ ] Persist JSON outputs; pretty print summary lines
+- **Config/Cost/Obs**
+  - [ ] `config.yaml` LLM defaults; token caps
+  - [ ] Capture per‑phase timings and token usage; sum cost
+- **Docs/Tests**
+  - [ ] Update this “### MVP” section and add golden tests for diabetes/osteoarthritis policies
+
+#### Backlog (not in MVP)
+- Add BM25/vector retrieval and metadata citations
+- Introduce basic CodeValidator and FormularyChecker as JSON rule tables
+- Safety guardrails for key labs/drug rules
+- Network/eligibility mock registries with short‑TTL cache
+- Grounded Assistant (Q&A) over policy corpus with strict citations
+
+#### DSPy references
+- [DSPy: Custom Modules tutorial](https://dspy.ai/tutorials/custom_module/)
+- [DSPy Modules guide](https://dspy-docs.vercel.app/docs/deep-dive/modules/guide)
+
+##### Aug 24 — Repository hygiene and legacy cleanup
+- [ ] Create `archive/` directory and move non-essential legacy assets:
+  - [ ] Move `legacy-website/` → `archive/legacy-website/`
+  - [ ] Move any one-off demo notebooks/scripts (if present) → `archive/`
+- [ ] Deprecate LangGraph remnants:
+  - [ ] Remove `langgraph.json` (or move to `archive/`); ensure no code references remain
+  - [ ] Search and remove/import‑fix any `langgraph` mentions in codebase
+- [ ] Remove stale agent names and docs:
+  - [ ] Ensure only current agent/module names are referenced (e.g., `ClinicalSummarizer`, `DecisionCombiner`)
+  - [ ] Delete or archive outdated `preauth_system/agents/*.md` and update internal links
+- [ ] Test and clean dead code/imports:
+  - [ ] Add dev tool: `uv add --dev vulture`
+  - [ ] Run `uv run vulture preauth_system ui-react api` and remove/inline dead code (case by case)
+- [ ] Logs and outputs hygiene:
+  - [ ] Ensure `logs/`, `output/`, `build/`, and cache dirs are git‑ignored; keep a sample `.keep` where needed
+  - [ ] Rotate or prune large artifacts under `output/` older than 14 days (scripted)
+- [ ] Packaging and deps:
+  - [ ] Prune unused Python deps in `pyproject.toml` (sync with `uv pip check`/`uv tree`)
+  - [ ] Align `uv.lock` after removals
+- [ ] Tests and CI:
+  - [ ] Remove/rename tests that reference legacy classes/functions
+  - [ ] Add a lightweight repo validation job: formatting/lint + unit tests

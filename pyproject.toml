@@ -3,7 +3,7 @@ name = "nazmito"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "xmlschema>=4.1.0",
     "xmltodict>=0.14.2",
@@ -35,13 +35,15 @@ dependencies = [
     "openai>=1.40.0",
     "tiktoken>=0.7.0",
     "python-dotenv>=0.19.0",
-    "jinja2>=3.0.0",
-    "dspy>=2.6.27",
+    "dspy>=3.0.0",
+    "elysia-ai",
 ]
 
 [tool.setuptools]
 packages = [
   "preauth_system",
-  "data_ingestion",
   "api",
 ]
+
+[tool.uv.sources]
+elysia-ai = { git = "https://github.com/weaviate/elysia" }
