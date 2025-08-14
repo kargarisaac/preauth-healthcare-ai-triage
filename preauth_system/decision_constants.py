@@ -1,0 +1,25 @@
+"""Decision and reason code constants for deterministic synthesis."""
+
+from __future__ import annotations
+
+from enum import Enum
+
+
+class DecisionOutcome(str, Enum):
+    APPROVE = "APPROVE"
+    DENY = "DENY"
+    REVIEW = "REVIEW"
+
+
+class ReasonCode(str, Enum):
+    # Generic
+    POLICY_CRITERIA_UNCERTAIN = "POLICY_CRITERIA_UNCERTAIN"
+    POLICY_NON_COVERAGE = "POLICY_NON_COVERAGE"
+    SAFETY_CONTRAINDICATION = "SAFETY_CONTRAINDICATION"
+    NON_COMPLIANT_DOCUMENTATION = "NON_COMPLIANT_DOCUMENTATION"
+    CODING_VALIDATION_FAILURE = "CODING_VALIDATION_FAILURE"
+    OUT_OF_NETWORK = "OUT_OF_NETWORK"
+    INCOMPLETE_INFORMATION = "INCOMPLETE_INFORMATION"
+    DUPLICATE_REQUEST = "DUPLICATE_REQUEST"
+
+
