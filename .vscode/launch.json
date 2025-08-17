@@ -2,17 +2,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "🤖 Debug Orchestrator Only", 
+            "name": "🤖 Debug Pipeline Only", 
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/preauth_system/orchestrator.py",
+            "program": "${workspaceFolder}/preauth_system/pipeline_module.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
                 "ENVIRONMENT": "development"
             },
-            "args": ["--demo"],
+            "args": [],
             "python": "${workspaceFolder}/.venv/bin/python"
         },
         {

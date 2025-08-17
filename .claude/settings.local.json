@@ -32,7 +32,10 @@
       "Bash(fi)",
       "Bash(done)",
       "Bash(chmod:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "WebSearch",
+      "WebSearch",
+      "WebSearch"
     ],
     "deny": []
   }

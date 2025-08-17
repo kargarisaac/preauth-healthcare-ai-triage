@@ -151,3 +151,86 @@ Core endpoints (all implemented):
 
 ## File Organization Guidelines
 - Always keep the documents related to one part or topic in one single file in @docs/
+
+## Multi-Agent Workflow System
+
+### Overview
+This system enables coordinated multi-agent sessions where specialized subagents work together on complex tasks, with all outputs tracked in session folders for auditability and reproducibility.
+
+### Core Challenge
+CRITICAL: Subagents operate in isolated context windows and cannot see CLAUDE.md instructions or files created by other agents unless explicitly passed context. The lead agent must handle all coordination.
+
+### Session Initiation Process
+
+1. Use the Start Session Command
+   
+   /start-session <task_description>
+      This command automatically creates the session folder with a consistent timestamp and initializes the session plan.
+
+2. Session Plan Creation
+   The /start-session command guides you to create a plan.md with:
+   - One-sentence objective
+   - 3-7 conceptual subtasks
+   - Assigned subagents with role suffixes
+   - Validation criteria
+
+### Agent Coordination Rules
+
+#### For the Lead Agent:
+CRITICAL: When using the Task tool to invoke subagents, you MUST:
+
+1. Always Pass Session Context - Include this in every Task prompt:
+   
+   SESSION_FOLDER: .claude/sessions/<session_folder_name>
+   You must save your output as a markdown file in this folder.
+   Use filename format: <your_role>-<instance_number>-output.md
+   
+2. Include Complete Metadata Template:
+   
+   Include this metadata block at the top of your output file:
+   ---
+   session_folder: .claude/sessions/<session_folder_name>
+   lead_agent: lead-agent-1
+   subagent: <agent_role>-<instance>
+   created_at: <UTC_ISO_timestamp>
+   ---
+   
+3. Validate Subagent Outputs - After each subagent completes:
+   - Check file exists at declared path
+   - Verify metadata matches session
+   - Confirm summary matches work completed
+
+4. Never Assume Context Transfer - Each Task invocation must include all necessary context since subagents cannot see previous work or the main conversation.
+
+#### Example Task Invocation:
+Task: senior-ai-engineer
+Prompt: |
+  SESSION_FOLDER: .claude/sessions/2025-08-15_14-30_fix-workflow
+  
+  You are working on: Implement authentication system
+  
+  Context from previous work: [Include relevant context here]
+  
+  Your specific task: Design the JWT token validation middleware
+  
+  REQUIRED OUTPUT FORMAT:
+  - Save as: senior-ai-engineer-1-output.md in the session folder
+  - Include metadata block with session info
+  - End with 1-3 sentence summary of what you completed
+  
+  Return to me: exact filename and summary when done.
+### File Coordination Pattern
+
+Since subagents cannot read each other's files, the lead agent must:
+1. Read outputs from completed subagents
+2. Extract relevant information
+3. Pass necessary context to subsequent subagents
+4. Maintain session state and handoffs
+
+### Validation Requirements
+
+Before considering a session complete:
+- All declared output files exist
+- All files have correct metadata
+- All summaries accurately reflect work done
+- Create aggregation.md with session results
