@@ -245,6 +245,109 @@ export interface FileValidation {
   };
 }
 
+/**
+ * Pipeline processing response - matches new unified pipeline API
+ */
+export interface PipelineProcessResponse {
+  success: boolean;
+  analysis_id: string;
+  intake: {
+    patient_id: string;
+    canonical_data: Record<string, any>;
+    processing_metadata: Record<string, any>;
+  };
+  clinical_summary: {
+    structured_data: Record<string, any>;
+    fhir_bundle: Record<string, any>;
+    summary_text: string;
+  };
+  evidence: {
+    clinical_guidelines: Array<Record<string, any>>;
+    policy_documents: Array<Record<string, any>>;
+    citations: Array<Record<string, any>>;
+  };
+  checklist: {
+    policy_name: string;
+    criteria: Array<{
+      criterion: string;
+      status: 'met' | 'unmet' | 'uncertain';
+      rationale: string;
+      evidence?: string;
+    }>;
+    compliance_score: number;
+  };
+  decision: {
+    outcome: 'APPROVE' | 'DENY' | 'REVIEW';
+    confidence: number;
+    rationale: string;
+    cost_impact?: number;
+    recommendations?: Array<string>;
+  };
+  dossier: {
+    html_content: string;
+    pdf_url?: string;
+    executive_summary: string;
+  };
+  metadata: {
+    processing_time_seconds: number;
+    cost_usd: number;
+    mode: 'deterministic' | 'hybrid' | 'agentic';
+    phase_timings: Record<string, number>;
+    token_usage?: Record<string, number>;
+  };
+  error?: string;
+}
+
+/**
+ * Professional dossier response
+ */
+export interface DossierResponse {
+  success: boolean;
+  analysis_id: string;
+  html_content: string;
+  pdf_url?: string;
+  executive_summary: string;
+  metadata: {
+    generated_at: string;
+    patient_id: string;
+    policy_applied: string;
+  };
+  error?: string;
+}
+
+/**
+ * Dashboard summary response with real-time metrics
+ */
+export interface DashboardSummaryResponse {
+  success: boolean;
+  data: {
+    processing_metrics: {
+      total_processed_today: number;
+      avg_processing_time_seconds: number;
+      success_rate: number;
+      cost_per_request_usd: number;
+    };
+    decision_outcomes: {
+      approved: number;
+      denied: number;
+      review_required: number;
+    };
+    recent_activity: Array<{
+      analysis_id: string;
+      patient_id: string;
+      timestamp: string;
+      outcome: string;
+      processing_time: number;
+    }>;
+    pipeline_efficiency: {
+      deterministic_percentage: number;
+      hybrid_percentage: number;
+      agentic_percentage: number;
+    };
+  };
+  error?: string;
+}
+
 // Legacy type aliases for backward compatibility
 export type PatientUploadResponse = XMLProcessResponse;
 export type PatientProcessResponse = XMLProcessResponse;  

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import type { ApiResponse, ProcessingStep, PatientProcessingStatus, XMLProcessResponse, AnalysisResponse } from '@/types/api';
-import { patientApi } from '@/services/apiService';
+import type { ApiResponse, ProcessingStep, PatientProcessingStatus, XMLProcessResponse, AnalysisResponse, PipelineProcessResponse, DashboardSummaryResponse } from '@/types/api';
+import { patientApi, pipelineApi } from '@/services/apiService';
 import { useToast } from './ToastContext';
 
 interface ProcessingContextValue {
@@ -20,6 +20,8 @@ interface ProcessingContextValue {
   // Processing results
   uploadResult: XMLProcessResponse | null;
   analysisResult: AnalysisResponse | null;
+  pipelineResult: PipelineProcessResponse | null;
+  dashboardSummary: DashboardSummaryResponse | null;
   
   // Original actions
   setCurrentFile: (file: File | null) => void;
@@ -42,6 +44,18 @@ interface ProcessingContextValue {
   uploadFileForPatient: (file: File, source: 'eclaim' | 'shafafiya', patientId?: string) => Promise<XMLProcessResponse | null>;
   processPatientData: (patientId: string) => Promise<XMLProcessResponse | null>;
   analyzePatient: (patientId: string) => Promise<AnalysisResponse | null>;
+  
+  // Pipeline processing actions
+  processPipelineFile: (file: File, source: string, mode: string) => Promise<PipelineProcessResponse | null>;
+  processPipelineSample: (sampleType: string, mode: string) => Promise<PipelineProcessResponse | null>;
+  
+  // Enhanced processing with insurer request creation
+  processFileWithInsurerRequest: (file: File, source: string, mode: string) => Promise<PipelineProcessResponse | null>;
+  processSampleWithInsurerRequest: (sampleType: string, mode: string) => Promise<PipelineProcessResponse | null>;
+  fetchDashboardSummary: () => Promise<DashboardSummaryResponse | null>;
+  
+  // Pipeline state management
+  setPipelineResult: (result: PipelineProcessResponse | null) => void;
 }
 
 const ProcessingContext = createContext<ProcessingContextValue | undefined>(undefined);
@@ -67,6 +81,8 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
   // Processing results
   const [uploadResult, setUploadResult] = useState<XMLProcessResponse | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
+  const [pipelineResult, setPipelineResult] = useState<PipelineProcessResponse | null>(null);
+  const [dashboardSummary, setDashboardSummary] = useState<DashboardSummaryResponse | null>(null);
   
   const { showToast } = useToast();
 
@@ -226,6 +242,7 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
     setProcessingResults(null);
     setUploadResult(null);
     setAnalysisResult(null);
+    setPipelineResult(null);
   }, []);
   
   // New patient workflow functions
@@ -367,6 +384,254 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
       setIsProcessing(false);
     }
   }, [showToast]);
+  
+  // Pipeline processing functions
+  const processPipelineFile = useCallback(async (
+    file: File,
+    source: string,
+    mode: string
+  ): Promise<PipelineProcessResponse | null> => {
+    try {
+      setIsProcessing(true);
+      setUploadProgress(0);
+      setProcessingError(null);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('source', source);
+      formData.append('mode', mode);
+      
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 5, 95));
+      }, 300);
+      
+      const response = await fetch('/api/pipeline/process', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.detail || `HTTP error! status: ${response.status}`);
+      }
+      
+      const result: PipelineProcessResponse = await response.json();
+      
+      if (result.success) {
+        setPipelineResult(result);
+        
+        showToast({
+          type: 'success',
+          title: 'Pipeline Complete',
+          message: `Processed in ${result.metadata.processing_time_seconds.toFixed(2)}s • Decision: ${result.decision.outcome}`,
+        });
+        
+        return result;
+      } else {
+        throw new Error(result.error || 'Pipeline processing failed');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Pipeline processing failed';
+      setProcessingError(errorMessage);
+      
+      showToast({
+        type: 'error',
+        title: 'Pipeline Failed',
+        message: errorMessage,
+      });
+      
+      return null;
+    } finally {
+      setIsProcessing(false);
+      setUploadProgress(0);
+    }
+  }, [showToast]);
+  
+  // Enhanced processing with automatic insurer request creation
+  const processFileWithInsurerRequest = useCallback(async (
+    file: File,
+    source: string,
+    mode: string = 'hybrid'
+  ): Promise<PipelineProcessResponse | null> => {
+    try {
+      setIsProcessing(true);
+      setUploadProgress(0);
+      setProcessingError(null);
+      
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 8, 95));
+      }, 400);
+      
+      const response = await pipelineApi.processFileWithRequest(file, source, mode);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      if (response.success) {
+        setPipelineResult(response.data);
+        
+        showToast({
+          type: 'success',
+          title: 'Processing Complete',
+          message: `File processed and insurer request created • Decision: ${response.data.decision?.outcome || 'Pending'}`,
+        });
+        
+        // Show additional notification about insurer workflow
+        setTimeout(() => {
+          showToast({
+            type: 'info',
+            title: 'Insurer Notification',
+            message: 'Request has been submitted to insurer dashboard for medical director review.',
+          });
+        }, 2000);
+        
+        return response.data;
+      } else {
+        throw new Error(response.data?.error || 'Processing failed');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Processing with insurer request creation failed';
+      setProcessingError(errorMessage);
+      
+      showToast({
+        type: 'error',
+        title: 'Processing Failed',
+        message: errorMessage,
+      });
+      
+      return null;
+    } finally {
+      setIsProcessing(false);
+      setUploadProgress(0);
+    }
+  }, [showToast]);
+  
+  const processPipelineSample = useCallback(async (
+    sampleType: string,
+    mode: string
+  ): Promise<PipelineProcessResponse | null> => {
+    try {
+      setIsProcessing(true);
+      setProcessingError(null);
+      
+      const response = await fetch(`/api/process/sample/${sampleType}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mode }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result: PipelineProcessResponse = await response.json();
+      
+      if (result.success) {
+        setPipelineResult(result);
+        
+        showToast({
+          type: 'success',
+          title: 'Sample Processed',
+          message: `${sampleType} sample processed successfully`,
+        });
+        
+        return result;
+      } else {
+        throw new Error(result.error || 'Sample processing failed');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sample processing failed';
+      setProcessingError(errorMessage);
+      
+      showToast({
+        type: 'error',
+        title: 'Processing Failed',
+        message: errorMessage,
+      });
+      
+      return null;
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [showToast]);
+  
+  // Enhanced sample processing with insurer request creation
+  const processSampleWithInsurerRequest = useCallback(async (
+    sampleType: string,
+    mode: string = 'hybrid'
+  ): Promise<PipelineProcessResponse | null> => {
+    try {
+      setIsProcessing(true);
+      setProcessingError(null);
+      
+      const response = await pipelineApi.processSampleWithRequest(sampleType, mode);
+      
+      if (response.success) {
+        setPipelineResult(response.data);
+        
+        showToast({
+          type: 'success',
+          title: 'Sample Processed',
+          message: `${sampleType} sample processed and insurer request created`,
+        });
+        
+        // Show additional notification about insurer workflow
+        setTimeout(() => {
+          showToast({
+            type: 'info',
+            title: 'Demo Request Created',
+            message: 'Sample request has been added to insurer dashboard for review.',
+          });
+        }, 1500);
+        
+        return response.data;
+      } else {
+        throw new Error(response.data?.error || 'Sample processing failed');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Sample processing with insurer request creation failed';
+      setProcessingError(errorMessage);
+      
+      showToast({
+        type: 'error',
+        title: 'Processing Failed',
+        message: errorMessage,
+      });
+      
+      return null;
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [showToast]);
+  
+  const fetchDashboardSummary = useCallback(async (): Promise<DashboardSummaryResponse | null> => {
+    try {
+      const response = await fetch('/api/dashboard/summary');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result: DashboardSummaryResponse = await response.json();
+      
+      if (result.success) {
+        setDashboardSummary(result);
+        return result;
+      } else {
+        throw new Error(result.error || 'Failed to fetch dashboard summary');
+      }
+    } catch (error: any) {
+      console.error('Failed to fetch dashboard summary:', error);
+      return null;
+    }
+  }, []);
 
   return (
     <ProcessingContext.Provider value={{
@@ -386,6 +651,8 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
       // Processing results
       uploadResult,
       analysisResult,
+      pipelineResult,
+      dashboardSummary,
       
       // Original actions
       setCurrentFile,
@@ -408,6 +675,18 @@ export function ProcessingProvider({ children }: ProcessingProviderProps) {
       uploadFileForPatient,
       processPatientData,
       analyzePatient,
+      
+      // Pipeline processing actions
+      processPipelineFile,
+      processPipelineSample,
+      fetchDashboardSummary,
+      
+      // Enhanced processing with insurer integration
+      processFileWithInsurerRequest,
+      processSampleWithInsurerRequest,
+      
+      // Pipeline state management
+      setPipelineResult,
     }}>
       {children}
     </ProcessingContext.Provider>

@@ -23,6 +23,7 @@ import { RealtimeMetrics } from './RealtimeMetrics';
 import { useAnalytics } from '../../hooks/data/useAnalytics';
 import { useRealTimeMetrics } from '../../hooks/data/useRealTimeMetrics';
 import { useDashboardLayout } from '../../hooks/ui/useDashboardLayout';
+import { useInsurer } from '../../contexts/InsurerContext';
 import { DateRangePreset } from '../../types/analytics';
 
 interface AnalyticsDashboardProps {
@@ -120,6 +121,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { metrics: insurerMetrics } = useInsurer();
 
   // Custom hooks
   const {
@@ -327,6 +329,53 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               data={analyticsData}
               isLoading={analyticsLoading}
             />
+
+            {/* Insurer Workflow Integration */}
+            {insurerMetrics && (
+              <Card title="Insurer Workflow Analytics" className="mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {insurerMetrics?.workload?.totalPending || 0}
+                    </div>
+                    <div className="text-sm text-blue-700">Pending Reviews</div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      Avg: {insurerMetrics?.workload?.avgReviewTime || 0}min
+                    </div>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {insurerMetrics?.performance?.approvalRate || 0}%
+                    </div>
+                    <div className="text-sm text-green-700">Approval Rate</div>
+                    <div className="text-xs text-green-600 mt-1">
+                      AI Agreement: {insurerMetrics?.performance?.aiAgreementRate || 0}%
+                    </div>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {insurerMetrics?.workload?.overdueReviews || 0}
+                    </div>
+                    <div className="text-sm text-orange-700">Overdue Reviews</div>
+                    <div className="text-xs text-orange-600 mt-1">
+                      Requires attention
+                    </div>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {insurerMetrics?.performance?.qualityScore || 0}%
+                    </div>
+                    <div className="text-sm text-purple-700">Quality Score</div>
+                    <div className="text-xs text-purple-600 mt-1">
+                      Decision quality
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500">
+                  Insurer workflow metrics refreshed automatically every 30 seconds
+                </div>
+              </Card>
+            )}
 
             {/* Key Metrics */}
             {metrics && (

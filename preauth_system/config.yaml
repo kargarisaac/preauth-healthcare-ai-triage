@@ -21,10 +21,12 @@ orchestration:
 
 # Centralized LLM configuration
 llm:
-  # Back-compat key (used if default_model is missing)
-  model: openrouter/openai/gpt-oss-20b
-  # New preferred default key
-  default_model: openrouter/openai/gpt-oss-20b
+  # # Back-compat key (used if default_model is missing)
+  # model: openrouter/openai/gpt-oss-20b
+  # # New preferred default key
+  # default_model: openrouter/openai/gpt-oss-20b
+  model: openrouter/openai/gpt-4o-mini
+  default_model: openrouter/openai/gpt-4o-mini
   # Optional per-agent overrides (by agent METADATA name)
   agents:
     clinical-analyzer:
@@ -49,3 +51,5 @@ llm:
       model: openrouter/openai/gpt-oss-20b
     data_quality:
       model: openrouter/openai/gpt-oss-20b
+    dossier_writer:
+      model: openrouter/openai/gpt-4o-mini

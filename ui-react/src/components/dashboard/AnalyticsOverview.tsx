@@ -19,9 +19,11 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { AnalyticsMetrics, AnalyticsDashboardData } from '../../types/analytics';
 import { useAnalytics } from '../../hooks/data/useAnalytics';
+import type { DashboardSummaryResponse } from '../../types/api';
 
 interface AnalyticsOverviewProps {
   data?: AnalyticsDashboardData | null;
+  pipelineData?: DashboardSummaryResponse | null;
   isLoading?: boolean;
   className?: string;
 }
@@ -177,6 +179,7 @@ const AlertIndicator: React.FC<AlertIndicatorProps> = ({ alerts }) => {
 
 export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
   data,
+  pipelineData,
   isLoading = false,
   className = ''
 }) => {
@@ -253,10 +256,13 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
     roi: 18.9
   };
 
+  // Use pipeline data if available, fallback to legacy analytics
+  const pipelineMetrics = pipelineData?.data;
+  
   const primaryKPIs = [
     {
       title: 'Daily Volume',
-      value: metrics.dailyVolume,
+      value: pipelineMetrics?.processing_metrics.total_processed_today || metrics.dailyVolume,
       change: periodChanges.volume,
       unit: 'requests',
       icon: <Activity className="h-5 w-5" />,
@@ -265,7 +271,9 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
     },
     {
       title: 'Processing Time',
-      value: Math.round(metrics.avgProcessingTime / 60),
+      value: pipelineMetrics ? 
+        (pipelineMetrics.processing_metrics.avg_processing_time_seconds / 60).toFixed(1) :
+        Math.round(metrics.avgProcessingTime / 60),
       change: periodChanges.processingTime,
       target: 15,
       unit: 'min',
@@ -274,24 +282,28 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
       description: 'Average time per request'
     },
     {
-      title: 'Automation Rate',
-      value: Math.round(metrics.automationRate * 100),
+      title: 'Success Rate',
+      value: pipelineMetrics ?
+        Math.round(pipelineMetrics.processing_metrics.success_rate * 100) :
+        Math.round(metrics.automationRate * 100),
       change: periodChanges.automationRate,
-      target: 85,
+      target: 95,
       unit: '%',
       icon: <Target className="h-5 w-5" />,
       color: 'purple' as const,
-      description: 'Requests processed automatically',
+      description: 'Successful processing rate',
       isPercentage: true
     },
     {
-      title: 'Cost Savings',
-      value: metrics.costSavings,
+      title: 'Cost Per Request',
+      value: pipelineMetrics ?
+        `$${pipelineMetrics.processing_metrics.cost_per_request_usd.toFixed(3)}` :
+        metrics.costSavings,
       change: periodChanges.costSavings,
-      unit: 'AED',
+      unit: pipelineMetrics ? 'USD' : 'AED',
       icon: <DollarSign className="h-5 w-5" />,
       color: 'green' as const,
-      description: 'Monthly cost reduction'
+      description: pipelineMetrics ? 'Average cost per processing request' : 'Monthly cost reduction'
     }
   ];
 
@@ -423,50 +435,169 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({
         </div>
       </div>
 
-      {/* Quick Stats Summary */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Summary Statistics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Users className="h-8 w-8 text-blue-500" />
+      {/* Pipeline Decision Outcomes */}
+      {pipelineMetrics && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Decision Outcomes</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              </div>
+              <p className="text-2xl font-bold text-green-900">
+                {pipelineMetrics.decision_outcomes.approved}
+              </p>
+              <p className="text-sm text-gray-600">Approved</p>
+              <p className="text-xs text-gray-500 mt-1">Auto-authorized</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {metrics.totalProcessed.toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-600">Total Requests Processed</p>
-            <p className="text-xs text-gray-500 mt-1">All time</p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Clock className="h-8 w-8 text-green-500" />
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <AlertTriangle className="h-8 w-8 text-red-500" />
+              </div>
+              <p className="text-2xl font-bold text-red-900">
+                {pipelineMetrics.decision_outcomes.denied}
+              </p>
+              <p className="text-sm text-gray-600">Denied</p>
+              <p className="text-xs text-gray-500 mt-1">Policy violations</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {Math.round(metrics.avgResponseTime)}
-            </p>
-            <p className="text-sm text-gray-600">Avg Response Time (min)</p>
-            <p className="text-xs text-gray-500 mt-1">Within SLA targets</p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <DollarSign className="h-8 w-8 text-purple-500" />
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Users className="h-8 w-8 text-yellow-500" />
+              </div>
+              <p className="text-2xl font-bold text-yellow-900">
+                {pipelineMetrics.decision_outcomes.review_required}
+              </p>
+              <p className="text-sm text-gray-600">Review Required</p>
+              <p className="text-xs text-gray-500 mt-1">Manual review needed</p>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {new Intl.NumberFormat('en-AE', {
-                style: 'currency',
-                currency: 'AED',
-                minimumFractionDigits: 0
-              }).format(metrics.totalSavingsYTD)}
-            </p>
-            <p className="text-sm text-gray-600">Total Savings YTD</p>
-            <p className="text-xs text-gray-500 mt-1">
-              {Math.round(metrics.roiPercentage)}% ROI achieved
-            </p>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
+
+      {/* Pipeline Efficiency */}
+      {pipelineMetrics && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Processing Efficiency</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-sm font-medium">Deterministic ($0.00)</span>
+              </div>
+              <span className="text-sm text-gray-900">
+                {pipelineMetrics.pipeline_efficiency.deterministic_percentage.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm font-medium">Hybrid (&lt;$0.10)</span>
+              </div>
+              <span className="text-sm text-gray-900">
+                {pipelineMetrics.pipeline_efficiency.hybrid_percentage.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span className="text-sm font-medium">Agentic (&lt;$0.25)</span>
+              </div>
+              <span className="text-sm text-gray-900">
+                {pipelineMetrics.pipeline_efficiency.agentic_percentage.toFixed(1)}%
+              </span>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Recent Activity */}
+      {pipelineMetrics?.recent_activity && pipelineMetrics.recent_activity.length > 0 && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+          <div className="space-y-3">
+            {pipelineMetrics.recent_activity.slice(0, 5).map((activity, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className={clsx(
+                    'w-2 h-2 rounded-full',
+                    activity.outcome === 'APPROVE' ? 'bg-green-500' :
+                    activity.outcome === 'DENY' ? 'bg-red-500' : 'bg-yellow-500'
+                  )}></div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {activity.patient_id}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(activity.timestamp).toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={clsx(
+                    'text-sm font-medium',
+                    activity.outcome === 'APPROVE' ? 'text-green-800' :
+                    activity.outcome === 'DENY' ? 'text-red-800' : 'text-yellow-800'
+                  )}>
+                    {activity.outcome}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {activity.processing_time.toFixed(1)}s
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Legacy Summary Stats - shown if no pipeline data */}
+      {!pipelineMetrics && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Summary Statistics</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Users className="h-8 w-8 text-blue-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {metrics.totalProcessed.toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-600">Total Requests Processed</p>
+              <p className="text-xs text-gray-500 mt-1">All time</p>
+            </div>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Clock className="h-8 w-8 text-green-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {Math.round(metrics.avgResponseTime)}
+              </p>
+              <p className="text-sm text-gray-600">Avg Response Time (min)</p>
+              <p className="text-xs text-gray-500 mt-1">Within SLA targets</p>
+            </div>
+
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <DollarSign className="h-8 w-8 text-purple-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {new Intl.NumberFormat('en-AE', {
+                  style: 'currency',
+                  currency: 'AED',
+                  minimumFractionDigits: 0
+                }).format(metrics.totalSavingsYTD)}
+              </p>
+              <p className="text-sm text-gray-600">Total Savings YTD</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {Math.round(metrics.roiPercentage)}% ROI achieved
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

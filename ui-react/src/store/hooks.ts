@@ -114,7 +114,7 @@ export const selectProcessingHistory = createSelector(
 
 export const selectSystemNotifications = createSelector(
   (state: RootState) => state.notifications.systemNotifications,
-  (notifications) => notifications.filter(n => !n.dismissed && (!n.endDate || n.endDate > new Date()))
+  (notifications) => Array.isArray(notifications) ? notifications.filter(n => !n.dismissed && (!n.endDate || n.endDate > new Date())) : []
 );
 
 export const selectProgressNotifications = createSelector(

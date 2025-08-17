@@ -17,7 +17,7 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 import yaml
 
-from preauth_system.orchestrator import PreAuthOrchestrator
+from preauth_system.pipeline_module import PreAuthPipeline
 
 
 class EvaluationResult(Enum):

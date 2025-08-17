@@ -7,6 +7,7 @@ import { AppProvider } from '@contexts/AppContext';
 import { ToastProvider } from '@contexts/ToastContext';
 import { ProcessingProvider } from '@contexts/ProcessingContext';
 import { PatientProvider } from '@contexts/PatientContext';
+import { InsurerProvider } from '@contexts/InsurerContext';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 import { DashboardSkeleton } from '@components/ui/SkeletonLoader';
 import PWAInstallPrompt from '@components/ui/PWAInstallPrompt';
@@ -62,7 +63,8 @@ function App() {
             <ToastProvider>
               <ProcessingProvider>
                 <PatientProvider>
-                  <PerformanceProvider>
+                  <InsurerProvider>
+                    <PerformanceProvider>
             <div className="min-h-screen bg-gray-50 dark:bg-dark-bg-primary transition-colors duration-200">
               <Suspense fallback={<AdaptiveLoadingSpinner />}>
                 <Routes>
@@ -101,7 +103,8 @@ function App() {
                 autoShow={true}
               />
             </div>
-                  </PerformanceProvider>
+                    </PerformanceProvider>
+                  </InsurerProvider>
                 </PatientProvider>
               </ProcessingProvider>
             </ToastProvider>

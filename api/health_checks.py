@@ -336,13 +336,12 @@ class DeepHealthCheck(BaseHealthCheck):
         """Perform comprehensive system validation."""
         try:
             # Test core functionality
-            from preauth_system.orchestrator import PreAuthOrchestrator
-            from preauth_system.orchestrator import ProcessingMode
+            from preauth_system.pipeline_module import PreAuthPipeline
             
-            # Initialize orchestrator
-            orchestrator = PreAuthOrchestrator(mode=ProcessingMode.DETERMINISTIC)
+            # Initialize pipeline
+            pipeline = PreAuthPipeline()
             
-            # Test basic processing capability (without AI)
+            # Test basic processing capability
             # This would ideally use a small test case
             
             return True  # Placeholder for actual deep validation

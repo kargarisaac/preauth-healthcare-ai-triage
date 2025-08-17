@@ -3,14 +3,64 @@ Shared DSPy Signature Classes for Pre-Authorization Agents
 Prevents code duplication across agent files
 """
 import dspy
-from typing import Dict, Any, List, Optional, TypedDict
+from typing import Dict, Any, List, Optional, TypedDict, Literal
 from pydantic import BaseModel
+from enum import Enum
 
 # Reuse the exact same description string across all signatures
 PATIENT_DATA_DESC = (
     "Structured patient context including demographics, medical_history, "
     "clinical_data (symptoms, labs, vitals), and requested_treatment."
 )
+
+
+# -----------------------------
+# Decision constants and enums
+# -----------------------------
+class DecisionOutcome(Enum):
+    """Possible decision outcomes for prior authorization requests."""
+    
+    APPROVE = "APPROVE"
+    DENY = "DENY"
+    REVIEW = "REVIEW"
+
+
+class ReasonCode(Enum):
+    """Standardized reason codes for decision outcomes."""
+    
+    # Approval reasons
+    POLICY_CRITERIA_MET = "POLICY_CRITERIA_MET"
+    CLINICAL_APPROPRIATENESS_CONFIRMED = "CLINICAL_APPROPRIATENESS_CONFIRMED"
+    
+    # Denial reasons
+    EXPLICIT_EXCLUSION = "EXPLICIT_EXCLUSION"
+    SAFETY_CONTRAINDICATION = "SAFETY_CONTRAINDICATION"
+    MANDATORY_CRITERIA_UNMET = "MANDATORY_CRITERIA_UNMET"
+    POLICY_NON_COVERAGE = "POLICY_NON_COVERAGE"
+    
+    # Review reasons
+    MISSING_REQUIRED_DOCUMENTATION = "MISSING_REQUIRED_DOCUMENTATION"
+    POLICY_CRITERIA_UNCERTAIN = "POLICY_CRITERIA_UNCERTAIN"
+    INSUFFICIENT_COMPLIANCE = "INSUFFICIENT_COMPLIANCE"
+    INCOMPLETE_INFORMATION = "INCOMPLETE_INFORMATION"
+    REQUIRES_PEER_REVIEW = "REQUIRES_PEER_REVIEW"
+
+
+# Mapping of criterion patterns to reason codes for deterministic logic
+CRITERION_TO_REASON_MAP = {
+    "diabetes_diagnosis": {
+        "unmet": ReasonCode.POLICY_NON_COVERAGE,
+        "uncertain": ReasonCode.INCOMPLETE_INFORMATION
+    },
+    "hba1c_elevated": {
+        "unmet": ReasonCode.POLICY_CRITERIA_UNCERTAIN,
+        "uncertain": ReasonCode.INCOMPLETE_INFORMATION
+    },
+    "safety_assessment": {
+        "unmet": ReasonCode.SAFETY_CONTRAINDICATION,
+        "uncertain": ReasonCode.REQUIRES_PEER_REVIEW
+    }
+}
 
 
 # -----------------------------
@@ -90,7 +140,75 @@ class SpecialtyOutput(BaseModel):
 
 
 class FinalReportOutput(BaseModel):
+    executive_summary: Optional[str] = None
+    clinical_context: Optional[str] = None
+    decision_rationale: Optional[str] = None
+    policy_analysis: Optional[str] = None
+    risk_assessment: Optional[str] = None
+    next_steps: Optional[str] = None
+    citations: Optional[List[str]] = None
+    language: Optional[str] = "en"  # en, ar for future bilingual support
+    
+    # Legacy support for simple content field
     content: Optional[str] = None
+    
+    def to_structured_dossier(self) -> Dict[str, Any]:
+        """Convert to structured dossier format expected by pipeline."""
+        sections = []
+        
+        if self.executive_summary:
+            sections.append({
+                "title": "Executive Summary",
+                "content": self.executive_summary,
+                "type": "summary"
+            })
+            
+        if self.clinical_context:
+            sections.append({
+                "title": "Clinical Context",
+                "content": self.clinical_context,
+                "type": "clinical"
+            })
+            
+        if self.policy_analysis:
+            sections.append({
+                "title": "Policy Analysis",
+                "content": self.policy_analysis,
+                "type": "policy"
+            })
+            
+        if self.decision_rationale:
+            sections.append({
+                "title": "Decision Rationale",
+                "content": self.decision_rationale,
+                "type": "decision"
+            })
+            
+        if self.risk_assessment:
+            sections.append({
+                "title": "Risk Assessment",
+                "content": self.risk_assessment,
+                "type": "risk"
+            })
+            
+        if self.next_steps:
+            sections.append({
+                "title": "Next Steps",
+                "content": self.next_steps,
+                "type": "action"
+            })
+            
+        return {
+            "executive_summary": self.executive_summary or "No summary provided",
+            "sections": sections,
+            "citations": self.citations or [],
+            "language": self.language,
+            "metadata": {
+                "sections_count": len(sections),
+                "has_citations": bool(self.citations),
+                "complexity_score": min(100, len(sections) * 15 + len(self.citations or []) * 5)
+            }
+        }
 
 
 # Additional module outputs
@@ -128,6 +246,36 @@ class PatientData(dspy.Signature):
     requested_treatment: Dict[str, Any] = dspy.InputField(
         desc="Requested service, medication, or procedure details"
     )
+
+# -----------------------------
+# Evidence retrieval outputs
+# -----------------------------
+class EvidenceItem(BaseModel):
+    source: Optional[str] = None
+    snippet: Optional[str] = None
+
+
+class EvidenceRetrievalOutput(BaseModel):
+    evidence: Optional[List[EvidenceItem]] = None
+
+
+# -----------------------------
+# Policy evaluation outputs
+# -----------------------------
+class PolicyCriteriaItem(BaseModel):
+    id: str
+    description: str
+    status: Literal["met", "unmet", "uncertain"]
+    rationale: str
+    citations: List[str]
+    missing_documentation: Optional[str] = None
+
+
+class PolicyChecklistOutput(BaseModel):
+    criteria: List[PolicyCriteriaItem]
+    missing_documents: List[str]
+    overall_compliance_score: float
+    policy_source: str
 
 
 # -----------------------------
@@ -169,7 +317,6 @@ class RiskAssessment(dspy.Signature):
     """You are a clinical risk assessor.
     Task: stratify risk, identify safety concerns, analyze risk‑benefit, and propose mitigation.
     Context: UAE population risk factors (heat, dust, occupation), cultural adherence, seasonal variations.
-    Output: overall risk level, key drivers, safety concerns/contraindications, risk‑benefit, mitigation recommendations.
     """
 
     patient_data: Dict[str, Any] = dspy.InputField(desc=PATIENT_DATA_DESC)
@@ -189,7 +336,6 @@ class AuthorizationDecision(dspy.Signature):
     """You are the authorization decision maker.
     Task: synthesize all analyses; determine APPROVED/DENIED/REQUIRES_REVIEW with rationale and citations.
     Context: UAE DHA/DOH regulatory standards, essential benefits, cultural/religious considerations.
-    Output: decision, confidence (1–10), clinical rationale, policy citations, conditions/limitations (if any).
     """
 
     patient_data: Dict[str, Any] = dspy.InputField(desc=PATIENT_DATA_DESC)
@@ -207,7 +353,6 @@ class ComplianceAudit(dspy.Signature):
     """You are a compliance auditor.
     Task: audit documentation completeness, policy adherence, regulatory compliance, and quality of reasoning.
     Context: UAE PDPL, DHA/DOH requirements, audit trail expectations.
-    Output: overall compliance score (0–100), documentation, policy_adherence, regulatory_status, QA findings, recommendations.
     """
 
     patient_data: Dict[str, Any] = dspy.InputField(desc=PATIENT_DATA_DESC)
@@ -271,13 +416,50 @@ class DataQualitySignature(dspy.Signature):
     demographics: Dict[str, Any] = dspy.InputField(
         desc="Patient demographics for completeness check"
     )
-    timeline: List[Dict[str, Any]] = dspy.InputField(
-        desc="Clinical timeline/observations"
-    )
-    medications: List[Dict[str, Any]] = dspy.InputField(desc="Medication history")
-    data_quality: DataQualityOutput = dspy.OutputField(
+
+
+# -----------------------------
+# Evidence Retrieval (ReAct) signature
+# -----------------------------
+class EvidenceRetrievalSignature(dspy.Signature):
+    """You are an evidence selection assistant for prior authorization.
+    Task: read full policy/KB documents using available tools based on the inputs and patient context and return at most 2 concise excerpts
+    that best justify coverage criteria for the request.
+    Inputs include the raw patient context and an already prepared clinical summary.
+    Rules:
+    - Choose tools judiciously; avoid redundant calls
+    - Prefer exact payer policy YAML for the relevant request category when applicable
+    - Output must be a small JSON object with up to 2 evidence items
+    """
+
+    patient_data: Dict[str, Any] = dspy.InputField(desc=PATIENT_DATA_DESC)
+    clinical_summary: Dict[str, Any] = dspy.InputField(desc="Structured clinical summary (executive_summary, recommendations, etc.)")
+    evidence: EvidenceRetrievalOutput = dspy.OutputField(
         desc=(
-            "JSON matching DataQualityOutput: overall_score, completeness_score, richness_score, "
-            "accuracy_score, recommendations, reasoning."
+            "Return JSON matching EvidenceRetrievalOutput: evidence list with up to 2 items, each with source and snippet."
+        )
+    )
+
+
+class PolicyEvaluationSignature(dspy.Signature):
+    """You are a policy evaluation specialist for prior authorization.
+    Task: evaluate policy criteria against patient case data with strict schema output.
+    Context: UAE healthcare policies, DHA/DOH regulatory standards, evidence-based coverage criteria.
+    Rules:
+    - Evaluate each policy criterion as "met", "unmet", or "uncertain"
+    - Provide detailed rationale with specific patient facts supporting your assessment
+    - Always cite specific filename/section from provided evidence
+    - Calculate overall compliance score as percentage of met criteria
+    - Identify missing documentation needed for uncertain criteria
+    Output: structured checklist with criteria evaluations, rationale, citations, and missing documents.
+    """
+
+    patient_data: Dict[str, Any] = dspy.InputField(desc=PATIENT_DATA_DESC)
+    clinical_summary: Dict[str, Any] = dspy.InputField(desc="Structured clinical summary from previous analysis")
+    evidence: List[Dict[str, Any]] = dspy.InputField(desc="Retrieved policy excerpts with source/snippet structure")
+    policy_checklist: PolicyChecklistOutput = dspy.OutputField(
+        desc=(
+            "Return JSON matching PolicyChecklistOutput: criteria (list of PolicyCriteriaItem), "
+            "missing_documents (list), overall_compliance_score (float 0.0-1.0), policy_source (string)."
         )
     )

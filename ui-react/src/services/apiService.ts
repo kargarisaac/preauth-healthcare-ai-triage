@@ -56,14 +56,37 @@ class ApiService {
       timeout = 10000,
       retries = 3,
       retryDelay = 1000,
+      cache: customCache,
       ...fetchOptions
     } = options;
 
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
+    // Convert custom cache values to standard RequestCache values
+    let standardCache: RequestCache = 'default';
+    if (customCache) {
+      switch (customCache) {
+        case 'no-cache':
+          standardCache = 'no-cache';
+          break;
+        case 'short':
+          standardCache = 'no-store'; // No caching for short-lived data
+          break;
+        case 'medium':
+          standardCache = 'default';
+          break;
+        case 'long':
+          standardCache = 'force-cache';
+          break;
+        default:
+          standardCache = 'default';
+      }
+    }
+
     // Prepare request
     const requestOptions: RequestInit = {
       ...fetchOptions,
+      cache: standardCache,
       headers: {
         'Content-Type': 'application/json',
         ...fetchOptions.headers,
@@ -212,6 +235,66 @@ export const patientApi = {
 
 // Export error types
 export { ApiError, NetworkError };
+
+// Insurer API endpoints
+export const insurerApi = {
+  // Request management
+  getRequests: (filters?: any) => 
+    apiService.get<any[]>('/insurer/requests', { cache: 'short' }),
+  
+  getRequest: (requestId: string) => 
+    apiService.get<any>(`/insurer/requests/${requestId}`),
+  
+  submitDecision: (requestId: string, decision: any) => 
+    apiService.post<any>(`/insurer/requests/${requestId}/decision`, decision),
+  
+  assignRequest: (requestId: string, assignee: string) => 
+    apiService.put<any>(`/insurer/requests/${requestId}/assign`, { assignee }),
+  
+  markCommunicated: (requestId: string) => 
+    apiService.post<any>(`/insurer/requests/${requestId}/communicate`, {}),
+  
+  // Patient history
+  getPatientHistory: (patientId: string) => 
+    apiService.get<any>(`/insurer/patients/${patientId}/history`),
+  
+  // Analytics and metrics
+  getDashboardMetrics: () => 
+    apiService.get<any>('/insurer/dashboard/metrics', { cache: 'short' }),
+  
+  // Real-time notifications
+  getNotifications: () => 
+    apiService.get<any[]>('/insurer/notifications'),
+};
+
+// Pipeline processing with automatic request creation
+export const pipelineApi = {
+  // Process file and automatically create insurer request
+  processFileWithRequest: (file: File, source: string, mode: string = 'hybrid') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('source', source);
+    formData.append('mode', mode);
+    formData.append('create_request', 'true'); // Flag to create insurer request
+    
+    return apiService.request<any>('/pipeline/process', {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Let browser set content-type for FormData
+    });
+  },
+  
+  // Process sample with request creation
+  processSampleWithRequest: (sampleType: string, mode: string = 'hybrid') => 
+    apiService.post<any>(`/process/sample/${sampleType}`, { 
+      mode, 
+      create_request: true 
+    }),
+  
+  // Get processing status
+  getProcessingStatus: (analysisId: string) => 
+    apiService.get<any>(`/process/status/${analysisId}`),
+};
 
 // Export types
 export type { ApiResponse, RequestOptions };

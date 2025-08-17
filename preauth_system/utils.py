@@ -8,6 +8,22 @@ from typing import Dict, Any, List
 import xmltodict  # type: ignore
 import yaml  # type: ignore
 from loguru import logger
+import dspy
+
+import os
+from contextlib import contextmanager
+from typing import Optional
+
+try:
+    from dspy.adapters.baml_adapter import BAMLAdapter  # type: ignore
+except Exception:  # pragma: no cover
+    BAMLAdapter = None  # type: ignore
+
+from preauth_system.signatures import (
+    ClinicalRiskSignature,
+    SpecialtyDeterminationSignature,
+    DataQualitySignature
+)
 
 
 def get_config() -> Dict[str, Any]:
@@ -32,8 +48,22 @@ def parse_xml(xml_file_path: str, xml_format: str) -> Dict[str, Any]:
     except Exception as ex:
         raise Exception(f"xmltodict failed to parse XML: {ex}")
 
+    # Hardened: handle namespaced root keys gracefully
     if xml_format == "eclaim":
-        xml_dict = xml_dict["PriorAuthorizationRequest"]
+        if "PriorAuthorizationRequest" in xml_dict:
+            xml_dict = xml_dict["PriorAuthorizationRequest"]
+        else:
+            # Fallback: find a key that endswith PriorAuthorizationRequest
+            root_key = next(
+                (k for k in xml_dict.keys() if str(k).split(":")[-1] == "PriorAuthorizationRequest"),
+                None,
+            )
+            if root_key and xml_dict.get(root_key):
+                xml_dict = xml_dict[root_key]
+            else:
+                # If structure unexpectedly nested, take first dict child
+                first_val = next((v for v in xml_dict.values() if isinstance(v, dict)), {})
+                xml_dict = first_val or {}
     elif xml_format == "shafafiya":
         pass
     else:
@@ -51,14 +81,36 @@ def extract_patient_info(xml_data: Dict[str, Any], xml_format: str) -> Dict[str,
     patient_info: Dict[str, Any] = {}
 
     if xml_format == "eclaim":
-        xml_dict = xml_data.get("as_dict", {})
-        patient_data = xml_dict.get("Patient", {})
+        xml_dict = xml_data.get("as_dict", {}) or {}
+        # Handle namespaced key variants for Patient
+        patient_data = (
+            xml_dict.get("Patient")
+            or next(
+                (
+                    v
+                    for k, v in xml_dict.items()
+                    if isinstance(v, dict) and str(k).split(":")[-1] == "Patient"
+                ),
+                {},
+            )
+            or {}
+        )
 
-        # Extract Emirates ID
-        patient_info["EmiratesIDNumber"] = patient_data.get("EmiratesIDNumber")
+        # Extract Emirates ID safely
+        patient_info["EmiratesIDNumber"] = patient_data.get("EmiratesIDNumber") or patient_data.get(
+            "http://www.eclaimlink.ae/DHD/ValidationSchema:EmiratesIDNumber"
+        )
 
         # Extract services from ServiceRequests
-        service_requests = xml_dict.get("ServiceRequests", {}).get("ServiceRequest", [])
+        sr_container = xml_dict.get("ServiceRequests") or next(
+            (
+                v
+                for k, v in xml_dict.items()
+                if isinstance(v, dict) and str(k).split(":")[-1] == "ServiceRequests"
+            ),
+            {},
+        )
+        service_requests = sr_container.get("ServiceRequest", [])
         if isinstance(service_requests, dict):
             service_requests = [service_requests]
 
@@ -92,8 +144,13 @@ def extract_patient_info(xml_data: Dict[str, Any], xml_format: str) -> Dict[str,
 
         patient_info["services"] = services
         patient_info["total_cost"] = total_cost
-        patient_info["justification"] = xml_dict.get("JustificationText")
-        patient_info.update(patient_data)
+        # Try namespaced justification as fallback
+        patient_info["justification"] = xml_dict.get("JustificationText") or xml_dict.get(
+            "http://www.eclaimlink.ae/DHD/ValidationSchema:JustificationText"
+        )
+        # Merge basic patient fields, keeping existing keys
+        for k, v in (patient_data or {}).items():
+            patient_info.setdefault(k, v)
 
     elif xml_format == "shafafiya":
         patient_info = {
@@ -106,21 +163,59 @@ def extract_patient_info(xml_data: Dict[str, Any], xml_format: str) -> Dict[str,
     return patient_info
 
 
+def prepare_pipeline_patient_data(unified_record) -> Dict[str, Any]:
+    """Map UnifiedPatientRecord to the `signatures.PatientData` structure.
+
+    Returns a dict with keys: patient_demographics, medical_history,
+    clinical_data, requested_treatment.
+    """
+    # Patient demographics
+    demographics = unified_record.current_demographics or {}
+
+    # Medical history (high level)
+    medical_history: Dict[str, Any] = {
+        "conditions": unified_record.clinical_conditions or [],
+        "care_episodes": unified_record.care_episodes or [],
+        "questionnaires": unified_record.questionnaire_responses or [],
+    }
+
+    # Clinical data snapshot
+    clinical_data: Dict[str, Any] = {
+        "timeline": unified_record.clinical_timeline or [],
+        "medications": unified_record.medication_regimen or [],
+        "risk_assessment": unified_record.risk_assessment or {},
+        "data_quality": unified_record.data_quality_assessment or {},
+    }
+
+    # Requested treatment info
+    requested_treatment: Dict[str, Any] = {
+        "services": unified_record.requested_services or [],
+        "justification": unified_record.clinical_justification or "",
+        "specialty": unified_record.specialty_context or "general",
+        "total_cost": sum(s.get("amount", 0) for s in (unified_record.requested_services or [])),
+    }
+
+    return {
+        "patient_demographics": demographics,
+        "medical_history": medical_history,
+        "clinical_data": clinical_data,
+        "requested_treatment": requested_treatment,
+    }
+
+
 def determine_specialty(xml_data: Dict[str, Any], patient_data: Dict[str, Any]) -> str:
     """Determine specialty using DSPy SpecialtyDetermination with fallback heuristic."""
     try:
-        from preauth_system.llms.specialty_determination import (
-            SpecialtyDetermination,
-        )
-
         # Prepare requested services from XML for the LLM
         xml_dict = (xml_data or {}).get("as_dict", {}) or {}
         service_reqs = xml_dict.get("ServiceRequests", {}).get("ServiceRequest", [])
         if isinstance(service_reqs, dict):
             service_reqs = [service_reqs]
 
-        sd = SpecialtyDetermination()
-        res = sd(patient_data=patient_data or {}, requested_services=service_reqs)
+        lm = get_module_lm("specialty_determination")
+        specialty_determiner = dspy.ChainOfThought(SpecialtyDeterminationSignature)
+        with with_dspy_lm(lm):
+            res = specialty_determiner(patient_data=patient_data or {}, requested_services=service_reqs)
         # Module returns a string or an object depending on implementation
         if isinstance(res, str):
             return res
@@ -222,12 +317,13 @@ def assess_clinical_risk_llm(
 ) -> Dict[str, Any]:
     """Clinical risk assessment via DSPy LLM with graceful fallback."""
     try:
-        from preauth_system.llms.clinical_summary import ClinicalRisk
 
-        risk_llm = ClinicalRisk()
-        result = risk_llm(
-            timeline=timeline, medications=medications, demographics=demographics
-        )
+        lm = get_module_lm("clinical_risk")
+        assess = dspy.ChainOfThought(ClinicalRiskSignature)
+        with with_dspy_lm(lm):
+            result = assess(
+                timeline=timeline, medications=medications, demographics=demographics
+            )
         out = getattr(result, "clinical_risk", None)
         if out:
             return {
@@ -265,10 +361,10 @@ def calculate_data_quality_llm(
 ) -> Dict[str, Any]:
     """Data quality assessment via DSPy LLM with graceful fallback."""
     try:
-        from preauth_system.llms.clinical_summary import DataQuality
-
-        dq_llm = DataQuality()
-        result = dq_llm(
+        lm = get_module_lm("data_quality")
+        assess = dspy.ChainOfThought(DataQualitySignature)
+        with with_dspy_lm(lm):
+            result = assess(
             demographics=demographics, timeline=timeline, medications=medications
         )
         out = getattr(result, "data_quality", None)
@@ -333,3 +429,91 @@ def check_demographics_completeness(demographics: Dict[str, Any]) -> Dict[str, A
             field for field in optional_fields if not demographics.get(field)
         ],
     }
+
+
+def _resolve_model_name(
+    agent_name: Optional[str] = None, module_name: Optional[str] = None
+) -> str:
+    cfg = get_config() or {}
+    llm_cfg = cfg.get("llm") or {}
+    # New preferred default
+    default_model = (
+        llm_cfg.get("default_model")
+        or llm_cfg.get("model")
+        or "openrouter/openai/gpt-oss-20b"
+    )
+    # Agent override
+    if agent_name:
+        agent_entry = (llm_cfg.get("agents") or {}).get(agent_name) or {}
+        if agent_entry.get("model"):
+            return agent_entry["model"]
+    # Module override
+    if module_name:
+        module_entry = (llm_cfg.get("modules") or {}).get(module_name) or {}
+        if module_entry.get("model"):
+            return module_entry["model"]
+    return default_model
+
+
+def get_openrouter_lm(
+    model: str | None = None,
+    cache: bool = True,
+    *,
+    agent_name: Optional[str] = None,
+    module_name: Optional[str] = None,
+) -> dspy.LM:
+    """Get OpenRouter LM instance based on central config or override.
+    Resolution order: explicit model arg > per-agent > per-module > default.
+    """
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        raise ValueError("OPENROUTER_API_KEY environment variable required")
+
+    model_name = model or _resolve_model_name(
+        agent_name=agent_name, module_name=module_name
+    )
+
+    return dspy.LM(
+        model=model_name,
+        api_key=api_key,
+        cache=cache,
+    )
+
+
+def configure_dspy_default():
+    """Configure DSPy with a default LM read from config.yaml.
+    Use sparingly; prefer per-call scoping with with_dspy_lm().
+    """
+    try:
+        lm = get_openrouter_lm()
+        if BAMLAdapter is not None:
+            dspy.configure(lm=lm, adapter=BAMLAdapter())
+        else:
+            dspy.configure(lm=lm)
+    except Exception:
+        # Last resort - no global config
+        pass
+
+
+@contextmanager
+def with_dspy_lm(lm: dspy.LM):
+    """Context manager to scope dspy.configure to a specific LM without global side effects."""
+    try:
+        if BAMLAdapter is not None:
+            dspy.configure(lm=lm, adapter=BAMLAdapter())
+        else:
+            dspy.configure(lm=lm)
+        yield
+    finally:
+        pass
+
+
+# Convenience helpers
+
+
+def get_agent_lm(agent_name: str, cache: bool = True) -> dspy.LM:
+    return get_openrouter_lm(cache=cache, agent_name=agent_name)
+
+
+def get_module_lm(module_name: str, cache: bool = True) -> dspy.LM:
+    return get_openrouter_lm(cache=cache, module_name=module_name)

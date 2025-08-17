@@ -12,6 +12,7 @@ import {
   Eye
 } from 'lucide-react';
 import { useProcessing } from '@/contexts/ProcessingContext';
+import { useInsurer } from '@/contexts/InsurerContext';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import ResultsModal from './ResultsModal';
@@ -87,12 +88,17 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
     setCurrentFile,
     processFile,
     processSampleFile,
+    processFileWithInsurerRequest,
+    processSampleWithInsurerRequest,
     clearResults
   } = useProcessing();
+  
+  const { refreshMetrics } = useInsurer();
 
   const [selectedFormat, setSelectedFormat] = useState('auto');
   const [dragOver, setDragOver] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [createInsurerRequest, setCreateInsurerRequest] = useState(true); // Default to creating insurer requests
 
   const handleFileSelect = useCallback((file: File) => {
     setCurrentFile(file);
@@ -141,12 +147,29 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
     if (!currentFile) return;
 
     const format = determineFormat(currentFile);
-    await processFile(format);
-  }, [currentFile, processFile, determineFormat]);
+    
+    if (createInsurerRequest) {
+      // Use enhanced processing that creates insurer requests
+      await processFileWithInsurerRequest(currentFile, format, 'hybrid');
+      // Refresh insurer metrics after processing
+      setTimeout(() => refreshMetrics(), 1000);
+    } else {
+      // Use standard processing
+      await processFile(format);
+    }
+  }, [currentFile, processFile, processFileWithInsurerRequest, determineFormat, createInsurerRequest, refreshMetrics]);
 
   const handleSampleProcess = useCallback(async (format: string) => {
-    await processSampleFile(format);
-  }, [processSampleFile]);
+    if (createInsurerRequest) {
+      // Use enhanced sample processing that creates insurer requests
+      await processSampleWithInsurerRequest(format, 'hybrid');
+      // Refresh insurer metrics after processing
+      setTimeout(() => refreshMetrics(), 1000);
+    } else {
+      // Use standard sample processing
+      await processSampleFile(format);
+    }
+  }, [processSampleFile, processSampleWithInsurerRequest, createInsurerRequest, refreshMetrics]);
 
   const handleViewResults = useCallback(() => {
     setShowResults(true);
@@ -249,6 +272,31 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
                 )}
               </div>
 
+              {/* Workflow Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Workflow Options
+                </label>
+                <div className="mb-4 p-3 border border-blue-200 bg-blue-50 rounded-lg">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={createInsurerRequest}
+                      onChange={(e) => setCreateInsurerRequest(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <div>
+                      <div className="font-medium text-blue-900 text-sm">
+                        Create Insurer Request
+                      </div>
+                      <div className="text-xs text-blue-700">
+                        Automatically submit to insurer dashboard for medical director review
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               {/* Format Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -293,12 +341,12 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
                   {isProcessing ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
+                      {createInsurerRequest ? 'Processing & Creating Request...' : 'Processing...'}
                     </>
                   ) : (
                     <>
                       <Zap className="w-4 h-4 mr-2" />
-                      Process File
+                      {createInsurerRequest ? 'Process & Submit to Insurer' : 'Process File'}
                     </>
                   )}
                 </Button>
@@ -347,7 +395,17 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
                     {processingResults.data?.authorization_id && (
                       <p>Authorization ID: {processingResults.data.authorization_id}</p>
                     )}
+                    {createInsurerRequest && processingResults.data?.request_id && (
+                      <p className="font-medium">Insurer Request ID: {processingResults.data.request_id}</p>
+                    )}
                   </div>
+                  {createInsurerRequest && (
+                    <div className="mt-3 pt-3 border-t border-green-200">
+                      <p className="text-sm text-green-700">
+                        ✓ Request submitted to insurer dashboard for medical director review
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -360,6 +418,11 @@ const FileProcessingSection: React.FC<FileProcessingSectionProps> = ({ className
             <div className="space-y-3">
               <p className="text-sm text-gray-600 mb-4">
                 Test the platform with sample healthcare data files.
+                {createInsurerRequest && (
+                  <span className="block mt-1 text-xs text-blue-600">
+                    Samples will create demo requests in insurer dashboard.
+                  </span>
+                )}
               </p>
 
               {sampleFiles.map((sample) => (

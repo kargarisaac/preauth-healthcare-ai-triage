@@ -3,13 +3,9 @@ import { RequestHistory } from '@/components/dashboard/RequestHistory';
 import Card from '@/components/ui/Card';
 import {
   BarChart3,
-  TrendingUp,
   Clock,
   DollarSign,
-  Users,
   CheckCircle,
-  AlertTriangle,
-  XCircle
 } from 'lucide-react';
 
 const RequestHistoryDemo: React.FC = () => {
@@ -79,71 +75,6 @@ const RequestHistoryDemo: React.FC = () => {
         </Card>
       </div>
 
-      {/* Features Overview */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Key Features</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Users className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Virtual Scrolling</h3>
-              <p className="text-sm text-gray-600">Handle thousands of requests with smooth performance</p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Advanced Search</h3>
-              <p className="text-sm text-gray-600">Real-time search with highlighting and filters</p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <AlertTriangle className="h-5 w-5 text-purple-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Bulk Operations</h3>
-              <p className="text-sm text-gray-600">Approve, deny, or assign multiple requests at once</p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <BarChart3 className="h-5 w-5 text-orange-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Export & Reports</h3>
-              <p className="text-sm text-gray-600">Export to CSV, Excel, or PDF formats</p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <XCircle className="h-5 w-5 text-red-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Status Tracking</h3>
-              <p className="text-sm text-gray-600">Real-time status updates with audit trails</p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <Clock className="h-5 w-5 text-indigo-600" />
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900">Mobile Responsive</h3>
-              <p className="text-sm text-gray-600">Optimized for desktop and mobile devices</p>
-            </div>
-          </div>
-        </div>
-      </Card>
 
       {/* Main Request History Component */}
       <RequestHistory className="mt-8" />
