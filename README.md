@@ -1,5 +1,6 @@
 # AI-Powered Healthcare Pre-Authorization Platform
 
+[![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-Explore%20Deep-blue)](https://deepwiki.com/kargarisaac/preauth-healthcare-ai-triage/1-overview)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
@@ -50,50 +51,8 @@ preauth_system/
 └── dossier.py        # HTML report generation
 ```
 
-### System Diagram
-```mermaid
-flowchart LR
-  subgraph Clients["Clinicians & insurer ops"]
-    WebUI["React dashboard"]
-    HTMLUI["HTML5 intake"]
-  end
-
-  subgraph Intake["File intake & validation"]
-    XML["eClaimLink / Shafafiya XML"]
-    CSV["CSV / flat files"]
-    Canonical["Canonical JSON normalizer"]
-  end
-
-  subgraph API["FastAPI app"]
-    Ingest["Upload endpoints"]
-    Pipeline["PreAuthPipeline (DSPy)"]
-    Dossier["Dossier writer"]
-  end
-
-  subgraph DSPy["Pipeline phases"]
-    Clin["Clinical summarizer"]
-    Evidence["Evidence checker (tools)"]
-    Policy["Policy evaluator"]
-  end
-
-  subgraph Intelligence["Knowledge base & tools"]
-    KB["RAG KB markdowns"]
-    Tools["Policy + guideline tool functions"]
-  end
-
-  Clients -->|upload/search| Intake
-  Intake --> Canonical --> Ingest --> Pipeline
-  Pipeline --> Clin
-  Pipeline --> Evidence
-  Pipeline --> Policy
-  Evidence --> KB
-  Evidence --> Tools
-  Policy --> Tools
-  Clin --> Dossier
-  Evidence --> Dossier
-  Policy --> Dossier
-  Dossier --> Clients
-```
+### System Architecture
+![System Architecture](images/pre-auth.jpg)
 
 ### Multi-Agent System
 - **Agent modules present**: clinical-analyzer, medication-specialist, risk-assessor, decision-maker, compliance-auditor (see `preauth_system/agents/`). They are implemented as DSPy ReAct/COT classes with tool access.
