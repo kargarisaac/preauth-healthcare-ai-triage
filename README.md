@@ -67,9 +67,16 @@ flowchart LR
   subgraph API["FastAPI gateway"]
     Orchestrator["Workflow orchestrator"]
     Policy["Deterministic policy engine"]
-    Agents["Multi-agent decision layer"]
     Safety["Safety & compliance checks"]
     Dossier["Dossier generator"]
+  end
+
+  subgraph Agents["Multi-agent layer"]
+    Clin["Clinical analyzer"]
+    Meds["Medication specialist"]
+    Risk["Risk assessor"]
+    Decide["Decision maker"]
+    Comp["Compliance auditor"]
   end
 
   subgraph Intelligence["Knowledge & tools"]
@@ -86,11 +93,25 @@ flowchart LR
   Clients -->|upload/search| Intake
   Intake --> Canonical --> Orchestrator
   Orchestrator --> Policy
-  Orchestrator --> Agents
-  Agents --> KB
-  Agents --> Tools
+  Orchestrator --> Clin
+  Orchestrator --> Meds
+  Orchestrator --> Risk
+  Clin --> KB
+  Meds --> KB
+  Risk --> KB
+  Clin --> Tools
+  Meds --> Tools
+  Risk --> Tools
   Policy --> Safety
-  Agents --> Safety
+  Clin --> Safety
+  Meds --> Safety
+  Risk --> Safety
+  Decide --> Safety
+  Comp --> Safety
+  Clin --> Decide
+  Meds --> Decide
+  Risk --> Decide
+  Decide --> Comp
   Safety --> Dossier
   Dossier --> Clients
   Orchestrator --> Queue
