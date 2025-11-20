@@ -52,7 +52,7 @@ preauth_system/
 ```
 
 ### System Architecture
-![System Architecture](images/pre-auth.jpg)
+![System Architecture](images/pre-auth.png)
 
 ### Multi-Agent System
 - **Agent modules present**: clinical-analyzer, medication-specialist, risk-assessor, decision-maker, compliance-auditor (see `preauth_system/agents/`). They are implemented as DSPy ReAct/COT classes with tool access.
