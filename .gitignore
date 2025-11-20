@@ -33,3 +33,6 @@ CLAUDE.md
 *claude_prompt*.md
 *cleanup_prompt*.md
 *cleanup_checklist*.md
+
+# MCP local config
+.mcp.json
