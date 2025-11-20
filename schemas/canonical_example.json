@@ -3,7 +3,7 @@
   "id": "healthcare-bundle-example-001",
   "meta": {
     "profile": [
-      "https://nazmito.com/fhir/StructureDefinition/healthcare-bundle"
+      "https://healthcare-preauth.org/fhir/StructureDefinition/healthcare-bundle"
     ],
     "source": "eClaimLink",
     "lastUpdated": "2025-07-31T10:30:00Z",
@@ -20,7 +20,7 @@
         "id": "PA-2025-000123",
         "meta": {
           "profile": [
-            "https://nazmito.com/fhir/StructureDefinition/uae-claim"
+            "https://healthcare-preauth.org/fhir/StructureDefinition/uae-claim"
           ],
           "source": "eClaimLink",
           "lastUpdated": "2025-07-31T10:30:00Z"
@@ -154,15 +154,15 @@
         },
         "extension": [
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/disposition-flag",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/disposition-flag",
             "valueString": "PRODUCTION"
           },
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/emirate-authority",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/emirate-authority",
             "valueCodeableConcept": {
               "coding": [
                 {
-                  "system": "https://nazmito.com/codesystems/authorities",
+                  "system": "https://healthcare-preauth.org/codesystems/authorities",
                   "code": "DHA",
                   "display": "Dubai Health Authority"
                 }
@@ -170,11 +170,11 @@
             }
           },
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/data-quality-score",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/data-quality-score",
             "valueDecimal": 0.95
           },
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/source-mapping",
             "extension": [
               {
                 "url": "source-field",
@@ -196,14 +196,14 @@
         "id": "HbA1c-Previous-001",
         "meta": {
           "profile": [
-            "https://nazmito.com/fhir/StructureDefinition/uae-observation"
+            "https://healthcare-preauth.org/fhir/StructureDefinition/uae-observation"
           ],
           "source": "clinical-text"
         },
         "identifier": [
           {
             "use": "usual",
-            "system": "https://nazmito.com/observation-id",
+            "system": "https://healthcare-preauth.org/observation-id",
             "value": "OBS-HbA1c-2025-001"
           }
         ],
@@ -309,11 +309,11 @@
         ],
         "extension": [
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/clinical-context-score",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/clinical-context-score",
             "valueDecimal": 0.88
           },
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/source-mapping",
             "extension": [
               {
                 "url": "source-field",
@@ -339,14 +339,14 @@
         "id": "Metformin-Current-001",
         "meta": {
           "profile": [
-            "https://nazmito.com/fhir/StructureDefinition/uae-medication-statement"
+            "https://healthcare-preauth.org/fhir/StructureDefinition/uae-medication-statement"
           ],
           "source": "clinical-text"
         },
         "identifier": [
           {
             "use": "usual",
-            "system": "https://nazmito.com/medication-statement-id",
+            "system": "https://healthcare-preauth.org/medication-statement-id",
             "value": "MED-001-2025"
           }
         ],
@@ -459,7 +459,7 @@
         ],
         "extension": [
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/source-mapping",
             "extension": [
               {
                 "url": "source-field",
@@ -481,14 +481,14 @@
         "id": "Diabetes-E11.9-001",
         "meta": {
           "profile": [
-            "https://nazmito.com/fhir/StructureDefinition/uae-condition"
+            "https://healthcare-preauth.org/fhir/StructureDefinition/uae-condition"
           ],
           "source": "eClaimLink"
         },
         "identifier": [
           {
             "use": "usual",
-            "system": "https://nazmito.com/condition-id",
+            "system": "https://healthcare-preauth.org/condition-id",
             "value": "COND-DM-001"
           }
         ],
@@ -595,7 +595,7 @@
         ],
         "extension": [
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/source-mapping",
             "extension": [
               {
                 "url": "source-field",
@@ -608,7 +608,7 @@
             ]
           },
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/clinical-reasoning",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/clinical-reasoning",
             "extension": [
               {
                 "url": "risk-score",
@@ -634,14 +634,14 @@
         "id": "HbA1c-Previous-Procedure-001",
         "meta": {
           "profile": [
-            "https://nazmito.com/fhir/StructureDefinition/uae-procedure"
+            "https://healthcare-preauth.org/fhir/StructureDefinition/uae-procedure"
           ],
           "source": "clinical-text"
         },
         "identifier": [
           {
             "use": "usual",
-            "system": "https://nazmito.com/procedure-id",
+            "system": "https://healthcare-preauth.org/procedure-id",
             "value": "PROC-HbA1c-2025-001"
           }
         ],
@@ -761,7 +761,7 @@
         ],
         "extension": [
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/source-mapping",
             "extension": [
               {
                 "url": "source-field",
@@ -774,7 +774,7 @@
             ]
           },
           {
-            "url": "https://nazmito.com/fhir/StructureDefinition/clinical-context-score",
+            "url": "https://healthcare-preauth.org/fhir/StructureDefinition/clinical-context-score",
             "valueDecimal": 0.85
           }
         ]
@@ -783,19 +783,19 @@
   ],
   "extension": [
     {
-      "url": "https://nazmito.com/fhir/StructureDefinition/schema-version",
+      "url": "https://healthcare-preauth.org/fhir/StructureDefinition/schema-version",
       "valueString": "v0.2"
     },
     {
-      "url": "https://nazmito.com/fhir/StructureDefinition/processing-timestamp",
+      "url": "https://healthcare-preauth.org/fhir/StructureDefinition/processing-timestamp",
       "valueDateTime": "2025-07-31T10:30:00Z"
     },
     {
-      "url": "https://nazmito.com/fhir/StructureDefinition/enrichment-score",
+      "url": "https://healthcare-preauth.org/fhir/StructureDefinition/enrichment-score",
       "valueDecimal": 0.88
     },
     {
-      "url": "https://nazmito.com/fhir/StructureDefinition/clinical-reasoning",
+      "url": "https://healthcare-preauth.org/fhir/StructureDefinition/clinical-reasoning",
       "extension": [
         {
           "url": "comprehensive-score",

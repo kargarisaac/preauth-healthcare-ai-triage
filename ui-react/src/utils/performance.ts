@@ -148,7 +148,7 @@ const sendAnalyticsBatch = async () => {
   if (analyticsQueue.length === 0) return;
 
   const batch = analyticsQueue.splice(0);
-  
+
   try {
     // Replace with your analytics endpoint
     if (process.env.NODE_ENV === 'production') {
@@ -175,7 +175,7 @@ if (typeof window !== 'undefined') {
 // Healthcare-specific performance tracking
 export const trackHealthcareMetric = (metric: keyof HealthcareMetrics, value: number) => {
   healthcareMetrics[metric] = value;
-  
+
   trackAnalytics({
     name: `healthcare_${metric}`,
     category: 'healthcare_performance',
@@ -234,7 +234,7 @@ export const getHealthcareMetrics = (): HealthcareMetrics => ({ ...healthcareMet
 export const markPerformance = (name: string, metadata?: Record<string, any>) => {
   if ('performance' in window && 'mark' in performance) {
     performance.mark(name);
-    
+
     trackAnalytics({
       name: 'performance_mark',
       category: 'performance',
@@ -259,7 +259,7 @@ export const measurePerformance = (name: string, startMark: string, endMark?: st
 
       const measure = performance.getEntriesByName(name, 'measure')[0];
       const duration = measure?.duration || 0;
-      
+
       if (measure) {
         trackAnalytics({
           name: 'performance_measure',
@@ -277,7 +277,7 @@ export const measurePerformance = (name: string, startMark: string, endMark?: st
           console.log(`Performance measure ${name}:`, duration, 'ms');
         }
       }
-      
+
       return duration;
     } catch (error) {
       console.warn('Performance measurement failed:', error);
@@ -319,7 +319,7 @@ export const addResourceHints = () => {
   // Add resource hints for healthcare APIs and assets
   dnsPrefetch('fonts.googleapis.com');
   dnsPrefetch('fonts.gstatic.com');
-  preconnect('https://api.nazmito.com');
+  preconnect('https://api.healthcare-preauth.org');
 };
 
 // Performance budget monitoring
@@ -333,7 +333,7 @@ export const checkPerformanceBudget = () => {
   };
 
   const issues: string[] = [];
-  
+
   Object.entries(budget).forEach(([metric, threshold]) => {
     const value = metrics[metric as keyof PerformanceMetrics];
     if (value !== null && value > threshold) {

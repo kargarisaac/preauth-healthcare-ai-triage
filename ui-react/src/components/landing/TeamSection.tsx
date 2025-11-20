@@ -1,5 +1,4 @@
 import React from 'react';
-import isaacPhoto from '@assets/isaac.jpeg';
 
 const TeamSection: React.FC = () => {
   return (
@@ -18,21 +17,17 @@ const TeamSection: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               <div className="lg:col-span-1">
                 <div className="text-center lg:text-left">
-                  <div className="w-32 h-32 rounded-full mx-auto lg:mx-0 mb-6 overflow-hidden">
-                    <img
-                      src={isaacPhoto}
-                      alt="Isaac Kargar"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-32 h-32 rounded-full mx-auto lg:mx-0 mb-6 overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+                    <div className="text-4xl">👥</div>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Isaac Kargar
+                    Founding Team
                   </h3>
                   <p className="text-primary-600 font-medium mb-4">
-                    Founder & CEO
+                    AI & Healthcare Experts
                   </p>
                   <p className="text-sm text-gray-600 font-medium">
-                    AI Scientist & Healthcare Technology Expert
+                    PhD-level expertise in AI and healthcare technology
                   </p>
                 </div>
               </div>
@@ -40,18 +35,17 @@ const TeamSection: React.FC = () => {
               <div className="lg:col-span-3">
                 <div className="space-y-4 text-gray-700">
                   <p>
-                    AI Scientist with 10+ years of experience in machine learning, large language models,
-                    and multi-agent systems. PhD in Machine Learning and Robotics.
+                    Our founding team brings together AI scientists with 10+ years of experience in machine learning,
+                    large language models, and multi-agent systems, complemented by deep healthcare domain expertise.
                   </p>
                   <p>
-                    Isaac has led high-impact AI initiatives in healthcare, autonomous systems,
-                    and enterprise software—most recently at In-Parallel and Resoniks. His work includes
-                    developing AI Agentic Systems, Knowledge Graphs, Graph-based RAG systems,
-                    anomaly detection, and policy learning in autonomous driving, with publications
-                    in IEEE Transactions on Intelligent Vehicles, Frontiers in Robotics and AI, and IV Symposium.
+                    The team has led high-impact AI initiatives in healthcare, autonomous systems,
+                    and enterprise software, with expertise in developing AI Agentic Systems, Knowledge Graphs,
+                    Graph-based RAG systems, anomaly detection, and policy learning systems.
                   </p>
                   <p>
-                    He brings a deep understanding of applied AI, healthtech, and cloud-scale deployment.
+                    Combined expertise spans applied AI, healthtech, and cloud-scale deployment with publications
+                    in leading academic journals and conferences.
                   </p>
                 </div>
 

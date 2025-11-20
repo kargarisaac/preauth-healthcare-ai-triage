@@ -19,7 +19,7 @@ export default defineConfig({
         // Enhanced caching strategies for healthcare app
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.nazmito\.com\//,
+            urlPattern: /^https:\/\/api\.healthcare-preauth\.org\//,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
@@ -55,8 +55,8 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'Nazmito - Healthcare Pre-Authorization Intelligence',
-        short_name: 'Nazmito',
+        name: 'Healthcare AI Pre-authorization Platform',
+        short_name: 'Healthcare AI',
         description: 'AI-powered pre-authorization platform for UAE healthcare insurance',
         theme_color: '#1E40AF',
         background_color: '#FFFFFF',
@@ -147,72 +147,72 @@ export default defineConfig({
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
             return 'vendor-react';
           }
-          
+
           // Router chunk
           if (id.includes('node_modules/react-router')) {
             return 'vendor-router';
           }
-          
+
           // State management
           if (id.includes('node_modules/@reduxjs') || id.includes('node_modules/react-redux')) {
             return 'vendor-redux';
           }
-          
+
           // UI and icons
           if (id.includes('node_modules/lucide-react') || id.includes('node_modules/clsx')) {
             return 'vendor-ui';
           }
-          
+
           // Charts and visualization
           if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
             return 'vendor-charts';
           }
-          
+
           // Healthcare-specific heavy libraries
           if (id.includes('node_modules/@uiw/react-json-view')) {
             return 'vendor-json';
           }
-          
+
           // File processing utilities
-          if (id.includes('node_modules/file-saver') || 
-              id.includes('node_modules/html2canvas') || 
+          if (id.includes('node_modules/file-saver') ||
+              id.includes('node_modules/html2canvas') ||
               id.includes('node_modules/jspdf')) {
             return 'vendor-files';
           }
-          
+
           // Virtual scrolling
           if (id.includes('node_modules/react-window')) {
             return 'vendor-virtualization';
           }
-          
+
           // Date utilities
           if (id.includes('node_modules/date-fns')) {
             return 'vendor-dates';
           }
-          
+
           // Performance monitoring
           if (id.includes('node_modules/web-vitals')) {
             return 'vendor-performance';
           }
-          
+
           // Healthcare components chunk
-          if (id.includes('/src/components/healthcare/') || 
+          if (id.includes('/src/components/healthcare/') ||
               id.includes('/src/components/dashboard/')) {
             return 'healthcare-components';
           }
-          
+
           // Landing page chunk
-          if (id.includes('/src/components/landing/') || 
+          if (id.includes('/src/components/landing/') ||
               id.includes('/src/pages/Landing/')) {
             return 'landing';
           }
-          
+
           // Analytics chunk
           if (id.includes('/src/pages/Analytics/') ||
               id.includes('/src/components/analytics/')) {
             return 'analytics';
           }
-          
+
           // Other vendor libraries
           if (id.includes('node_modules/')) {
             return 'vendor-misc';
@@ -286,13 +286,13 @@ export default defineConfig({
     // Target modern browsers for better optimization
     target: 'esnext',
   },
-  
+
   // Enhanced development server
   preview: {
     port: 4173,
     strictPort: true,
   },
-  
+
   // Performance hints
   define: {
     __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),

@@ -1811,7 +1811,7 @@ wheels = [
 ]
 
 [[package]]
-name = "nazmito"
+name = "healthcare-ai-preauth"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

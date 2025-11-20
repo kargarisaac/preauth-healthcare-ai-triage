@@ -1,6 +1,6 @@
 # Redux Toolkit State Management
 
-A comprehensive Redux Toolkit implementation for the Nazmito healthcare data processing platform.
+A comprehensive Redux Toolkit implementation for the Healthcare AI Pre-authorization Platform.
 
 ## Overview
 

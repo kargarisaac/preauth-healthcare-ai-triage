@@ -34,7 +34,7 @@ const HeroSection: React.FC = () => {
             </p>
 
             <p className="text-lg text-gray-600 mb-8 max-w-xl animate-fade-in-up delay-400">
-              Nazmito enriches every authorization with AI and clinical rules. You approve faster,
+              The Healthcare AI Platform enriches every authorization with AI and clinical rules. You approve faster,
               touch fewer files, and stop costly chronic complications before they start.
             </p>
 

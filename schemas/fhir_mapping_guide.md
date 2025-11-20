@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide documents how XML data from eClaimLink and Shafafiya systems maps to the extended canonical FHIR resources in Nazmito's healthcare bundle schema. The mapping supports 5 core FHIR resources: Claim, Observation, MedicationStatement, Condition, and Procedure.
+This guide documents how XML data from eClaimLink and Shafafiya systems maps to the extended canonical FHIR resources in the Healthcare AI Pre-authorization Platform's healthcare bundle schema. The mapping supports 5 core FHIR resources: Claim, Observation, MedicationStatement, Condition, and Procedure.
 
 ## Schema Version: v0.2
 
@@ -248,17 +248,17 @@ All resources include UAE-specific extensions for enhanced clinical decision sup
 
 | **Extension URL** | **Purpose** | **Applied To** |
 |---|---|---|
-| `https://nazmito.com/fhir/StructureDefinition/emirate-authority` | Emirates health authority | All resources |
-| `https://nazmito.com/fhir/StructureDefinition/source-mapping` | XML source traceability | All resources |
-| `https://nazmito.com/fhir/StructureDefinition/clinical-context-score` | AI confidence in clinical extraction | Observation, MedicationStatement |
-| `https://nazmito.com/fhir/StructureDefinition/clinical-reasoning` | Clinical decision support scores | Condition, Bundle |
-| `https://nazmito.com/fhir/StructureDefinition/data-quality-score` | Overall data quality assessment | Bundle, Claim |
+| `https://healthcare-preauth.org/fhir/StructureDefinition/emirate-authority` | Emirates health authority | All resources |
+| `https://healthcare-preauth.org/fhir/StructureDefinition/source-mapping` | XML source traceability | All resources |
+| `https://healthcare-preauth.org/fhir/StructureDefinition/clinical-context-score` | AI confidence in clinical extraction | Observation, MedicationStatement |
+| `https://healthcare-preauth.org/fhir/StructureDefinition/clinical-reasoning` | Clinical decision support scores | Condition, Bundle |
+| `https://healthcare-preauth.org/fhir/StructureDefinition/data-quality-score` | Overall data quality assessment | Bundle, Claim |
 
 ### Source Mapping Extension Structure:
 
 ```json
 {
-  "url": "https://nazmito.com/fhir/StructureDefinition/source-mapping",
+  "url": "https://healthcare-preauth.org/fhir/StructureDefinition/source-mapping",
   "extension": [
     {
       "url": "source-field",

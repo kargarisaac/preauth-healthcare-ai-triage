@@ -1,6 +1,6 @@
 # API Services Documentation
 
-This directory contains the comprehensive API service layer for the Nazmito React application, providing seamless integration with the FastAPI backend.
+This directory contains the comprehensive API service layer for the Healthcare AI Pre-authorization Platform React application, providing seamless integration with the FastAPI backend.
 
 ## Overview
 
@@ -196,7 +196,7 @@ unsubscribe();
 
 ```bash
 # API Base URL (default: http://localhost:8000/api)
-VITE_API_BASE_URL=https://api.nazmito.com/api
+VITE_API_BASE_URL=https://api.healthcare-preauth.org/api
 ```
 
 ### Default Settings
@@ -330,4 +330,4 @@ const result: ProcessingResponse = await fileProcessingService.processEClaimFile
 const health: HealthResponse = await apiService.get<HealthResponse>('/api/health');
 ```
 
-This comprehensive API service layer provides everything needed for robust, production-ready communication with the Nazmito FastAPI backend.
+This comprehensive API service layer provides everything needed for robust, production-ready communication with the Healthcare AI Pre-authorization Platform FastAPI backend.

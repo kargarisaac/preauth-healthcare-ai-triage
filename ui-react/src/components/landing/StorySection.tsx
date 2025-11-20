@@ -14,10 +14,10 @@ const StorySection: React.FC = () => {
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 lg:p-12">
           <div className="prose prose-lg mx-auto">
             <p className="text-lg text-gray-700 leading-relaxed text-center">
-              Nazmito started with a simple question: why isn't the pre‑auth step used to
-              prevent problems instead of just policing them? Our founder, Isaac, saw a
+              Healthcare AI Platform started with a simple question: why isn't the pre‑auth step used to
+              prevent problems instead of just policing them? Our founding team saw a
               global pattern of huge data exhaust and little clinical intelligence in
-              insurance processes. We built Nazmito to flip that script, starting with the UAE.
+              insurance processes. We built Healthcare AI Platform to flip that script, starting with the UAE.
             </p>
           </div>
 

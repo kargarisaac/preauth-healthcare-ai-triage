@@ -1,4 +1,4 @@
 file_path,num_tokens,num_chars,last_modified
-/Users/isaackargar/codes/personal/nazmito/preauth_system/rag/kb/parkinson_dbs_guidelines.md,3561,15373,2025-08-08T17:46:39.498453
-/Users/isaackargar/codes/personal/nazmito/preauth_system/rag/kb/osteoarthritis_management.md,3280,14095,2025-08-08T17:45:15.538429
-/Users/isaackargar/codes/personal/nazmito/preauth_system/rag/kb/diabetes_technology_guidelines.md,2455,10964,2025-08-08T17:44:00.411169
+./preauth_system/rag/kb/parkinson_dbs_guidelines.md,3561,15373,2025-08-08T17:46:39.498453
+./preauth_system/rag/kb/osteoarthritis_management.md,3280,14095,2025-08-08T17:45:15.538429
+./preauth_system/rag/kb/diabetes_technology_guidelines.md,2455,10964,2025-08-08T17:44:00.411169

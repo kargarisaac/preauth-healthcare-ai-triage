@@ -21,9 +21,9 @@ const defaultColumns: RequestTableColumn[] = [
 
 // Local storage keys
 const STORAGE_KEYS = {
-  COLUMNS: 'nazmito_table_columns',
-  COLUMN_ORDER: 'nazmito_table_column_order',
-  PAGE_SIZE: 'nazmito_table_page_size',
+  COLUMNS: 'healthcare-preauth_table_columns',
+  COLUMN_ORDER: 'healthcare-preauth_table_column_order',
+  PAGE_SIZE: 'healthcare-preauth_table_page_size',
 } as const;
 
 export function useTableState() {

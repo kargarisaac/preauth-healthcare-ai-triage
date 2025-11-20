@@ -1,5 +1,5 @@
 """
-Production-ready security module for Nazmito API.
+Production-ready security module for Healthcare AI Pre-authorization API.
 
 Implements authentication, authorization, input validation, and security middleware
 for production deployment.
@@ -52,7 +52,7 @@ class SecurityConfig:
     }
     
     # Trusted hosts
-    TRUSTED_HOSTS = os.getenv("TRUSTED_HOSTS", "localhost,127.0.0.1,api.nazmito.ai").split(",")
+    TRUSTED_HOSTS = os.getenv("TRUSTED_HOSTS", "localhost,127.0.0.1,api.healthcare-preauth.ai").split(",")
     
     # Input validation patterns
     PATIENT_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,50}$")
@@ -75,7 +75,7 @@ class APIKeyManager:
     def _load_api_keys(self):
         """Load API keys from environment or storage."""
         # In production, load from secure storage (database, secrets manager)
-        master_key = os.getenv("NAZMITO_MASTER_API_KEY")
+        master_key = os.getenv("HEALTHCARE_PREAUTH_MASTER_API_KEY")
         if master_key:
             self.api_keys[master_key] = {
                 "name": "master",
@@ -86,7 +86,7 @@ class APIKeyManager:
             }
         
         # Demo/development keys
-        demo_key = os.getenv("NAZMITO_DEMO_API_KEY", "demo_key_12345_change_in_production")
+        demo_key = os.getenv("HEALTHCARE_PREAUTH_DEMO_API_KEY", "demo_key_12345_change_in_production")
         self.api_keys[demo_key] = {
             "name": "demo",
             "created_at": datetime.now(timezone.utc),

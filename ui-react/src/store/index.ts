@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { 
-  persistStore, 
+import {
+  persistStore,
   persistReducer,
   FLUSH,
   REHYDRATE,
@@ -20,7 +20,7 @@ import { apiMiddleware } from './middleware/apiMiddleware';
 
 // Persist configuration
 const persistConfig = {
-  key: 'nazmito-root',
+  key: 'healthcare-preauth-root',
   storage,
   whitelist: ['userPreferences'], // Only persist user preferences
 };

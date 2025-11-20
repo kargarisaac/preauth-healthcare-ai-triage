@@ -1,7 +1,7 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
 import type { RootState } from '../index';
-import { 
-  processFileAsync, 
+import {
+  processFileAsync,
   fetchRequestHistoryAsync,
   setError as setProcessingError,
   updateUploadProgress,
@@ -23,7 +23,7 @@ apiMiddleware.startListening({
   matcher: isAnyOf(processFileAsync.pending),
   effect: async (action, listenerApi) => {
     const { dispatch } = listenerApi;
-    
+
     // Show processing notification
     dispatch(showToast({
       type: 'info',
@@ -46,7 +46,7 @@ apiMiddleware.startListening({
   matcher: isAnyOf(processFileAsync.fulfilled),
   effect: async (action, listenerApi) => {
     const { dispatch } = listenerApi;
-    
+
     dispatch(showToast({
       type: 'success',
       title: 'File Processed Successfully',
@@ -57,7 +57,7 @@ apiMiddleware.startListening({
 
     // Auto-trigger validation if enabled
     const state = listenerApi.getState() as RootState;
-    if (state.userPreferences.autoValidation && 
+    if (state.userPreferences.autoValidation &&
         state.userPreferences.defaultValidationFunctions.length > 0 &&
         action.payload?.fhirBundle?.id) {
       dispatch(validateWithLLMAsync({
@@ -74,9 +74,9 @@ apiMiddleware.startListening({
   matcher: isAnyOf(processFileAsync.rejected),
   effect: async (action, listenerApi) => {
     const { dispatch } = listenerApi;
-    
+
     const errorMessage = action.payload as string || 'File processing failed';
-    
+
     dispatch(showToast({
       type: 'error',
       title: 'Processing Failed',
@@ -92,7 +92,7 @@ apiMiddleware.startListening({
   matcher: isAnyOf(validateWithLLMAsync.pending),
   effect: async (action, listenerApi) => {
     const { dispatch } = listenerApi;
-    
+
     dispatch(showToast({
       type: 'info',
       title: 'Starting LLM Validation',
@@ -108,7 +108,7 @@ apiMiddleware.startListening({
   matcher: isAnyOf(validateWithLLMAsync.fulfilled),
   effect: async (action, listenerApi) => {
     const { dispatch } = listenerApi;
-    
+
     dispatch(showToast({
       type: 'success',
       title: 'Validation Complete',
@@ -124,9 +124,9 @@ apiMiddleware.startListening({
   matcher: isAnyOf(validateWithLLMAsync.rejected),
   effect: async (action, listenerApi) => {
     const { dispatch } = listenerApi;
-    
+
     const errorMessage = action.payload as string || 'Validation failed';
-    
+
     dispatch(showToast({
       type: 'error',
       title: 'Validation Failed',
@@ -148,14 +148,14 @@ apiMiddleware.startListening({
   effect: async (action, listenerApi) => {
     const { dispatch, getState } = listenerApi;
     const state = getState() as RootState;
-    
+
     // Only retry on network errors, not client errors
-    if (action.payload && typeof action.payload === 'string' && 
+    if (action.payload && typeof action.payload === 'string' &&
         action.payload.includes('NetworkError')) {
-      
+
       // Wait before retry
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Retry the original action
       if (action.type.includes('processFile')) {
         // Don't auto-retry file processing due to potential side effects
@@ -181,11 +181,11 @@ apiMiddleware.startListening({
   effect: async (action, listenerApi) => {
     const { getState } = listenerApi;
     const state = getState() as RootState;
-    
+
     // Update cache timestamp if using cache
     if (state.userPreferences.cacheTimeout > 0) {
       // Store cache metadata in localStorage
-      localStorage.setItem('nazmito_request_history_cache', JSON.stringify({
+      localStorage.setItem('healthcare-preauth_request_history_cache', JSON.stringify({
         timestamp: Date.now(),
         data: action.payload,
       }));
@@ -196,13 +196,13 @@ apiMiddleware.startListening({
 // Offline support
 apiMiddleware.startListening({
   predicate: (action) => {
-    return action.type.endsWith('/pending') && 
+    return action.type.endsWith('/pending') &&
            action.type.includes('Async') &&
            !navigator.onLine;
   },
   effect: async (action, listenerApi) => {
     const { dispatch } = listenerApi;
-    
+
     dispatch(showToast({
       type: 'warning',
       title: 'Offline Mode',
@@ -221,14 +221,14 @@ apiMiddleware.startListening({
   ),
   effect: async (action, listenerApi) => {
     const state = listenerApi.getState() as RootState;
-    
+
     if (state.userPreferences.debugMode) {
       const endTime = Date.now();
       const startTime = action.meta?.startedTimeStamp || endTime;
       const duration = endTime - startTime;
-      
+
       console.debug(`Operation ${action.type} completed in ${duration}ms`);
-      
+
       // Show performance notification in debug mode
       if (duration > 5000) { // If operation took more than 5 seconds
         listenerApi.dispatch(showToast({
@@ -248,7 +248,7 @@ apiMiddleware.startListening({
   matcher: isAnyOf(processFileAsync.fulfilled),
   effect: async (action, listenerApi) => {
     const state = listenerApi.getState() as RootState;
-    
+
     if (state.userPreferences.autoSave) {
       try {
         // Save to local storage as backup
@@ -257,9 +257,9 @@ apiMiddleware.startListening({
           timestamp: Date.now(),
           fileName: state.fileProcessing.currentFile?.name,
         };
-        
-        localStorage.setItem('nazmito_last_processed', JSON.stringify(saveData));
-        
+
+        localStorage.setItem('healthcare-preauth_last_processed', JSON.stringify(saveData));
+
         console.debug('Auto-saved processed data');
       } catch (error) {
         console.warn('Failed to auto-save data:', error);

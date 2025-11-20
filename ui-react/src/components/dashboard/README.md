@@ -252,7 +252,7 @@ const dateRangePresets = [
 ### Chart Colors
 ```typescript
 const CHART_COLORS = {
-  primary: '#0066cc',      // Nazmito Blue
+  primary: '#0066cc',      // Healthcare Blue
   secondary: '#00a86b',    // Success Green
   accent: '#ff6b35',       // Warning Orange
   error: '#dc3545',        // Error Red

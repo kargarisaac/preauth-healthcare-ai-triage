@@ -5,7 +5,7 @@ const HowItWorksSection: React.FC = () => {
     {
       number: 1,
       icon: '🔍',
-      title: 'Nazmito Ingest™: See the Full Member Picture',
+      title: 'Healthcare AI Platform Ingest™: See the Full Member Picture',
       description: `Our engine ingests claims, labs, and pharmacy data. We normalize formats,
         score data quality, and compare history against clinical guidelines to
         spot care gaps instantly.`
@@ -13,7 +13,7 @@ const HowItWorksSection: React.FC = () => {
     {
       number: 2,
       icon: '🎯',
-      title: 'Nazmito Decide™: Shift From Approval to Action',
+      title: 'Healthcare AI Platform Decide™: Shift From Approval to Action',
       description: `Instead of a simple yes/no, our rules and ML models craft an "enriched,
         pre-approved pathway." If a diabetes check is overdue, we bundle it.
         If a lower-cost drug equivalent exists, we suggest it and reward providers who adopt it.`
@@ -21,7 +21,7 @@ const HowItWorksSection: React.FC = () => {
     {
       number: 3,
       icon: '📊',
-      title: 'Nazmito Explain™: Trust Through Transparency',
+      title: 'Healthcare AI Platform Explain™: Trust Through Transparency',
       description: `Every decision comes with a complete audit trail: which rules fired,
         which model version was used, and the clinical citation. This explainability
         builds trust and simplifies compliance.`
@@ -29,7 +29,7 @@ const HowItWorksSection: React.FC = () => {
     {
       number: 4,
       icon: '🧠',
-      title: 'Nazmito Intelligence™: Create Localized Intelligence',
+      title: 'Healthcare AI Platform Intelligence™: Create Localized Intelligence',
       description: `Outcome signals feed reinforcement-learning loops that personalize and
         localize our models to UAE member populations, ensuring the system gets
         smarter and more effective every week.`
@@ -43,7 +43,7 @@ const HowItWorksSection: React.FC = () => {
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mb-6">
             Process
           </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">How Nazmito Works</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">How Healthcare AI Platform Works</h2>
         </div>
 
         <div className="relative">

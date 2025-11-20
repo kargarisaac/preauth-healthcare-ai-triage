@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://nazmito.com/schemas/canonical/v0.2/healthcare-bundle.json",
-  "title": "Nazmito Canonical Healthcare Bundle Schema",
+  "$id": "https://healthcare-preauth.org/schemas/canonical/v0.2/healthcare-bundle.json",
+  "title": "Healthcare AI Pre-authorization Platform Canonical Healthcare Bundle Schema",
   "description": "Unified schema for healthcare data including Claims, Observations, Medications, Conditions, and Procedures, based on FHIR resources with UAE-specific extensions",
   "type": "object",
   "required": [
@@ -123,22 +123,22 @@
         "url": {
           "type": "string",
           "enum": [
-            "https://nazmito.com/fhir/StructureDefinition/schema-version",
-            "https://nazmito.com/fhir/StructureDefinition/original-format",
-            "https://nazmito.com/fhir/StructureDefinition/data-quality-score",
-            "https://nazmito.com/fhir/StructureDefinition/processing-timestamp",
-            "https://nazmito.com/fhir/StructureDefinition/gap-flags",
-            "https://nazmito.com/fhir/StructureDefinition/enrichment-score",
-            "https://nazmito.com/fhir/StructureDefinition/ai-confidence",
-            "https://nazmito.com/fhir/StructureDefinition/incentive-eligible",
-            "https://nazmito.com/fhir/StructureDefinition/authorization-result",
-            "https://nazmito.com/fhir/StructureDefinition/record-count",
-            "https://nazmito.com/fhir/StructureDefinition/disposition-flag",
-            "https://nazmito.com/fhir/StructureDefinition/emirate-authority",
-            "https://nazmito.com/fhir/StructureDefinition/hijri-date",
-            "https://nazmito.com/fhir/StructureDefinition/clinical-reasoning",
-            "https://nazmito.com/fhir/StructureDefinition/source-mapping",
-            "https://nazmito.com/fhir/StructureDefinition/clinical-context-score"
+            "https://healthcare-preauth.org/fhir/StructureDefinition/schema-version",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/original-format",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/data-quality-score",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/processing-timestamp",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/gap-flags",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/enrichment-score",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/ai-confidence",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/incentive-eligible",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/authorization-result",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/record-count",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/disposition-flag",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/emirate-authority",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/hijri-date",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/clinical-reasoning",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/source-mapping",
+            "https://healthcare-preauth.org/fhir/StructureDefinition/clinical-context-score"
           ]
         },
         "valueString": {

@@ -132,7 +132,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
   const formatFileName = (format: string, data: string): string => {
     const timestamp = new Date().toISOString().split('T')[0];
     const dataType = data === 'all' ? 'complete' : data;
-    return `nazmito-${dataType}-${timestamp}.${format}`;
+    return `healthcare-preauth-${dataType}-${timestamp}.${format}`;
   };
 
   const prepareData = (dataType: string) => {
@@ -218,7 +218,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
     // Title
     pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Nazmito Processing Report', pageWidth / 2, yPosition, { align: 'center' });
+    pdf.text('Healthcare AI Platform Processing Report', pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 20;
 
     // Bundle Information
@@ -315,7 +315,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ results }) => {
 
     summaryDiv.innerHTML = `
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #1f2937; margin-bottom: 10px;">Nazmito Processing Report</h1>
+        <h1 style="color: #1f2937; margin-bottom: 10px;">Healthcare AI Platform Processing Report</h1>
         <p style="color: #6b7280; margin: 0;">Generated on ${new Date().toLocaleDateString()}</p>
       </div>
 

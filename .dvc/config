@@ -1,8 +1,0 @@
-[core]
-    remote = gcs_remote
-['remote "gdrive_remote"']
-    url = gdrive://1GTW7tupkL1BAyRf6UXVrPuyAboHv2EN_
-    gdrive_client_id = 701121727376-h7087b25vmpcuonprh3r6a4g9dm45rjl.apps.googleusercontent.com
-    gdrive_client_secret = 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
-['remote "gcs_remote"']
-    url = gs://nazmito-datasets/

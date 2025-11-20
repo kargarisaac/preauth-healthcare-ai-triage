@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Menu, 
-  X, 
-  Bell, 
-  Settings, 
-  User, 
-  LogOut, 
-  FileText, 
+import {
+  Menu,
+  X,
+  Bell,
+  Settings,
+  User,
+  LogOut,
+  FileText,
   BarChart3,
   Home,
   ChevronDown
@@ -53,12 +53,12 @@ export default function DashboardHeader({
           {/* Logo and Title */}
           <div className="flex items-center space-x-4">
             <Link to="/" className="flex items-center space-x-2">
-              <img src={logoImage} alt="Nazmito" className="h-8 w-8" />
+              <img src={logoImage} alt="Healthcare AI Platform" className="h-8 w-8" />
               <span className="text-xl font-bold text-gray-900 dark:text-dark-text-primary">
-                Nazmito
+                Healthcare AI Platform
               </span>
             </Link>
-            
+
             {title && (
               <div className="hidden sm:block">
                 <div className="w-px h-6 bg-gray-300 dark:bg-dark-border-primary mx-4" />
@@ -130,11 +130,11 @@ export default function DashboardHeader({
               {isUserMenuOpen && (
                 <>
                   {/* Overlay */}
-                  <div 
-                    className="fixed inset-0 z-10" 
+                  <div
+                    className="fixed inset-0 z-10"
                     onClick={() => setIsUserMenuOpen(false)}
                   />
-                  
+
                   {/* Dropdown */}
                   <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-large z-20 bg-white dark:bg-dark-bg-secondary border border-gray-200 dark:border-dark-border-primary py-2">
                     <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-border-primary">
@@ -145,7 +145,7 @@ export default function DashboardHeader({
                         admin@example.com
                       </p>
                     </div>
-                    
+
                     <Link
                       to="/dashboard/settings"
                       className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary transition-colors"
@@ -154,7 +154,7 @@ export default function DashboardHeader({
                       <Settings className="w-4 h-4" />
                       <span>Settings</span>
                     </Link>
-                    
+
                     <button
                       className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-dark-text-secondary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}

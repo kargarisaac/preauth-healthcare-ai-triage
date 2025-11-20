@@ -52,8 +52,8 @@ const DEFAULT_QUICK_FILTERS: QuickFilter[] = [
 ];
 
 // Search history storage
-const SEARCH_HISTORY_KEY = 'nazmito_search_history';
-const SAVED_SEARCHES_KEY = 'nazmito_saved_searches';
+const SEARCH_HISTORY_KEY = 'healthcare-preauth_search_history';
+const SAVED_SEARCHES_KEY = 'healthcare-preauth_saved_searches';
 const MAX_SEARCH_HISTORY = 10;
 
 export function useRequestSearch() {

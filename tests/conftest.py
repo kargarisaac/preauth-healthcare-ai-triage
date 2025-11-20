@@ -879,14 +879,14 @@ def fhir_test_data_factory():
                 "id": "TXN-ECLAIM-2025-001789",
                 "meta": {
                     "profile": [
-                        "https://nazmito.com/fhir/StructureDefinition/uae-claim"
+                        "https://healthcare-preauth.org/fhir/StructureDefinition/uae-claim"
                     ],
                     "source": "eClaimLink",
                 },
                 "identifier": [
                     {
                         "use": "official",
-                        "system": "https://nazmito.com/identifiers/eclaim-transaction",
+                        "system": "https://healthcare-preauth.org/identifiers/eclaim-transaction",
                         "value": "TXN-ECLAIM-2025-001789",
                     }
                 ],
@@ -917,13 +917,13 @@ def fhir_test_data_factory():
                 "id": "condition-E11.9-1",
                 "meta": {
                     "profile": [
-                        "https://nazmito.com/fhir/StructureDefinition/uae-condition"
+                        "https://healthcare-preauth.org/fhir/StructureDefinition/uae-condition"
                     ],
                     "source": "eClaimLink",
                 },
                 "identifier": [
                     {
-                        "system": "https://nazmito.com/identifiers/condition",
+                        "system": "https://healthcare-preauth.org/identifiers/condition",
                         "value": "condition-E11.9-1",
                     }
                 ],
@@ -975,13 +975,13 @@ def fhir_test_data_factory():
                 "id": "observation-hba1c-1",
                 "meta": {
                     "profile": [
-                        "https://nazmito.com/fhir/StructureDefinition/uae-observation"
+                        "https://healthcare-preauth.org/fhir/StructureDefinition/uae-observation"
                     ],
                     "source": "clinical-text",
                 },
                 "identifier": [
                     {
-                        "system": "https://nazmito.com/identifiers/observation",
+                        "system": "https://healthcare-preauth.org/identifiers/observation",
                         "value": "observation-hba1c-1",
                     }
                 ],
@@ -1024,13 +1024,13 @@ def fhir_test_data_factory():
                 "id": "medication-metformin-1",
                 "meta": {
                     "profile": [
-                        "https://nazmito.com/fhir/StructureDefinition/uae-medication-statement"
+                        "https://healthcare-preauth.org/fhir/StructureDefinition/uae-medication-statement"
                     ],
                     "source": "clinical-text",
                 },
                 "identifier": [
                     {
-                        "system": "https://nazmito.com/identifiers/medication-statement",
+                        "system": "https://healthcare-preauth.org/identifiers/medication-statement",
                         "value": "medication-metformin-1",
                     }
                 ],
@@ -1057,13 +1057,13 @@ def fhir_test_data_factory():
                 "id": "procedure-83036-requested",
                 "meta": {
                     "profile": [
-                        "https://nazmito.com/fhir/StructureDefinition/uae-procedure"
+                        "https://healthcare-preauth.org/fhir/StructureDefinition/uae-procedure"
                     ],
                     "source": "eClaimLink",
                 },
                 "identifier": [
                     {
-                        "system": "https://nazmito.com/identifiers/procedure",
+                        "system": "https://healthcare-preauth.org/identifiers/procedure",
                         "value": "procedure-83036-requested",
                     }
                 ],
@@ -1092,7 +1092,7 @@ def fhir_test_data_factory():
                 "id": "eClaimLink-Bundle-TXN-ECLAIM-2025-001789-20250731",
                 "meta": {
                     "profile": [
-                        "https://nazmito.com/fhir/StructureDefinition/healthcare-bundle"
+                        "https://healthcare-preauth.org/fhir/StructureDefinition/healthcare-bundle"
                     ],
                     "source": "eClaimLink",
                     "versionId": "1",
@@ -1190,7 +1190,7 @@ def clinical_validation_helper():
                 ext
                 for ext in extensions
                 if ext.get("url")
-                == "https://nazmito.com/fhir/StructureDefinition/clinical-context-score"
+                == "https://healthcare-preauth.org/fhir/StructureDefinition/clinical-context-score"
             ]
             if context_scores:
                 assert (
@@ -1240,7 +1240,7 @@ def clinical_validation_helper():
                 ext
                 for ext in extensions
                 if ext.get("url")
-                == "https://nazmito.com/fhir/StructureDefinition/data-quality-score"
+                == "https://healthcare-preauth.org/fhir/StructureDefinition/data-quality-score"
             ]
 
             if quality_scores:
@@ -1380,7 +1380,7 @@ def assert_fhir_resource_quality(
     for ext in extensions:
         if (
             ext.get("url")
-            == "https://nazmito.com/fhir/StructureDefinition/clinical-context-score"
+            == "https://healthcare-preauth.org/fhir/StructureDefinition/clinical-context-score"
         ):
             confidence = ext.get("valueDecimal", 0)
             assert (

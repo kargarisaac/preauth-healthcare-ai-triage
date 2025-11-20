@@ -1,5 +1,5 @@
 """
-Nazmito API package initializer.
+Healthcare AI Pre-authorization Platform API package initializer.
 """
 
 # Expose FastAPI app for convenience when importing api

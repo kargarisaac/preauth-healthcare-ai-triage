@@ -15,7 +15,7 @@ const FAQSection: React.FC = () => {
     },
     {
       question: 'Who owns the decision?',
-      answer: 'You do. Nazmito is decision support. We provide rationale and audit trails; you keep the final call.'
+      answer: 'You do. Healthcare AI Platform is decision support. We provide rationale and audit trails; you keep the final call.'
     },
     {
       question: 'How do you prove savings?',
@@ -91,7 +91,7 @@ const FAQSection: React.FC = () => {
             Have more questions? We'd love to help.
           </p>
           <a
-            href="mailto:kargarisaac@gmail.com?subject=Nazmito%20Questions"
+            href="mailto:contact@healthcare-preauth.com?subject=Healthcare%20AI%20Platform%20Questions"
             className="inline-flex items-center px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-soft hover:shadow-medium"
           >
             Contact Us

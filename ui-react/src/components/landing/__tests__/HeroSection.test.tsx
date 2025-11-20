@@ -22,7 +22,7 @@ describe('HeroSection Component', () => {
     render(<HeroSection />)
 
     expect(screen.getByText('Clinical Intelligence for UAE Payers')).toBeInTheDocument()
-    expect(screen.getByText(/Nazmito enriches every authorization/)).toBeInTheDocument()
+    expect(screen.getByText(/Healthcare AI Platform enriches every authorization/)).toBeInTheDocument()
   })
 
   it('displays call-to-action buttons', () => {

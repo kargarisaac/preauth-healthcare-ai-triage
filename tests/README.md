@@ -1,6 +1,6 @@
-# Nazmito Patient-Centric Workflow Test Suite
+# Healthcare AI Pre-authorization Platform Test Suite
 
-Comprehensive test suite for the Nazmito patient-centric healthcare XML processing and analysis workflow.
+Comprehensive test suite for the Healthcare AI Pre-authorization Platform patient-centric healthcare XML processing and analysis workflow.
 
 ## Overview
 
@@ -499,4 +499,4 @@ open ui-react/coverage/lcov-report/index.html
 - Performance tests should be updated for new features
 - Integration tests should reflect real-world usage patterns
 
-This comprehensive test suite ensures the reliability, performance, and maintainability of the Nazmito patient-centric workflow, providing confidence for healthcare data processing in production environments.
+This comprehensive test suite ensures the reliability, performance, and maintainability of the Healthcare AI Pre-authorization Platform patient-centric workflow, providing confidence for healthcare data processing in production environments.

@@ -1,5 +1,5 @@
 """
-Unit tests package for Nazmito healthcare platform.
+Unit tests package for Healthcare AI Pre-authorization Platform.
 
 This package contains unit tests for individual components:
 - XML ingestors (eClaimLink, Shafafiya)

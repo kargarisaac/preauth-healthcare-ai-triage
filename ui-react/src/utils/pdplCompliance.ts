@@ -499,7 +499,7 @@ export class PDPLComplianceManager {
       ],
       notice: 'This export contains all personal data we hold about you as per UAE PDPL Article 13',
       contactInfo: {
-        dataProtectionOfficer: 'dpo@nazmito.com',
+        dataProtectionOfficer: 'dpo@healthcare-preauth.com',
         phone: '+971-4-XXX-XXXX'
       },
       data: {

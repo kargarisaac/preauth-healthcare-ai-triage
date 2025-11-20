@@ -1,5 +1,5 @@
 """
-Comprehensive health checks for Nazmito API production deployment.
+Comprehensive health checks for Healthcare AI Pre-authorization Platform production deployment.
 
 Provides detailed health assessments for Kubernetes liveness and readiness probes,
 monitoring systems, and operational validation.

@@ -1,5 +1,5 @@
 """
-Production configuration management for Nazmito API.
+Production configuration management for Healthcare AI Pre-authorization API.
 
 Handles environment variables, secrets management, and configuration validation
 for different deployment environments.
@@ -26,7 +26,7 @@ class Environment(str, Enum):
 @dataclass
 class DatabaseConfig:
     """Database configuration settings."""
-    url: str = "sqlite:///./nazmito.db"
+    url: str = "sqlite:///./healthcare_preauth.db"
     pool_size: int = 10
     max_overflow: int = 20
     pool_timeout: int = 30

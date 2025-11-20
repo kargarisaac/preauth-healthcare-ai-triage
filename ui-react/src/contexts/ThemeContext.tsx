@@ -8,19 +8,19 @@ interface ThemeContextType {
   // Current theme state
   theme: ThemeMode;
   actualTheme: 'light' | 'dark'; // The actual resolved theme
-  
+
   // Theme actions
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
-  
+
   // System detection
   systemTheme: 'light' | 'dark';
   isSystemTheme: boolean;
-  
+
   // Accessibility
   reducedMotion: boolean;
   highContrast: boolean;
-  
+
   // Healthcare-specific
   isDarkMode: boolean;
   colorScheme: 'healthcare-light' | 'healthcare-dark';
@@ -39,7 +39,7 @@ function useSystemTheme() {
     if (typeof window === 'undefined') return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       setSystemTheme(e.matches ? 'dark' : 'light');
     };
@@ -48,7 +48,7 @@ function useSystemTheme() {
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
-    } 
+    }
     // Legacy browsers
     else if (mediaQuery.addListener) {
       mediaQuery.addListener(handleChange);
@@ -70,7 +70,7 @@ function useReducedMotion() {
     if (typeof window === 'undefined') return;
 
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       setReducedMotion(e.matches);
     };
@@ -107,24 +107,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Apply theme to DOM
   useEffect(() => {
     const root = document.documentElement;
-    
+
     // Remove existing theme classes
     root.classList.remove('light', 'dark');
-    
+
     // Add current theme class
     root.classList.add(actualTheme);
-    
+
     // Set data attributes for CSS custom properties
     root.setAttribute('data-theme', actualTheme);
     root.setAttribute('data-color-scheme', colorScheme);
-    
+
     // Apply accessibility preferences
     if (reducedMotion) {
       root.classList.add('reduce-motion');
     } else {
       root.classList.remove('reduce-motion');
     }
-    
+
     if (highContrast) {
       root.classList.add('high-contrast');
     } else {
@@ -139,7 +139,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Store theme preference in localStorage for SSR compatibility
     try {
-      localStorage.setItem('nazmito-theme', theme);
+      localStorage.setItem('healthcare-preauth-theme', theme);
     } catch (error) {
       console.warn('Failed to save theme preference:', error);
     }
@@ -164,7 +164,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from localStorage on mount
   useEffect(() => {
     try {
-      const savedTheme = localStorage.getItem('nazmito-theme') as ThemeMode;
+      const savedTheme = localStorage.getItem('healthcare-preauth-theme') as ThemeMode;
       if (savedTheme && savedTheme !== theme && ['light', 'dark', 'system'].includes(savedTheme)) {
         dispatch(setTheme(savedTheme));
       }
@@ -204,7 +204,7 @@ export function useTheme() {
 // Helper hook for components that need to be theme-aware
 export function useThemeClasses() {
   const { isDarkMode, actualTheme, reducedMotion, highContrast } = useTheme();
-  
+
   return {
     isDarkMode,
     theme: actualTheme,
@@ -224,7 +224,7 @@ export function useThemeClasses() {
 // Healthcare-specific theme utilities
 export function useHealthcareTheme() {
   const { isDarkMode, actualTheme } = useTheme();
-  
+
   return {
     isDarkMode,
     theme: actualTheme,

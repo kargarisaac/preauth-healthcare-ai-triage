@@ -122,7 +122,7 @@ const DEFAULT_WIDGETS: DashboardWidget[] = [
 export const useDashboardLayout = (
   options: UseDashboardLayoutOptions = {}
 ): UseDashboardLayoutReturn => {
-  const { storageKey = 'nazmito-dashboard-layout', defaultLayout = 'grid' } = options;
+  const { storageKey = 'healthcare-preauth-dashboard-layout', defaultLayout = 'grid' } = options;
 
   // State
   const [config, setConfig] = useState<DashboardConfig>(() => {

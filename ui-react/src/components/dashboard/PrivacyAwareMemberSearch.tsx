@@ -92,7 +92,7 @@ export const PrivacyAwareMemberSearch: React.FC<PrivacyAwareMemberSearchProps> =
         type: 'warning',
         actions: [{
           label: 'Contact Data Protection Officer',
-          action: () => window.open('mailto:dpo@nazmito.com?subject=Data Retention Query')
+          action: () => window.open('mailto:dpo@healthcare-preauth.com?subject=Data Retention Query')
         }]
       });
     }

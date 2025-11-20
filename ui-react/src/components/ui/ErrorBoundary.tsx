@@ -134,7 +134,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         isProcessingFile: window.location.pathname.includes('upload'),
         isDashboard: window.location.pathname.includes('dashboard'),
         isAnalytics: window.location.pathname.includes('analytics'),
-        hasStoredData: localStorage.getItem('nazmito_data') !== null,
+        hasStoredData: localStorage.getItem('healthcare-preauth_data') !== null,
       };
     } catch {
       return {};
@@ -182,7 +182,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         break;
       case 'support':
         // Open support chat or email
-        window.open('mailto:support@nazmito.com?subject=Error Report&body=Error ID: ' + this.state.errorId);
+        window.open('mailto:support@healthcare-preauth.com?subject=Error Report&body=Error ID: ' + this.state.errorId);
         break;
       case 'retry':
         this.handleRetry();

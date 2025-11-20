@@ -1,6 +1,6 @@
 # Theme System Documentation
 
-This document describes the comprehensive dark/light theme system implemented for the Nazmito healthcare application.
+This document describes the comprehensive dark/light theme system implemented for the Healthcare AI Pre-authorization Platform.
 
 ## Overview
 
@@ -281,7 +281,7 @@ Check localStorage permissions and Redux persistence configuration:
 ```tsx
 // Verify Redux persistence
 const persistConfig = {
-  key: 'nazmito-root',
+  key: 'healthcare-preauth-root',
   storage,
   whitelist: ['userPreferences'], // Must include userPreferences
 };

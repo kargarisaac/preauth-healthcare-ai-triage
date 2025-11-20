@@ -1,6 +1,6 @@
 # LLM Validation Dashboard
 
-This directory contains React components for the LLM (Large Language Model) validation and analysis system in the Nazmito healthcare platform.
+This directory contains React components for the LLM (Large Language Model) validation and analysis system in the Healthcare AI Pre-authorization Platform.
 
 ## Components Overview
 
@@ -231,4 +231,4 @@ interface LLMValidationConfig {
 
 ## License
 
-This code is part of the Nazmito healthcare platform and is proprietary software.
+This code is part of the Healthcare AI Pre-authorization Platform and is proprietary software.

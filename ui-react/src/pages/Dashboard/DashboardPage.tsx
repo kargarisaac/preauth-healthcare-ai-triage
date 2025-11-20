@@ -24,7 +24,7 @@ const DashboardOverview: React.FC = () => {
   const handleTestToast = () => {
     showToast({
       type: 'success',
-      title: 'Welcome to Nazmito!',
+      title: 'Welcome to Healthcare AI Platform!',
       message: 'Your React dashboard is working perfectly.',
     });
   };
@@ -180,7 +180,7 @@ const DashboardOverview: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border-l-4 border-green-500">
               <div className="flex-shrink-0 mt-1">
                 <span className="text-green-500 text-sm">✅</span>
@@ -194,7 +194,7 @@ const DashboardOverview: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
               <div className="flex-shrink-0 mt-1">
                 <span className="text-blue-500 text-sm">📋</span>
@@ -224,7 +224,7 @@ const DashboardOverview: React.FC = () => {
                 <div className="bg-blue-600 h-2 rounded-full" style={{width: '96.2%'}}></div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">AI Accuracy</span>
@@ -234,7 +234,7 @@ const DashboardOverview: React.FC = () => {
                 <div className="bg-green-600 h-2 rounded-full" style={{width: '94.7%'}}></div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700 dark:text-dark-text-secondary">Cost Efficiency</span>
@@ -244,7 +244,7 @@ const DashboardOverview: React.FC = () => {
                 <div className="bg-purple-600 h-2 rounded-full" style={{width: '87.3%'}}></div>
               </div>
             </div>
-            
+
             <div className="pt-2 mt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="text-xs text-gray-500 dark:text-dark-text-tertiary">
                 📊 All metrics updated in real-time • Last sync: {new Date().toLocaleTimeString()}
@@ -260,7 +260,7 @@ const DashboardOverview: React.FC = () => {
 const DashboardPage: React.FC = () => {
   const { metrics: insurerMetrics } = useInsurer();
   const location = useLocation();
-  
+
   // Determine current active route
   const getCurrentRoute = () => {
     const path = location.pathname;
@@ -270,9 +270,9 @@ const DashboardPage: React.FC = () => {
     if (path.includes('/dashboard/analytics')) return 'analytics';
     return 'overview';
   };
-  
+
   const currentRoute = getCurrentRoute();
-  
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg-primary transition-colors duration-200">
       {/* Navigation */}
@@ -280,12 +280,12 @@ const DashboardPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <Link to="/" className="flex items-center">
-              <img src={logoImage} alt="Nazmito" className="h-8 w-8" />
+              <img src={logoImage} alt="Healthcare AI Platform" className="h-8 w-8" />
               <span className="ml-2 text-xl font-bold text-gray-900 dark:text-dark-text-primary">Dubai Health Insurance</span>
             </Link>
             <div className="flex items-center space-x-1">
-              <Link 
-                to="/dashboard/overview" 
+              <Link
+                to="/dashboard/overview"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors relative ${
                   currentRoute === 'overview'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
@@ -294,8 +294,8 @@ const DashboardPage: React.FC = () => {
               >
                 🏠 Overview
               </Link>
-              <Link 
-                to="/dashboard/requests" 
+              <Link
+                to="/dashboard/requests"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors relative ${
                   currentRoute === 'requests'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
@@ -309,8 +309,8 @@ const DashboardPage: React.FC = () => {
                   </span>
                 )}
               </Link>
-              <Link 
-                to="/dashboard/upload" 
+              <Link
+                to="/dashboard/upload"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   currentRoute === 'upload'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
@@ -319,8 +319,8 @@ const DashboardPage: React.FC = () => {
               >
                 📄 Process Files
               </Link>
-              <Link 
-                to="/dashboard/analytics" 
+              <Link
+                to="/dashboard/analytics"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   currentRoute === 'analytics'
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'

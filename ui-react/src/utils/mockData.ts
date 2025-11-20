@@ -219,7 +219,7 @@ export function generateMockAuditTrail(requestId: string): RequestAuditTrail[] {
     details: {
       action_type: action.toLowerCase().replace(/\s+/g, '_'),
       metadata: {
-        user_agent: 'Nazmito Dashboard v1.0',
+        user_agent: 'Healthcare AI Dashboard v1.0',
         session_id: `sess_${Math.random().toString(36).substring(7)}`,
       },
     },
@@ -256,6 +256,6 @@ export function setupMockData() {
     timestamp: Date.now(),
   };
 
-  localStorage.setItem('nazmito_mock_requests', JSON.stringify(mockData));
+  localStorage.setItem('healthcare-preauth_mock_requests', JSON.stringify(mockData));
   console.log('Mock request data generated and stored in localStorage');
 }

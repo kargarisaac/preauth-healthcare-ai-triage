@@ -3,10 +3,10 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './index';
 import { useAppDispatch, useAppSelector } from './hooks';
-import { 
-  playNotificationSound, 
+import {
+  playNotificationSound,
   requestDesktopPermission,
-  showDesktopNotification 
+  showDesktopNotification
 } from './slices/notificationSlice';
 import { selectNotificationSettings, selectActiveToasts, selectIsLoading, selectProcessingState, selectProcessingHistory } from './hooks';
 
@@ -44,7 +44,7 @@ function NotificationHandler() {
 // Auto-save middleware component
 function AutoSaveHandler() {
   const preferences = useAppSelector(state => state.userPreferences);
-  
+
   useEffect(() => {
     if (!preferences.autoSave) return;
 
@@ -107,7 +107,7 @@ function LoadingFallback() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading Nazmito...</p>
+        <p className="text-gray-600">Loading Healthcare Pre-authorization Platform...</p>
       </div>
     </div>
   );
@@ -144,34 +144,34 @@ export function useApp() {
   return {
     // Current view management
     currentView: 'overview', // This would need to be added to state if needed
-    
+
     // Processing state
     ...processingState,
     requests: processingHistory,
-    
+
     // Actions - mapped to Redux actions
     switchView: (view: string) => {
       // This would need to be implemented if view state is needed
       console.log('Switch view:', view);
     },
-    
+
     addRequest: (request: any) => {
       dispatch({ type: 'fileProcessing/addToHistory', payload: request });
     },
-    
+
     updateMetrics: (metrics: any) => {
       // This would need to be implemented based on requirements
       console.log('Update metrics:', metrics);
     },
-    
+
     setLoading: (loading: boolean) => {
       dispatch({ type: 'fileProcessing/setProcessingStatus', payload: loading ? 'processing' : 'idle' });
     },
-    
+
     setError: (error: string | null) => {
       dispatch({ type: 'fileProcessing/setError', payload: error });
     },
-    
+
     // Metrics - derived from state
     metrics: {
       activeRequests: processingHistory.length,

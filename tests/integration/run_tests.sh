@@ -9,7 +9,7 @@ echo "🚀 Starting Integration Test Suite"
 echo "=================================="
 
 # Set Python path
-export PYTHONPATH="/Users/isaackargar/codes/personal/nazmito"
+export PYTHONPATH="./"
 
 # Test configuration
 export PREAUTH_TEST_MODE=true

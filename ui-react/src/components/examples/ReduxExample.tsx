@@ -136,8 +136,8 @@ export function ReduxExample() {
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <Card title="Redux Toolkit Example" className="p-6">
         <p className="text-gray-600 mb-6">
-          This component demonstrates how to use Redux Toolkit for state management 
-          in the Nazmito application.
+          This component demonstrates how to use Redux Toolkit for state management
+          in the Healthcare AI Platform application.
         </p>
 
         {/* File Selection */}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Modern XML Processing Service for Nazmito API.
+Modern XML Processing Service for Healthcare AI Pre-authorization Platform.
 Uses the async orchestrator for workflow processing.
 """
 

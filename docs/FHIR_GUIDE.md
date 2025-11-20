@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Nazmito implements a FHIR-first architecture where simple patient CSV data is enriched and transformed into comprehensive FHIR Bundles that serve as the single canonical data format. This approach eliminates data duplication, provides optimal structure for AI/LLM consumption, and combines international healthcare interoperability standards with UAE-specific requirements.
+The Healthcare AI Pre-authorization Platform implements a FHIR-first architecture where simple patient CSV data is enriched and transformed into comprehensive FHIR Bundles that serve as the single canonical data format. This approach eliminates data duplication, provides optimal structure for AI/LLM consumption, and combines international healthcare interoperability standards with UAE-specific requirements.
 
 ## Why FHIR for UAE Healthcare?
 
@@ -23,7 +23,7 @@ The UAE healthcare system presents unique challenges:
 3. **Cultural Context Missing**: FHIR lacks extensions for Islamic calendar dates, Arabic names, and regional clinical practices
 4. **Legacy System Reality**: 90% of UAE payers use non-FHIR systems requiring hybrid approaches
 
-### Nazmito's FHIR-First Strategy
+### Healthcare AI Pre-authorization Platform's FHIR-First Strategy
 
 **Core Principle:** Transform all patient data into enriched FHIR Bundles that serve as the single canonical format, eliminating data duplication while adding UAE-specific extensions to handle regional requirements without breaking interoperability.
 
@@ -190,7 +190,7 @@ ServiceRequest resources provide clinical context for each service within a Clai
 
 ### Extension Design Philosophy
 
-**Namespace Convention:** `http://nazmito.com/fhir/extensions/`
+**Namespace Convention:** `http://healthcare-preauth.com/fhir/extensions/`
 **Principle:** Extend without breaking FHIR compliance
 
 ### Key UAE Extensions
@@ -199,7 +199,7 @@ ServiceRequest resources provide clinical context for each service within a Clai
 ```json
 {
   "extension": [{
-    "url": "http://nazmito.com/fhir/extensions/disposition-flag",
+    "url": "http://healthcare-preauth.com/fhir/extensions/disposition-flag",
     "valueCode": "TEST"
   }]
 }
@@ -214,10 +214,10 @@ ServiceRequest resources provide clinical context for each service within a Clai
 ```json
 {
   "extension": [{
-    "url": "http://nazmito.com/fhir/extensions/emirate-authority",
+    "url": "http://healthcare-preauth.com/fhir/extensions/emirate-authority",
     "valueCodeableConcept": {
       "coding": [{
-        "system": "http://nazmito.com/codesystems/authorities",
+        "system": "http://healthcare-preauth.com/codesystems/authorities",
         "code": "DHA",
         "display": "Dubai Health Authority"
       }]
@@ -230,7 +230,7 @@ ServiceRequest resources provide clinical context for each service within a Clai
 ```json
 {
   "extension": [{
-    "url": "http://nazmito.com/fhir/extensions/hijri-date",
+    "url": "http://healthcare-preauth.com/fhir/extensions/hijri-date",
     "valueString": "1446-07-15"
   }]
 }
@@ -240,7 +240,7 @@ ServiceRequest resources provide clinical context for each service within a Clai
 ```json
 {
   "extension": [{
-    "url": "http://nazmito.com/fhir/extensions/quality-score",
+    "url": "http://healthcare-preauth.com/fhir/extensions/quality-score",
     "valueDecimal": 0.95
   }]
 }
@@ -250,7 +250,7 @@ ServiceRequest resources provide clinical context for each service within a Clai
 ```json
 {
   "extension": [{
-    "url": "http://nazmito.com/fhir/extensions/clinical-reasoning",
+    "url": "http://healthcare-preauth.com/fhir/extensions/clinical-reasoning",
     "extension": [
       {
         "url": "risk-score",
@@ -487,4 +487,4 @@ When enriching FHIR Bundles from multiple sources:
 - Comprehensive audit trails maintained within FHIR Bundle metadata
 - PDPL compliance integrated into FHIR resource handling
 
-This FHIR-first architecture positions Nazmito to deliver superior clinical intelligence while maintaining full UAE healthcare compliance and preparing for the future adoption of native FHIR systems across the region.
+This FHIR-first architecture positions Healthcare AI Pre-authorization Platform to deliver superior clinical intelligence while maintaining full UAE healthcare compliance and preparing for the future adoption of native FHIR systems across the region.

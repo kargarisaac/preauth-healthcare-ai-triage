@@ -18,7 +18,7 @@ const TransformationSection: React.FC = () => {
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
                 ⛔
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Before Nazmito</h3>
+              <h3 className="text-xl font-bold text-gray-900">Before Healthcare AI Platform</h3>
             </div>
 
             <ul className="space-y-3">
@@ -58,7 +58,7 @@ const TransformationSection: React.FC = () => {
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
                 ✨
               </div>
-              <h3 className="text-xl font-bold text-gray-900">After Nazmito</h3>
+              <h3 className="text-xl font-bold text-gray-900">After Healthcare AI Platform</h3>
             </div>
 
             <ul className="space-y-3">

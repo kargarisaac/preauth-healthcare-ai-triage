@@ -92,7 +92,7 @@ test.describe('Landing Page', () => {
 
   test('should have proper SEO elements', async ({ page }) => {
     // Check for essential SEO elements
-    await expect(page).toHaveTitle(/Nazmito/i)
+    await expect(page).toHaveTitle(/Healthcare AI Pre-authorization Platform/i)
 
     const metaDescription = page.locator('meta[name="description"]')
     await expect(metaDescription).toHaveAttribute('content', /.+/)

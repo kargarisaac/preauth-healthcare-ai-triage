@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Production server runner for Nazmito Healthcare XML API.
+Production server runner for Healthcare AI Pre-authorization Platform.
 
 This script provides different ways to run the FastAPI server for different environments.
 """
@@ -30,7 +30,7 @@ def run_development():
     host = server_cfg.get("host") or "127.0.0.1"
     port = int(server_cfg.get("port") or 8000)
 
-    print("🚀 Starting Nazmito Healthcare XML API - Development Mode")
+    print("🚀 Starting Healthcare AI Pre-authorization Platform - Development Mode")
     print(f"📖 API Documentation: http://{host}:{port}/api/docs")
     print("🔄 Auto-reload enabled")
     print("-" * 60)
@@ -51,7 +51,7 @@ def run_production(host="0.0.0.0", port=8000, workers=1):
     try:
         import uvicorn
 
-        print("🏭 Starting Nazmito Healthcare XML API - Production Mode")
+        print("🏭 Starting Healthcare AI Pre-authorization Platform - Production Mode")
         print(f"🌐 Server: http://{host}:{port}")
         print(f"👷 Workers: {workers}")
         print(f"📖 API Documentation: http://{host}:{port}/api/docs")
@@ -79,7 +79,7 @@ def run_docker():
     port = int(server_cfg.get("port") or os.getenv("PORT", "8000"))
     workers = int(server_cfg.get("workers") or os.getenv("WORKERS", "1"))
 
-    print("🐳 Starting Nazmito Healthcare XML API - Docker Mode")
+    print("🐳 Starting Healthcare AI Pre-authorization Platform - Docker Mode")
     print(f"🌐 Server: http://{host}:{port}")
     print(f"👷 Workers: {workers}")
     print("-" * 60)
@@ -97,7 +97,7 @@ def run_docker():
 def main():
     """Main entry point with command line argument parsing."""
     parser = argparse.ArgumentParser(
-        description="Nazmito Healthcare XML API Server",
+        description="Healthcare AI Pre-authorization Platform Server",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

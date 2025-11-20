@@ -1,6 +1,6 @@
 # CSV Sample Files Documentation
 
-This directory contains representative CSV datasets for testing the Nazmito CSV processing pipeline. Each file is designed to test specific aspects of healthcare data ingestion and FHIR conversion.
+This directory contains representative CSV datasets for testing the Healthcare AI Pre-authorization Platform CSV processing pipeline. Each file is designed to test specific aspects of healthcare data ingestion and FHIR conversion.
 
 ## Sample Files Overview
 
@@ -208,4 +208,4 @@ python -c "import pandas as pd; [print(f'{f}: {pd.read_csv(f).shape}') for f in 
 python pipelines/csv_processor.py samples/uae_healthcare_sample.csv
 ```
 
-This comprehensive set of CSV samples provides thorough testing coverage for the Nazmito CSV processing pipeline, ensuring robust handling of real-world healthcare data scenarios.
+This comprehensive set of CSV samples provides thorough testing coverage for the Healthcare AI Pre-authorization Platform CSV processing pipeline, ensuring robust handling of real-world healthcare data scenarios.
