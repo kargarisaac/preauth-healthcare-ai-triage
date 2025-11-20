@@ -52,7 +52,7 @@ preauth_system/
 
 ### System Diagram
 ```mermaid
-flowchart TD
+flowchart LR
   subgraph Clients["Clinicians & insurer ops"]
     WebUI["React dashboard"]
     HTMLUI["HTML5 intake"]
@@ -84,22 +84,25 @@ flowchart TD
   end
 
   Clients -->|upload/search| Intake
-  Intake --> Canonical --> API
+  Intake --> Canonical --> Orchestrator
   Orchestrator --> Policy
   Orchestrator --> Agents
-  Agents --> Intelligence
+  Agents --> KB
+  Agents --> Tools
   Policy --> Safety
+  Agents --> Safety
   Safety --> Dossier
-  Agents --> Dossier
   Dossier --> Clients
-  API --> Data
+  Orchestrator --> Queue
+  Orchestrator --> Cache
+  Safety --> Audit
 ```
 
 ### Multi-Agent System
-- **5 Specialized Agents**: clinical-analyzer, medication-specialist, risk-assessor, decision-maker, compliance-auditor
-- **Tools-First Architecture**: Agents use tools (kb_search, fhir_query, safety_check) before LLM calls
-- **Confidence Scoring**: Each agent provides confidence metrics (0-100%)
-- **Intelligent Caching**: Patient summaries, policy evaluations, KB retrievals
+- **Roles**: clinical-analyzer (problem list, vitals), medication-specialist (drug interactions, dosing), risk-assessor (risks/contraindications), decision-maker (coverage proposal), compliance-auditor (PDPL + policy alignment)
+- **Execution flow**: orchestrator fans out case context → agents run tools-first (kb_search, fhir_query, safety_check) → each returns rationale + confidence → decision-maker assembles recommendation → compliance-auditor validates before dossier generation.
+- **Safeguards**: deterministic policy check runs in parallel; safety gate blocks unsafe plan; audit log captures agent traces.
+- **Caching**: request/response caches for summaries, KB hits, and policy evaluations to reduce cost/latency.
 
 ### Frontend Applications
 - **React Dashboard**: Modern TypeScript dashboard with real-time updates
