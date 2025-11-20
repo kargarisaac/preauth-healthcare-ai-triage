@@ -64,66 +64,42 @@ flowchart LR
     Canonical["Canonical JSON normalizer"]
   end
 
-  subgraph API["FastAPI gateway"]
-    Orchestrator["Workflow orchestrator"]
-    Policy["Deterministic policy engine"]
-    Safety["Safety & compliance checks"]
-    Dossier["Dossier generator"]
+  subgraph API["FastAPI app"]
+    Ingest["Upload endpoints"]
+    Pipeline["PreAuthPipeline (DSPy)"]
+    Dossier["Dossier writer"]
   end
 
-  subgraph Agents["Multi-agent layer"]
-    Clin["Clinical analyzer"]
-    Meds["Medication specialist"]
-    Risk["Risk assessor"]
-    Decide["Decision maker"]
-    Comp["Compliance auditor"]
+  subgraph DSPy["Pipeline phases"]
+    Clin["Clinical summarizer"]
+    Evidence["Evidence checker (tools)"]
+    Policy["Policy evaluator"]
   end
 
-  subgraph Intelligence["Knowledge & tools"]
-    KB["Local KB + vector search"]
-    Tools["FHIR lookup, safety checks, citations"]
-  end
-
-  subgraph Data["Data plane"]
-    Queue["Task queue / async jobs"]
-    Cache["Processing cache"]
-    Audit["Audit logs"]
+  subgraph Intelligence["Knowledge base & tools"]
+    KB["RAG KB markdowns"]
+    Tools["Policy + guideline tool functions"]
   end
 
   Clients -->|upload/search| Intake
-  Intake --> Canonical --> Orchestrator
-  Orchestrator --> Policy
-  Orchestrator --> Clin
-  Orchestrator --> Meds
-  Orchestrator --> Risk
-  Clin --> KB
-  Meds --> KB
-  Risk --> KB
-  Clin --> Tools
-  Meds --> Tools
-  Risk --> Tools
-  Policy --> Safety
-  Clin --> Safety
-  Meds --> Safety
-  Risk --> Safety
-  Decide --> Safety
-  Comp --> Safety
-  Clin --> Decide
-  Meds --> Decide
-  Risk --> Decide
-  Decide --> Comp
-  Safety --> Dossier
+  Intake --> Canonical --> Ingest --> Pipeline
+  Pipeline --> Clin
+  Pipeline --> Evidence
+  Pipeline --> Policy
+  Evidence --> KB
+  Evidence --> Tools
+  Policy --> Tools
+  Clin --> Dossier
+  Evidence --> Dossier
+  Policy --> Dossier
   Dossier --> Clients
-  Orchestrator --> Queue
-  Orchestrator --> Cache
-  Safety --> Audit
 ```
 
 ### Multi-Agent System
-- **Roles**: clinical-analyzer (problem list, vitals), medication-specialist (drug interactions, dosing), risk-assessor (risks/contraindications), decision-maker (coverage proposal), compliance-auditor (PDPL + policy alignment)
-- **Execution flow**: orchestrator fans out case context → agents run tools-first (kb_search, fhir_query, safety_check) → each returns rationale + confidence → decision-maker assembles recommendation → compliance-auditor validates before dossier generation.
-- **Safeguards**: deterministic policy check runs in parallel; safety gate blocks unsafe plan; audit log captures agent traces.
-- **Caching**: request/response caches for summaries, KB hits, and policy evaluations to reduce cost/latency.
+- **Agent modules present**: clinical-analyzer, medication-specialist, risk-assessor, decision-maker, compliance-auditor (see `preauth_system/agents/`). They are implemented as DSPy ReAct/COT classes with tool access.
+- **Current state**: the FastAPI pipeline (`PreAuthPipeline`) runs DSPy programs directly (clinical summarizer, evidence checker, policy evaluator) and does not yet invoke the agent modules from the API path.
+- **Tools-first design**: evidence checker uses policy/guideline tools (`preauth_system/dspy_tools.py`) to ground retrieval before LLM responses.
+- **Planned wiring**: agents can be connected to the pipeline orchestrator to provide parallel specialist reasoning once integrated into `PreAuthPipeline`.
 
 ### Frontend Applications
 - **React Dashboard**: Modern TypeScript dashboard with real-time updates
